@@ -1,0 +1,10 @@
+{
+  "name": "axiom-desk",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test"
+  }
+}
