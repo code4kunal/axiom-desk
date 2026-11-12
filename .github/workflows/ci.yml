@@ -19,6 +19,8 @@ jobs:
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run pyright
+      - name: registry check and generated files current
+        run: uv run python -m axiom_api.codegen --check
       - run: uv run pytest
       - run: uv run pytest -m parity
       - run: uv run pytest -m golden
@@ -30,7 +32,8 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          # 24 runs .ts tests natively (type stripping)
+          node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm -r typecheck

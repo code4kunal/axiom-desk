@@ -1,0 +1,19 @@
+[
+  {
+    "name": "runs_latest",
+    "description": "Latest published run of a kind (for example the current regime)",
+    "input_schema": {
+      "properties": {
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "LatestRunInput",
+      "type": "object"
+    }
+  }
+]

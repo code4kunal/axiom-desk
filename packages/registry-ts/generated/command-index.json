@@ -1,0 +1,7 @@
+[
+  {
+    "name": "runs_latest",
+    "summary": "Latest published run of a kind (for example the current regime)",
+    "permission": "read"
+  }
+]

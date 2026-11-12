@@ -2,13 +2,14 @@
 name = "axiom-desk"
 version = "0.1.0"
 requires-python = ">=3.12,<3.13"
-dependencies = ["axiom-core"]
+dependencies = ["axiom-core", "axiom-api"]
 
 [dependency-groups]
 dev = [
   "pytest>=8",
   "ruff>=0.6",
   "pyright>=1.1.380",
+  "httpx2>=2.16",
 ]
 
 [tool.uv]
@@ -16,9 +17,10 @@ package = false
 
 [tool.uv.sources]
 axiom-core = { workspace = true }
+axiom-api = { workspace = true }
 
 [tool.uv.workspace]
-members = ["packages/core"]
+members = ["packages/core", "services/api"]
 
 [tool.pytest.ini_options]
 testpaths = ["packages", "tools", "services"]
