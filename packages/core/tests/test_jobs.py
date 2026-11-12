@@ -192,6 +192,55 @@ def test_other_tenant_cannot_see_a_job(
         jobs.cancel(outsider, job_id)
 
 
+def test_another_user_and_their_agent_cannot_see_or_cancel_a_job(
+    conn: sqlite3.Connection, clock: Callable[[], float], directory: Directory
+) -> None:
+    jobs = make_service(conn, clock, folds_kind())
+    ana = user(directory)
+    job_id = jobs.submit(ana, "folds", {"folds": 1}, request_id="r1")
+    for other in (user(directory, "pam"), agent_for("pam")):
+        for read in (jobs.status, jobs.partials, jobs.result, jobs.cancel):
+            with pytest.raises(NotFound):
+                read(other, job_id)
+    assert jobs.status(agent_for(), job_id).state == "queued"
+    assert jobs.run_next() == job_id
+    assert jobs.result(ana, job_id) == [fold_score({}, 0)]
+
+
+def test_a_job_that_always_fails_is_given_up_and_the_queue_moves_on(
+    conn: sqlite3.Connection, clock: Callable[[], float], directory: Directory
+) -> None:
+    def broken(i: int) -> None:
+        raise WorkerDied
+
+    poison = JobKind("poison", lambda p: 1, lambda p, i: broken(i), lambda p: 1.0)
+    ok = folds_kind()
+    jobs = JobService(conn, clock, {"poison": poison, "folds": ok}, max_attempts=3)
+    ana = user(directory)
+    bad = jobs.submit(ana, "poison", {}, request_id="bad")
+    good = jobs.submit(ana, "folds", {"folds": 1}, request_id="good")
+
+    for _ in range(3):
+        with pytest.raises(WorkerDied):
+            jobs.run_next()
+    assert jobs.run_next() == bad
+    assert jobs.status(ana, bad).state == "failed"
+    assert jobs.run_next() == good
+    assert jobs.status(ana, good).state == "done"
+
+
+def test_a_job_whose_kind_the_worker_lacks_fails_instead_of_crashing(
+    conn: sqlite3.Connection, clock: Callable[[], float], directory: Directory
+) -> None:
+    ana = user(directory)
+    submitted = make_service(conn, clock, folds_kind())
+    orphan = submitted.submit(ana, "folds", {"folds": 1}, request_id="r1")
+    worker = JobService(conn, clock, {})
+    assert worker.run_next() == orphan
+    assert submitted.status(ana, orphan).state == "failed"
+    assert worker.run_next() is None
+
+
 def test_unknown_kind_is_refused(
     conn: sqlite3.Connection, clock: Callable[[], float], directory: Directory
 ) -> None:

@@ -29,6 +29,7 @@ class JobState(StrEnum):
     RUNNING = "running"
     CANCELLED = "cancelled"
     DONE = "done"
+    FAILED = "failed"
 
 
 ACTIVE = (JobState.QUEUED, JobState.RUNNING, JobState.AWAITING_APPROVAL)
@@ -72,12 +73,14 @@ class JobService:
         *,
         quota: int = 4,
         approval_cost: float = 100.0,
+        max_attempts: int = 3,
     ) -> None:
         self._conn = conn
         self.clock = clock
         self._kinds = kinds
         self._quota = quota
         self._approval_cost = approval_cost
+        self._max_attempts = max_attempts
 
     def submit(self, principal: Principal, kind: str, params: Params, *, request_id: str) -> str:
         """Queue a job. The same request_id from the same user returns the existing job."""
@@ -117,7 +120,7 @@ class JobService:
 
     def approve(self, principal: Principal, job_id: str) -> None:
         """Only the human the job runs for can release an agent job held for cost."""
-        row = self._get(principal, job_id)
+        row = self._get(principal, job_id, any_user=True)
         if principal.kind is not PrincipalKind.USER or principal.user_id != row.user_id:
             raise Forbidden("only the job's own user can approve it")
         with self._conn:
@@ -154,16 +157,26 @@ class JobService:
         # shortcut: one worker per records DB, so an orphaned 'running' job is simply resumed;
         # add a lease with expiry before running more than one worker.
         row = self._conn.execute(
-            "SELECT id, kind, params, total FROM jobs WHERE state IN ('running', 'queued') "
+            "SELECT id, kind, params, total, attempts FROM jobs "
+            "WHERE state IN ('running', 'queued') "
             "ORDER BY state = 'running' DESC, created_at, id LIMIT 1"
         ).fetchone()
         if row is None:
             return None
-        job_id, kind, raw_params, total = row
-        job_kind = self._kinds[kind]
+        job_id, kind, raw_params, total, attempts = row
+        job_kind = self._kinds.get(kind)
+        # A step that raises, or kills the process, every time would otherwise be resumed
+        # forever and block every job queued behind it.
+        if job_kind is None or attempts >= self._max_attempts:
+            with self._conn:
+                self._conn.execute("UPDATE jobs SET state = 'failed' WHERE id = ?", (job_id,))
+            return job_id
         params: Params = json.loads(raw_params)
         with self._conn:
-            self._conn.execute("UPDATE jobs SET state = 'running' WHERE id = ?", (job_id,))
+            self._conn.execute(
+                "UPDATE jobs SET state = 'running', attempts = attempts + 1 WHERE id = ?",
+                (job_id,),
+            )
         for step in range(self._done_count(job_id), total):
             if self._cancel_requested(job_id):
                 break
@@ -195,17 +208,20 @@ class JobService:
         )
         return [json.loads(r[0]) for r in rows]
 
-    def _find(self, principal: Principal, job_id: str) -> _JobRow | None:
+    def _find(self, principal: Principal, job_id: str, *, any_user: bool = False) -> _JobRow | None:
         row = self._conn.execute(
             "SELECT tenant_id, user_id, kind, state, total FROM jobs WHERE id = ?", (job_id,)
         ).fetchone()
-        # another tenant's job reads as missing, so ids do not leak across tenants
+        # Another tenant's job, or another user's, reads as missing. A user's agent carries
+        # that user's id, so it sees the user's jobs.
         if row is None or row[0] != principal.tenant_id:
+            return None
+        if not any_user and row[1] != principal.user_id:
             return None
         return _JobRow(row[1], row[2], row[3], row[4])
 
-    def _get(self, principal: Principal, job_id: str) -> _JobRow:
-        row = self._find(principal, job_id)
+    def _get(self, principal: Principal, job_id: str, *, any_user: bool = False) -> _JobRow:
+        row = self._find(principal, job_id, any_user=any_user)
         if row is None:
             raise NotFound("job", job_id)
         return row

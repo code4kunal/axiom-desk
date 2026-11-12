@@ -13,9 +13,16 @@ jobs:
           fetch-depth: 0
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --python 3.12
-      - name: secrets in this push
-        if: github.event_name == 'pull_request'
-        run: uv run python tools/check_secrets.py --range "origin/${{ github.base_ref }}...HEAD"
+      - name: secrets in every pushed commit
+        run: |
+          if [ "${{ github.event_name }}" = pull_request ]; then
+            range="origin/${{ github.base_ref }}..HEAD"
+          elif [ "${{ github.event.before }}" = 0000000000000000000000000000000000000000 ]; then
+            range="origin/${{ github.event.repository.default_branch }}..${{ github.sha }}"
+          else
+            range="${{ github.event.before }}..${{ github.sha }}"
+          fi
+          uv run python tools/check_secrets.py --range "$range"
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run pyright
@@ -23,7 +30,8 @@ jobs:
         run: uv run python -m axiom_api.codegen --check
       - run: uv run pytest
       - run: uv run pytest -m parity
-      - run: uv run pytest -m golden
+      # exit 5 means no golden tests exist yet; any other failure still fails the step
+      - run: uv run pytest -m golden || test $? -eq 5
 
   typescript:
     runs-on: ubuntu-latest

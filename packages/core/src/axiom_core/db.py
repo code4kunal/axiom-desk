@@ -17,8 +17,23 @@ def migrate(conn: Connection) -> list[str]:
     for path in sorted(MIGRATIONS.glob("*.sql")):
         if path.name in done:
             continue
-        with conn:
-            conn.executescript(path.read_text())
-            conn.execute("INSERT INTO schema_migrations (name) VALUES (?)", (path.name,))
+        # executescript commits before it runs, so the transaction must live inside the script.
+        # The marker row goes first: a second process migrating the same file hits the primary
+        # key and backs out instead of running the script twice.
+        name = path.name.replace("'", "''")
+        script = (
+            f"BEGIN IMMEDIATE;\nINSERT INTO schema_migrations (name) VALUES ('{name}');\n"
+            f"{path.read_text()}\n;COMMIT;"
+        )
+        try:
+            conn.executescript(script)
+        except BaseException:
+            conn.rollback()
+            taken = conn.execute(
+                "SELECT 1 FROM schema_migrations WHERE name = ?", (path.name,)
+            ).fetchone()
+            if taken is None:
+                raise
+            continue
         applied.append(path.name)
     return applied

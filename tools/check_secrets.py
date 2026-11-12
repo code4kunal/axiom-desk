@@ -2,7 +2,7 @@
 
 Usage: check_secrets.py            (scans `git diff --cached`)
        check_secrets.py --stdin    (scans a unified diff on stdin)
-       check_secrets.py --range A..B
+       check_secrets.py --range A..B   (scans each commit in the range)
 Prints only the file and line number of each hit, never the matched value.
 """
 
@@ -15,9 +15,15 @@ PATTERNS: dict[str, re.Pattern[str]] = {
     "private key block": re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----"),
     "github token": re.compile(r"\bgh[pousr]_[A-Za-z0-9]{36,}\b"),
     "anthropic key": re.compile(r"\bsk-ant-[A-Za-z0-9_-]{20,}"),
+    # The name may carry a prefix or suffix (OPENAI_API_KEY, client_secret, "api_key": in JSON),
+    # but not one that makes it a reference (SECRET_NAME, token_url). An unquoted value must
+    # contain a digit, so `token = request_headers_get` is not a hit.
     "assigned key or secret": re.compile(
-        r"(?i)\b(api[_-]?key|secret|token|password)\b\s*[:=]\s*['\"][^'\"\s]{16,}['\"]"
+        r"(?i)(?<![a-z])(api[_-]?key|secret|token|passw(?:or)?d)"
+        r"(?:[_-](?!(?:name|id|arn|path|file|ref|env|url)\b)[a-z0-9_-]*)?['\"]?"
+        r"\s*[:=]\s*(?:['\"][^'\"\s]{16,}['\"]|(?=[^\s'\"]*\d)[A-Za-z0-9+/=_-]{16,}(?![^\s,;]))"
     ),
+    "password in a connection url": re.compile(r"[a-z][a-z0-9+.-]*://[^:/\s@]+:[^@\s/${<]{3,}@"),
 }
 
 
@@ -47,8 +53,11 @@ def main(argv: list[str]) -> int:
     if "--stdin" in argv:
         diff = sys.stdin.read()
     else:
-        cmd = ["git", "diff", "--unified=0"]
-        cmd += [argv[argv.index("--range") + 1]] if "--range" in argv else ["--cached"]
+        # A range is scanned commit by commit, so a secret added and later removed still shows.
+        if "--range" in argv:
+            cmd = ["git", "log", "-p", "--unified=0", "--format=", argv[argv.index("--range") + 1]]
+        else:
+            cmd = ["git", "diff", "--unified=0", "--cached"]
         diff = subprocess.run(cmd, capture_output=True, text=True, check=True).stdout
     hits = scan(diff)
     for hit in hits:
