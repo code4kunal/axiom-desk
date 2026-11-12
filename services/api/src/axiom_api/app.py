@@ -20,7 +20,7 @@ from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 
 # Surfaces a browser may claim. The agent calls the registry in-process as its own principal.
-HTTP_SURFACES = {"screen": Binding.SCREEN, "command": Binding.COMMAND}
+HTTP_SURFACES = {b.value: b for b in Binding if b is not Binding.AGENT}
 
 
 @dataclass(frozen=True)

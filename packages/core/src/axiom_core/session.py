@@ -23,7 +23,7 @@ class VerifiedClaims:
 
     subject: str
     tenant_id: str
-    amr: tuple[str, ...]  # authentication methods; must include "mfa"
+    amr: tuple[str, ...]
 
 
 @dataclass

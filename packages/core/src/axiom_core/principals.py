@@ -1,5 +1,3 @@
-"""Who is acting: roles and principals."""
-
 from dataclasses import dataclass
 from enum import StrEnum
 
@@ -14,7 +12,7 @@ class Role(StrEnum):
 
 class PrincipalKind(StrEnum):
     USER = "user"
-    AGENT = "agent"  # the agent acting for user_id, with that user's entitlements
+    AGENT = "agent"
     SYSTEM = "system"
 
 
@@ -23,4 +21,4 @@ class Principal:
     kind: PrincipalKind
     tenant_id: str
     user_id: str
-    authenticated_at: float | None = None  # last interactive sign-in; None for agent and system
+    authenticated_at: float | None = None

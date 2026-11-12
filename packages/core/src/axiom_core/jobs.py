@@ -8,6 +8,7 @@ import json
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel
@@ -16,11 +17,21 @@ from axiom_core.authz import Action, Forbidden, NotFound
 from axiom_core.db import Connection
 from axiom_core.envelope import HandlerResult, JsonValue, Source, canonical, digest
 from axiom_core.principals import Principal, PrincipalKind
-from axiom_core.registry import ALL_BINDINGS, CallContext, Capability
+from axiom_core.registry import ALL_BINDINGS, CallContext, Capability, Entitlements
 
 Params = Mapping[str, JsonValue]
-ACTIVE = ("queued", "running", "awaiting_approval")
-SOURCE = Source("axiom-jobs", "public")
+SOURCE = Source("axiom-jobs", Entitlements.PUBLIC)
+
+
+class JobState(StrEnum):
+    QUEUED = "queued"
+    AWAITING_APPROVAL = "awaiting_approval"
+    RUNNING = "running"
+    CANCELLED = "cancelled"
+    DONE = "done"
+
+
+ACTIVE = (JobState.QUEUED, JobState.RUNNING, JobState.AWAITING_APPROVAL)
 
 
 @dataclass(frozen=True)
@@ -97,7 +108,7 @@ class JobService:
                     principal.kind.value,
                     kind,
                     canonical(dict(params)),
-                    "awaiting_approval" if needs_approval else "queued",
+                    JobState.AWAITING_APPROVAL if needs_approval else JobState.QUEUED,
                     job_kind.steps(params),
                     self.clock(),
                 ),
@@ -127,7 +138,7 @@ class JobService:
 
     def status(self, principal: Principal, job_id: str) -> JobStatus:
         row = self._get(principal, job_id)
-        return JobStatus(job_id, row.kind, row.state, len(self._steps(job_id)), row.total)
+        return JobStatus(job_id, row.kind, row.state, self._done_count(job_id), row.total)
 
     def partials(self, principal: Principal, job_id: str) -> list[JsonValue]:
         self._get(principal, job_id)
@@ -135,12 +146,11 @@ class JobService:
 
     def result(self, principal: Principal, job_id: str) -> list[JsonValue]:
         state = self._get(principal, job_id).state
-        if state != "done":
+        if state != JobState.DONE:
             raise ValueError(f"job {job_id} is {state}, no result")
         return self._steps(job_id)
 
     def run_next(self) -> str | None:
-        """Run the oldest runnable job to an end state, skipping steps already checkpointed."""
         # shortcut: one worker per records DB, so an orphaned 'running' job is simply resumed;
         # add a lease with expiry before running more than one worker.
         row = self._conn.execute(
@@ -154,7 +164,7 @@ class JobService:
         params: Params = json.loads(raw_params)
         with self._conn:
             self._conn.execute("UPDATE jobs SET state = 'running' WHERE id = ?", (job_id,))
-        for step in range(len(self._steps(job_id)), total):
+        for step in range(self._done_count(job_id), total):
             if self._cancel_requested(job_id):
                 break
             value = job_kind.run_step(params, step)
@@ -162,7 +172,7 @@ class JobService:
                 self._conn.execute(
                     "INSERT INTO job_steps VALUES (?, ?, ?)", (job_id, step, canonical(value))
                 )
-        end = "cancelled" if self._cancel_requested(job_id) else "done"
+        end = JobState.CANCELLED if self._cancel_requested(job_id) else JobState.DONE
         with self._conn:
             self._conn.execute("UPDATE jobs SET state = ? WHERE id = ?", (end, job_id))
         return job_id
@@ -172,6 +182,12 @@ class JobService:
             "SELECT cancel_requested FROM jobs WHERE id = ?", (job_id,)
         ).fetchone()
         return bool(flag)
+
+    def _done_count(self, job_id: str) -> int:
+        (count,) = self._conn.execute(
+            "SELECT COUNT(*) FROM job_steps WHERE job_id = ?", (job_id,)
+        ).fetchone()
+        return count
 
     def _steps(self, job_id: str) -> list[JsonValue]:
         rows = self._conn.execute(

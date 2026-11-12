@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
 
-type JsonValue = Any  # any value json.dumps accepts
+type JsonValue = Any
 
 
 def canonical(value: JsonValue) -> str:

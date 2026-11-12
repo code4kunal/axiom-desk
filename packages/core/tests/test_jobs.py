@@ -134,7 +134,7 @@ def test_orphaned_running_job_resumes_before_older_queued_work(
         jobs.run_next()
     assert jobs.status(ana, orphan).state == "running"
 
-    jobs.approve(ana, older)  # now queued, and created before the orphan
+    jobs.approve(ana, older)
     assert jobs.run_next() == orphan
     assert jobs.result(ana, orphan) == [fold_score({}, 0), fold_score({}, 1)]
     assert jobs.run_next() == older
@@ -295,7 +295,6 @@ def test_killed_worker_resumes_from_the_last_checkpoint(tmp_path: Path) -> None:
     directory.bootstrap_admin("desk", "ada")
     ada = directory.principal("desk", "ada")
     params: dict[str, JsonValue] = {"log": str(log), "gate": str(gate)}
-    # same shape as the worker's kind; this process only submits and reads
     stand_in = JobKind("folds", lambda p: 3, fold_score, lambda p: 1.0)
     jobs = JobService(conn, time.time, {"folds": stand_in})
     job_id = jobs.submit(ada, "folds", params, request_id="kill")

@@ -88,7 +88,6 @@ class Registry:
         return [self._caps[name] for name in sorted(self._caps)]
 
     def check(self) -> list[str]:
-        """Problems that fail CI: each entry needs all three bindings and a valid parity fixture."""
         problems: list[str] = []
         for cap in self.capabilities():
             for missing in sorted(ALL_BINDINGS - cap.bindings):

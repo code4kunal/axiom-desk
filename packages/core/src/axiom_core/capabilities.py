@@ -1,5 +1,3 @@
-"""Capabilities the core package itself provides."""
-
 from pydantic import BaseModel
 
 from axiom_core.authz import Action, NotFound

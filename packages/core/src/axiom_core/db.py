@@ -11,7 +11,6 @@ Connection = sqlite3.Connection
 
 
 def migrate(conn: Connection) -> list[str]:
-    """Apply every migration not yet recorded, in file-name order. Returns the ones applied."""
     conn.execute("CREATE TABLE IF NOT EXISTS schema_migrations (name TEXT PRIMARY KEY)")
     done = {row[0] for row in conn.execute("SELECT name FROM schema_migrations")}
     applied: list[str] = []

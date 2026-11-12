@@ -35,10 +35,8 @@ ALLOWED_ROLES: dict[Action, frozenset[Role]] = {
     Action.CHANGE_INTENT: frozenset({Role.PM, Role.TRADER}),
     Action.CUT_LEDGER_MODULE: frozenset({Role.PM}),
 }
-# The agent reads and drafts for its user; every other action needs the human.
 AGENT_ACTIONS = frozenset({Action.READ, Action.WRITE_DRAFT})
 SYSTEM_ACTIONS = frozenset({Action.READ, Action.WRITE_DRAFT})
-# Actions whose role assignment must cover the resource's book.
 BOOK_SCOPED = frozenset(
     {Action.WRITE_DRAFT, Action.CONFIRM_TICKET, Action.CHANGE_BUDGET, Action.CHANGE_INTENT}
 )

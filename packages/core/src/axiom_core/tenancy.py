@@ -44,7 +44,6 @@ class Directory:
         return Principal(kind, tenant_id, user_id, authenticated_at)
 
     def bootstrap_admin(self, tenant_id: str, user_id: str) -> None:
-        """Create a tenant's first admin. Recorded as a system action."""
         system = Principal(PrincipalKind.SYSTEM, tenant_id, "system")
         self._write_role(tenant_id, user_id, Role.ADMIN, None, insert=True)
         self._audit.record(
