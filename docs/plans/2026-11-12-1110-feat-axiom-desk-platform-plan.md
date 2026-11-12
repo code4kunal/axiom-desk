@@ -70,6 +70,7 @@ The internal desk works across five tools every day: charts in TradingView, opti
 - **Equity intelligence is adaptive and evidence-graded.** Signals are weighted by regime rather than refit each cycle, flows confirm rather than lead, and the macro "sector clock" is not a primary signal. Governs R130–R143. (session-settled: user-approved — the user asked for adaptive, non-post-facto rotation and early bear triggers; the research grades set what leads and what lags.)
 - **Volatility trading gets its own lab inside Axiom Options.** Governs R145–R150, R152. (session-settled: user-directed — chosen over the narrower IV/RV spread, vol cones and VRP display in R37 and R70: the user wants volatility trading covered in depth, with AlgoTest's VRP analysis as the floor to beat.)
 - **The platform learns on its own but only demotes on its own.** Re-estimation, shadow variants and pattern search run continuously; anything that goes live needs walk-forward evidence and a desk quant's sign-off. Governs R151, R152. (session-settled: user-approved — chosen over models that retrain and redeploy unattended: quants keep sign-off on every live model.)
+- **For retail clients the agent drafts only what an RA authored.** It may draft an order that follows or rebalances toward a basket or change the tenant's RA published, sized to the client's holdings, and nothing else. Governs R55, R60. (session-settled: user-directed — chosen over personalised agent drafts and per-tenant choice: agent-proposed allocations for retail clients are plausibly personalised investment advice needing IA registration.)
 - **No committed dates.** The PRD's six-month V1 assumed fewer modules than V1 now holds; planning sets the schedule.
 
 ### Actors
@@ -137,8 +138,8 @@ Phase tags mark when a requirement must be true: [V1], [V1.5] or [V2]. A require
 - R25. Any screen result can be saved as a watchlist, either live (membership re-evaluates) or frozen (a snapshot).
 - R26. Patterns from R16, Radar signals and regime alignment are usable as screen criteria.
 - R27. Every screen result, watchlist entry and Radar card opens straight into a chart.
-- R28. An idea is a chart snapshot linked to the live chart, with thesis, entry zone, invalidation level and horizon, and supports comments.
-- R29. Every published idea is tracked after publication and marked as hit, invalidated or expired against its own invalidation level and horizon.
+- R28. An idea is a chart snapshot linked to the live chart, with thesis, entry zone, an optional target zone, invalidation level and horizon, and supports comments.
+- R29. Every published idea is tracked after publication and marked as hit, invalidated or expired against its own levels and horizon. An idea is hit when price reaches its target zone before the invalidation level and before the horizon ends. An idea with no target, including every client idea (R63), resolves only as invalidated or expired. An idea edited after publishing is scored on its original levels and shows its edit history.
 - R30. In V1, ideas are shared within the desk. [V2] Idea sharing for retail clients follows R63.
 
 **Ease of use**
@@ -164,7 +165,7 @@ Phase tags mark when a requirement must be true: [V1], [V1.5] or [V2]. A require
 - R40. Each regime maps to asset-class tilts across the investable classes in R7.
 - R41. Baskets are diversified portfolios across basket-eligible classes, with target weights, rebalance rules and a backtest across past regimes.
 - R42. Portfolio monitoring tracks holdings, drift from basket weights, volatility, drawdown, concentration and correlation, and stress-tests against historical shocks.
-- R43. A regime change or drift beyond a basket's tolerance produces a rebalance draft per R55, never an order.
+- R43. A regime change or drift beyond a basket's tolerance produces a rebalance draft per R55, never an order. A regime change counts only after it has held for a confirmation window set from the evidence engine's backtests. Until then the regime shows Transition / Uncertain, which carries no asset tilt and drafts nothing, so a call that flips near a threshold cannot draft contradictory rebalances day after day.
 - R44. The Opportunity Radar scans the R7 universe per the PRD 4.3 criteria, and each card shows score, confidence, horizon, downside risks, invalidation trigger and the evidence card from R86–R93.
 
 **Strategy Lab (PRD 4.10)**
@@ -191,7 +192,7 @@ Phase tags mark when a requirement must be true: [V1], [V1.5] or [V2]. A require
 - R52. Every agent answer states the question answered, the exact data sources and timestamps, the calculation method, the findings with supporting metrics, and the limitations and risks.
 - R53. The agent never forecasts prices, promises returns or uses buy or sell language toward a client.
 - R54. The agent can run screens, backtests, chart builds, basket analyses and portfolio queries across every module, and combine them in one answer.
-- R55. The agent may draft a basket investment, a rebalance or an options trade ticket, and every draft is shown to the user for confirmation.
+- R55. The agent may draft a basket investment, a rebalance or an options trade ticket, and every draft is shown to the user for confirmation. [V2] For a retail client the agent drafts only orders that follow or rebalance toward a basket or change the tenant's RA published, sized to the client's holdings. It explains and analyses freely but never proposes its own allocation, instrument or ticket to a retail client. Desk users keep full drafting.
 - R56. No order is ever placed without the user's explicit confirmation of that specific order inside the broker's order flow.
 - R57. In V1 the agent accepts typed English. [V1.5] Speech-to-text and Indian-language support are added.
 
@@ -199,10 +200,10 @@ Phase tags mark when a requirement must be true: [V1], [V1.5] or [V2]. A require
 
 - R58. [V1.5] A broker tenant can white-label the platform with its own branding inside its web and mobile experience.
 - R59. [V2] Confirmed drafts hand off to the broker's own order flow, and Axiom never routes orders or holds client funds.
-- R60. [V2] Baskets, Radar calls and published ideas reach retail clients only when authored or approved by the tenant's RA team.
+- R60. [V2] Baskets, Radar calls and published ideas reach retail clients only when authored or approved by the tenant's RA team. The agent's retail drafts follow the same rule (R55).
 - R61. [V2] Retail clients complete risk profiling, and a basket is shown as suitable or unsuitable against that profile.
 - R62. The SEBI gate classifies every client-facing output as data, neutral analytics, or research/advice. It is designed and enforced as a no-op in V1, and [V2] blocks research/advice output that lacks RA authorship.
-- R63. [V2] Retail clients can share ideas only as educational content without targets or entry levels, and their ideas are moderated. RA-authored ideas are labelled as registered research.
+- R63. [V2] Retail clients can share ideas only as educational content without targets or entry levels, and their ideas are moderated. RA-authored ideas are labelled as registered research and show the RA's registered name and SEBI registration number (UNVERIFIED: SEBI circular of 26 Feb 2026 on social content by regulated entities). Client ideas never show a performance claim next to a named instrument.
 - R64. [V1.5] Axiom meets the obligations a broker passes to its technology vendors: data localisation in India, audit access, security certification and incident reporting.
 
 **Desk adoption**
@@ -328,6 +329,8 @@ Phase tags mark when a requirement must be true: [V1], [V1.5] or [V2]. A require
 - R150. Published volatility patterns (premium harvesting, term-structure carry, put-skew premium, event crush, weekend and expiry decay) ship as hypotheses tested on NSE data, each labelled confirmed on NSE, weakening or not supported, with the platform's own findings shown beside the published claim.
 - R151. The platform keeps re-estimating setup statistics, VRP buckets and signal weights and runs candidate variants in shadow. Demotion on calibration drift is automatic; promotion to live needs a walk-forward pass and a desk quant's sign-off, and every change is logged and can be rolled back.
 - R152. The platform searches its data for new volatility and positioning patterns, counts every variant it tests toward the R90 multiple-testing correction, and shows each discovery as a candidate until it passes R86–R93 out of sample.
+- R153. History behind screens, backtests and baskets includes delisted and merged instruments, and fundamentals as originally reported with their report dates, so Strategy Lab and basket backtests do not overstate returns.
+- R154. A trigger never fires on data past its source's freshness threshold. It shows "paused: stale data" and resumes when the data recovers. A fired trigger is one-shot by default, or re-arms only after its condition resets. Deleting a drawing that a trigger uses disables the trigger with a visible notice.
 
 ### Visualizations
 
@@ -500,6 +503,10 @@ flowchart TB
   - **Given:** a shadow variant of a short-strangle setup beats the live version in walk-forward testing.
   - **When:** the weekly model review runs.
   - **Then:** the variant is proposed for promotion and stays in shadow until a desk quant signs off, and the change log records who approved it and why.
+- AE20. Covers R55, R60.
+  - **Given:** a retail client asks the agent "what should I buy to hedge?"
+  - **When:** the agent answers.
+  - **Then:** it explains hedging approaches and shows the RA-published baskets or hedges available to that client, and drafts nothing an RA did not author.
 
 ### Success Criteria
 
@@ -596,7 +603,7 @@ Technical questions from the brainstorm are answered in the Planning Contract (K
 
 ## Planning Contract
 
-**Product Contract preservation:** changed: R145–R152, AE18 and AE19 added at the user's direction (Volatility Lab and governed self-learning). The quant-core decision now also governs R144–R152. The brainstorm's technical questions moved to the KTDs below. R6 text is unchanged and flagged as an open product question. No other requirement changed.
+**Product Contract preservation:** changed: R145–R152, AE18 and AE19 added at the user's direction (Volatility Lab and governed self-learning). The quant-core decision now also governs R144–R152. The brainstorm's technical questions moved to the KTDs below. R6 text is unchanged and flagged as an open product question. Later on 2026-11-12, at the user's direction, R28, R29, R43, R55, R60 and R63 were amended, R153, R154 and AE20 were added, and G1 gained the survivorship check. No other requirement changed.
 
 **Target repo:** `axiom-desk/` on the desk machine, greenfield. All file paths below are relative to it.
 
@@ -794,7 +801,7 @@ axiom-desk/
 
 Merge gates. Work may start on every unit; a unit whose gate is open does not merge.
 
-- G1. Vendor contracts and the NSE non-display licence are signed, and vendors have supplied sample historical chain files with data dictionaries. The signed terms must allow perpetual storage of raw chains and derived surfaces and features, non-display use of purchased and end-of-day history for calibration and backtests, and keeping the archive after a contract ends. Before signing, fixtures come from a vendor trial or sample-file agreement whose terms allow recording. Gates live adapters in U6, history import and the archive in U7, and every unit whose verification needs multi-year purchased history: the U7 benchmark, the U12 coverage report, U13 promotion tests and the first U27 review.
+- G1. Vendor contracts and the NSE non-display licence are signed, and vendors have supplied sample historical chain files with data dictionaries. The signed terms must allow perpetual storage of raw chains and derived surfaces and features, non-display use of purchased and end-of-day history for calibration and backtests, and keeping the archive after a contract ends. History must include delisted and merged instruments and as-reported fundamentals with report dates (R153). Before signing, fixtures come from a vendor trial or sample-file agreement whose terms allow recording. Gates live adapters in U6, history import and the archive in U7, and every unit whose verification needs multi-year purchased history: the U7 benchmark, the U12 coverage report, U13 promotion tests and the first U27 review.
 - G2. Legal review confirms the V1 ticket path stays outside exchange algo empanelment, and that reading the desk's trade book is allowed by the broker's terms, using a read-only credential. Gates the ticket export and fill reader in U21; drafts and validators merge on normal unit criteria.
 - G3. A model-provider route clears vendor terms and India residency. Gates switching U25 from the recorded-model test harness to a live provider.
 - G4. A desk quant signs each model spec and its golden numbers: surface and Greeks (U9), volatility models (U10), exposure model (U11), evidence thresholds (U12), regime and equity models (U22), hedge ladder thresholds (U24).
@@ -966,7 +973,7 @@ Waits on: PR1 (merge order only).
 ### U7. Store benchmark, market-data store, archive, history import
 
 - **Goal:** pick the time-series store on evidence, then store live data, archive it daily and load purchased history.
-- **Requirements:** R1, R83, R93, R110; KTD8.
+- **Requirements:** R1, R83, R93, R110, R153; KTD8.
 - **Dependencies:** U6.
 - **Files:** `tools/benchmarks/store/`, `packages/data/src/axiom_data/store.py`, `archive.py`, `history_import.py`, `packages/data/tests/test_store.py`, `test_archive.py`, `test_history_import.py`.
 - **Approach:**
@@ -1166,7 +1173,7 @@ Waits on: PR5 (merge order only). Merge of U21's ticket export and fill reader g
 ### U18. Screens, watchlists, triggers and alerts
 
 - **Goal:** screens and watchlists that feed each other, and triggers that report their own hit rates.
-- **Requirements:** R21, R24–R27, R80, R112, R118, R119, AE4, AE14; KTD12. The conviction view (R111) needs regime fit and earnings revisions and lands in U22.
+- **Requirements:** R21, R24–R27, R80, R112, R118, R119, R154, AE4, AE14; KTD12. The conviction view (R111) needs regime fit and earnings revisions and lands in U22.
 - **Dependencies:** U12, U15.
 - **Files:** `packages/options/src/axiom_options/screens.py`, `packages/core/src/axiom_core/watchlists.py`, `triggers.py`, `alerts.py`, `apps/desk/src/triggers/`, `apps/desk/src/alerts/`, `packages/core/tests/test_watchlists.py`, `test_triggers.py`.
 - **Approach:** screens are jobs over the universe or a watchlist; live watchlists re-evaluate on each run; compound triggers are setup definitions with evidence, composed from the command bar; watchlist health shows per name; the alert budget caps delivery and rolls overflow into a digest shown in an alert inbox.
@@ -1374,3 +1381,14 @@ These are review items left for the author. They do not block implementation and
 
   The ticket export and the issued-ticket screen cannot be built or tested until the desk names its broker terminal and whether tickets go in by file import or by copy. Only the desk can supply this, and it belongs with the ticket-path legal review (G2).
 - **V1 done:** the desk has worked in Axiom without its four tools for the period it agrees with the PM lead, the R126 timings meet the chart bar, and the Edge Ledger's first review shows at least one module family beating its base rate after costs.
+
+### Stack signals from the ce-plan session (UNVERIFIED)
+
+Search snippets only; page fetches were blocked. Check each before a unit depends on it.
+
+- U14: TradingView Advanced Charts is free only for public-facing sites and needs approval, which a direct competitor is unlikely to get. Lightweight Charts v5 (Apache-2.0, multi-pane, plugins) is a candidate base for the renderer spike, with drawings, Renko, Kagi, point-and-figure, replay and overlays built in-house.
+- U15: TA-Lib and pandas-ta-classic detect candlestick patterns only. Chart patterns and hit-rate statistics are custom work.
+- U20: vectorbt's licence is disputed (MIT, or Apache with Commons Clause); read its LICENSE first. NautilusTrader is LGPL. backtrader and zipline-reloaded show low activity.
+- U7: TimescaleDB's TSL-licensed features restrict offering it as a service, which supports benchmarking ClickHouse against QuestDB (both Apache-2.0).
+- R57 (V1.5 voice): Sarvam Saaras v3 covers 22 Indian languages plus English with code-mixing.
+- R63: SEBI's August 2024 amendments bar regulated entities from associating with unregistered people giving advice.
