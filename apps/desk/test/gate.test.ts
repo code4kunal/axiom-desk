@@ -31,10 +31,14 @@ const failing: [string, Partial<GateInputs>][] = [
 for (const [name, change] of failing)
   test(`fails on its own: ${name}`, () => assert.equal(gate({ ...desktop, ...change }), false));
 
-test("the pin gate ignores WebGL (checked after load) but nothing else", () => {
+// User ruling 2026-11-13: a "3g" estimate still pins the poster; only the 3D ring stays off.
+const pinsAnyway = ["no WebGL2", "3g"];
+
+test("the pin gate ignores WebGL (checked after load) and a 3g estimate, but nothing else", () => {
   const noWebgl: GateInputs = { ...desktop, webgl2: false };
   assert.equal(pinGate(noWebgl), true);
-  for (const [name, change] of failing.filter(([n]) => n !== "no WebGL2"))
+  assert.equal(pinGate({ ...desktop, effectiveType: "3g" }), true);
+  for (const [name, change] of failing.filter(([n]) => !pinsAnyway.includes(n)))
     assert.equal(pinGate({ ...desktop, ...change }), false, name);
 });
 
