@@ -17,8 +17,8 @@ export default function Home() {
       <Sheet id="problem" layout="text" heading={problem.heading} lede={problem.lede} />
       <Sheet id="charts" layout="clip" heading={charts.heading} caption={charts.caption} media={<ClipSlot clip={charts.clip} />} />
       <Sheet id="options" layout="portrait" heading={options.heading} caption={options.caption} media={<ClipSlot clip={options.clip} />} />
-      <Sheet id="hedge" layout="card" heading={hedge.heading} lede={hedge.lede} media={<HedgeCard text={hedge.card} />} />
-      <Sheet id="agent" layout="portrait" heading={agent.heading} lede={agent.lede} media={<ClipSlot clip={agent.clip} />} />
+      <Sheet id="hedge" layout="card" heading={hedge.heading} lede={hedge.lede} media={<HedgeCard text={hedge.card} grid={hedge.grid} />} />
+      <Sheet id="agent" layout="portrait" heading={agent.heading} lede={agent.lede} caption={agent.caption} media={<ClipSlot clip={agent.clip} />} />
       <Sheet id="evidence" layout="card" heading={evidence.heading} lede={evidence.lede} media={<Specimen />} />
       <Sheet id="brokers" layout="text" heading={brokers.heading} lede={brokers.lede}>
         {/* Works without JS; the broker dialog will intercept this click. */}

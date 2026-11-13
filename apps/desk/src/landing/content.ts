@@ -101,11 +101,20 @@ export const hedge = {
   heading: "When regime confidence shifts, Axiom drafts the hedge.",
   lede: "It never places it. A human confirms every order.",
   card: hedgeCard,
+  // The same example figures as the evidence specimen: one number everywhere.
+  grid: [
+    { label: "TRIGGER", value: "EARLY DETERIORATION" },
+    { label: "BASE RATE", value: "0.58" },
+    { label: "N", value: "212" },
+    { label: "OOS", value: "0.54" },
+    { label: "GRADE", value: "CNF" },
+  ],
 };
 
 export const agent = {
   heading: "Ask what changed since yesterday’s close.",
   lede: "The agent answers with citations to the same numbers the screens show.",
+  caption: "CITATIONS · SAME NUMBERS AS THE SCREENS",
   clip: { label: "CLIP PLACEHOLDER", shape: "portrait" },
 };
 

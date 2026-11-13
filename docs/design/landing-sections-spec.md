@@ -84,7 +84,7 @@ U3 placeholder: `--raised`, `1px solid var(--hairline)`, radius 4px, a second ha
 
 `season` (hero, h1), `problem`, `charts`, `options`, `hedge`, `agent`, `evidence`, `brokers`; `footer` exists (U2). Sub-anchor `reading` on the 40% plate. All with `scroll-margin-top: 64px`; `html` already has `scroll-padding-top: 48px`.
 
-## 9. Proposed new copy (needs user approval; page works without each)
+## 9. Proposed new copy (all three approved by the user, 2026-11-13; built)
 
 1. 05 grid labels `TRIGGER`, `GRADE` and values `EARLY DETERIORATION`, `0.58`, `212`, `0.54`, `CNF` (all ILLUSTRATIVE, under the card's ILLUSTRATIVE segment). `BASE RATE`, `N`, `OOS` are direction vocabulary.
 2. 06 caption: `CITATIONS · SAME NUMBERS AS THE SCREENS`.
