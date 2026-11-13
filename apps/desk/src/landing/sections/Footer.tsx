@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { sections, shell } from "../content";
-import { ThemeButton } from "../ThemeButton";
 import { Wordmark } from "../Wordmark";
 
 export function Footer() {
@@ -30,7 +29,6 @@ export function Footer() {
         </div>
 
         <div className="col-span-4 flex flex-col gap-4 md:col-span-2 lg:col-span-3 lg:col-start-10">
-          <ThemeButton />
           <ul className="flex gap-6">
             <li>
               <Link href="/privacy" className="link flex h-12 min-w-12 items-center text-small">

@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { BrokerDialog } from "@/landing/BrokerDialog";
 import { ClipSlot } from "@/landing/ClipSlot";
 import { agent, brokers, charts, evidence, hedge, options, problem } from "@/landing/content";
 import { HedgeCard } from "@/landing/HedgeCard";
@@ -10,7 +11,6 @@ import { Specimen } from "@/landing/Specimen";
 const i = (n: number) => ({ "--i": n }) as CSSProperties;
 
 export default function Home() {
-  const mailto = `mailto:${brokers.contact}?subject=${encodeURIComponent(brokers.subject)}`;
   return (
     <>
       <Hero />
@@ -21,15 +21,10 @@ export default function Home() {
       <Sheet id="agent" layout="portrait" heading={agent.heading} lede={agent.lede} caption={agent.caption} media={<ClipSlot clip={agent.clip} />} />
       <Sheet id="evidence" layout="card" heading={evidence.heading} lede={evidence.lede} media={<Specimen />} />
       <Sheet id="brokers" layout="text" heading={brokers.heading} lede={brokers.lede}>
-        {/* Works without JS; the broker dialog will intercept this click. */}
-        <a
-          href={mailto}
-          data-reveal
+        <BrokerDialog
           style={i(2)}
           className="mt-8 flex h-12 items-center justify-center rounded-2 bg-brass-mark px-6 font-body text-ui font-medium text-on-brass md:inline-flex"
-        >
-          {brokers.action}
-        </a>
+        />
         <p data-reveal style={i(3)} className="mt-4 text-body text-ink">
           {brokers.publicLine}
         </p>

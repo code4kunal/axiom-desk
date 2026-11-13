@@ -70,7 +70,7 @@ Axiom has no public face. The platform plan of record covers desk screens only, 
 **Themes, navigation, sharing**
 
 - R14. The theme follows `prefers-color-scheme` until the visitor picks one in the menu; the choice persists and applies before first paint with no flash.
-- R15. One `<nav>` lists the nine section anchors. Deep links such as `/#hedge` land on their section after the hero is set up, and back and forward restore the scroll position.
+- R15. One `<nav>` lists the eight section anchors (the footer is not a nav item; amended in U5). Deep links such as `/#hedge` land on their section after the hero is set up, and back and forward restore the scroll position.
 - R16. Sharing metadata provides `og:title`, `og:description`, a 1200×630 `og:image` of the ring at 0% with the statement, and a Twitter card; its copy passes R2.
 - R17. Unknown routes render a tokenised 404 with a link home and `noindex`.
 - R18. `/privacy` and `/terms` exist as static pages with a visible "Text pending legal review" notice; no legal text is invented.
@@ -133,6 +133,7 @@ Axiom has no public face. The platform plan of record covers desk screens only, 
 - KTD7. **Clip slots render a still only in this plan.** Video playback code waits for the first real clip, because nothing could exercise it now (see Deferred to Follow-Up Work).
 - KTD8. **Theme applied before paint.** A blocking inline script in `<head>` reads the stored choice (wrapped in try/catch), sets `data-theme`, and injects a `<link rel="preload" as="image" fetchpriority="high">` for the resolved theme's poster. The hero carries two poster `<img>` elements whose visibility `[data-theme]` CSS controls; the inactive one is `loading="lazy"`, so it isn't fetched. A `<picture media>` source can't be used, because it reads only `prefers-color-scheme` and not the stored choice.
 - KTD9. **21st.dev via the shadcn CLI on a reviewed diff.** `shadcn init` overwrites `globals.css` and the `@theme` tokens, so U5 runs it after the tokens exist, reviews the diff, and restores any overwritten token. Only the three named primitives are added.
+  - *Deviation (U5, 2026-11-13):* `shadcn init` failed (`spawn pnpm ENOENT`) and its generated deps (`cn@0.5.2`, `lucide-react@1.72.0`) are under the two-week age floor. U5 installs only `radix-ui@1.8.1` (exact) and writes the three primitives by hand against `DESIGN.md` tokens; `globals.css` is untouched by any CLI.
 - KTD10. **Fonts self-hosted through `next/font/google`**: Martel 700/800, Hind 400/500/600, Martian Mono 400/500, latin subset only, no runtime calls to Google. Whether `next/font` emits the digits-only `unicode-range` the direction asks for is UNVERIFIED; if it doesn't, Martian Mono loads in full latin, and the R20 budget still applies.
 - KTD11. **Copy lives in one typed content module** (`apps/desk/src/landing/content.ts`). Sections, metadata and the banned-phrase test all read from it, so the test sees every string the page can show.
 
@@ -303,7 +304,7 @@ apps/desk/
 - **Dependencies:** U2, U3.
 - **Files:** `src/landing/ClipSlot.tsx`, `ThemeMenu.tsx`, `BrokerDialog.tsx`, `NavSheet.tsx`, `src/components/ui/*`, `public/clips/*`, `e2e/actions.spec.ts`; also `src/landing/Nav.tsx`, `src/landing/content.ts` (step 5).
 - **Approach:**
-  1. Run `shadcn init` and add the three primitives per KTD9; review the token diff before anything else.
+  1. Add the three primitives per KTD9 (hand-written on `radix-ui`, see the KTD9 deviation).
   2. Restyle per R13. No hover lift or shadow growth (direction § Motion grammar).
   3. `ClipSlot` renders the placeholder still labelled `CLIP PLACEHOLDER` at a fixed size (R12, KTD7). It is a server component, not a client island.
   4. `BrokerDialog` implements R10 with the address from `content.ts`.
@@ -313,7 +314,7 @@ apps/desk/
   - Covers AE4. Opening the dialog shows the address as text; Copy writes it to the clipboard; the `mailto:` link carries the subject.
   - The dialog traps focus while open, closes on Escape, and returns focus to "Talk to the desk".
   - The theme menu offers System, Dark and Light; choosing Light persists across a reload.
-  - The nav sheet opens at 375px, lists the nine anchors, and closes after one is chosen.
+  - The nav sheet opens at 375px, lists the eight anchors, and closes after one is chosen.
   - Each clip slot shows `CLIP PLACEHOLDER` and has no `<video>` network request on load.
 - **Verification:** the three primitives show no stock shadcn look: no shadow, radius 4px or less, Hind labels, token colours only.
 

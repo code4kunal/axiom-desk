@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "d121cde2-530e-4bc7-9b84-859d357f7d81",
+  "status": "current",
+  "command": "deliver",
+  "type": "lifecycle",
+  "input": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/u14-renderer-spike-dabe9f/docs/diagrams/src/landing-overlays.lifecycle.json",
+  "output": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/u14-renderer-spike-dabe9f/docs/diagrams/landing-overlays.html",
+  "specification": {
+    "sha256": "cc20600bbc9662cfd20f43864e8889be173992aaa4ddd018f4a6bcda6c1ba1fd",
+    "bytes": 4152
+  },
+  "artifact": {
+    "sha256": "e3c5634a19b84a576b591886a8244b691d64b8b943ccaca2f53d29f30ebcc9ff",
+    "bytes": 844311
+  }
+}

@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { sections, shell } from "./content";
+import { NavSheet } from "./NavSheet";
+import { ThemeMenu } from "./ThemeMenu";
 import { Wordmark } from "./Wordmark";
 
 const ordinal = (i: number) => String(i + 1).padStart(2, "0");
@@ -13,8 +15,9 @@ export function Nav() {
             <Wordmark />
           </Link>
         </header>
-        <nav aria-label={shell.navLabel} className="h-full">
-          <ol className="hidden h-full items-stretch gap-4 lg:flex xl:gap-6">
+        <div className="flex h-full items-center gap-4 xl:gap-6">
+        <nav aria-label={shell.navLabel} className="h-full max-lg:hidden">
+          <ol className="flex h-full items-stretch gap-4 xl:gap-6">
             {sections.map((s, i) => (
               <li key={s.id} className="flex">
                 <Link
@@ -27,14 +30,10 @@ export function Nav() {
               </li>
             ))}
           </ol>
-          {/* shortcut: links to the footer index until the mobile nav sheet exists. */}
-          <Link
-            href="/#footer"
-            className="-mx-2 flex h-12 min-w-12 items-center justify-end px-2 font-mono focus-visible:outline-offset-[-2px] text-label font-medium uppercase text-ink lg:hidden"
-          >
-            {shell.indexTrigger}
-          </Link>
         </nav>
+        <ThemeMenu />
+        <NavSheet />
+        </div>
       </div>
     </div>
   );

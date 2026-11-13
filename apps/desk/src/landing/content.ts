@@ -9,7 +9,6 @@ export const sections = [
   { id: "agent", label: "Agent" },
   { id: "evidence", label: "Evidence" },
   { id: "brokers", label: "Brokers" },
-  { id: "footer", label: "Footer" },
 ] as const;
 
 export const shell = {
@@ -21,6 +20,7 @@ export const shell = {
   footerCaption: "AXIOM · EN-IN · ILLUSTRATIVE FIGURES ONLY",
   theme: "Theme",
   themeChoices: { system: "System", dark: "Dark", light: "Light" },
+  close: "Close",
   privacy: "Privacy",
   terms: "Terms",
 };
@@ -149,4 +149,10 @@ export const brokers = {
   contact: "desk@axiom.invalid",
   subject: "Axiom for brokers",
   publicLine: "Investing with a broker? Ask them for Axiom.",
+  dialogLede: "Write to the desk at this address.",
+  copy: "Copy address",
+  copied: "Copied",
+  copiedStatus: "Address copied",
+  copyFailed: "Select and copy",
+  mail: "Write an email",
 };

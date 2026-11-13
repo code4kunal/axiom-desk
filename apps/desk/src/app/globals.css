@@ -200,6 +200,39 @@ html[data-js] [data-reveal]:not([data-shown]) {
   }
 }
 
+/* Overlays (U5): open = fade + short rise, close = fade. Radix keeps the node until the exit animation
+   ends. Menus are quicker than the dialog and sheet; reduced motion drops the rise. */
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+    translate: 0 var(--rise);
+  }
+}
+@keyframes overlay-out {
+  to {
+    opacity: 0;
+  }
+}
+.overlay {
+  --rise: 12px;
+  --in: 240ms;
+  &[data-state="open"] {
+    animation: overlay-in var(--in) var(--ease-reveal);
+  }
+  &[data-state="closed"] {
+    animation: overlay-out 200ms ease-in;
+  }
+}
+.overlay-menu {
+  --rise: 4px;
+  --in: 160ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .overlay {
+    --rise: 0px;
+  }
+}
+
 @utility frame {
   margin-inline: auto;
   width: 100%;

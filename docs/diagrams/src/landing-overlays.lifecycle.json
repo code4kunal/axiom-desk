@@ -1,0 +1,179 @@
+{
+  "schema_version": 3,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "Axiom landing overlays: theme menu, broker dialog, nav sheet",
+    "subtitle": "Planned U5 behaviour, not yet built. Source: landing plan U5, R10, R13, R14, R19",
+    "locale": "en",
+    "output": "docs/diagrams/landing-overlays.html",
+    "quality_profile": "showcase"
+  },
+  "mainPath": [
+    "rest",
+    "dialog",
+    "copied",
+    "mail"
+  ],
+  "states": [
+    {
+      "id": "rest",
+      "type": "start",
+      "label": "Page at rest",
+      "sublabel": "theme set before paint",
+      "tag": "no overlay",
+      "step": "01"
+    },
+    {
+      "id": "dialog",
+      "type": "active",
+      "label": "Broker dialog",
+      "sublabel": "address, Copy, mail link",
+      "tag": "focus trapped",
+      "step": "02"
+    },
+    {
+      "id": "copied",
+      "type": "success",
+      "label": "Address copied",
+      "sublabel": "in the clipboard",
+      "tag": "status text",
+      "step": "03"
+    },
+    {
+      "id": "mail",
+      "type": "external",
+      "label": "Mail app",
+      "sublabel": "subject prefilled",
+      "tag": "leaves page",
+      "step": "04"
+    },
+    {
+      "id": "menu",
+      "type": "active",
+      "label": "Theme menu",
+      "sublabel": "System, Dark, Light",
+      "tag": "header control"
+    },
+    {
+      "id": "applied",
+      "type": "success",
+      "label": "Theme applied",
+      "sublabel": "choice saved",
+      "tag": "persists"
+    },
+    {
+      "id": "sheet",
+      "type": "active",
+      "label": "Nav sheet",
+      "sublabel": "eight anchors",
+      "tag": "below 1024px"
+    },
+    {
+      "id": "section",
+      "type": "success",
+      "label": "Section reached",
+      "sublabel": "sheet closes",
+      "tag": "anchor"
+    }
+  ],
+  "transitions": [
+    {
+      "id": "rest-dialog",
+      "from": "rest",
+      "to": "dialog",
+      "label": "open",
+      "variant": "emphasis"
+    },
+    {
+      "id": "dialog-copied",
+      "from": "dialog",
+      "to": "copied",
+      "label": "Copy"
+    },
+    {
+      "id": "copied-mail",
+      "from": "copied",
+      "to": "mail",
+      "label": "mail"
+    },
+    {
+      "id": "dialog-rest",
+      "from": "dialog",
+      "to": "rest",
+      "label": "Escape/Close, focus returns"
+    },
+    {
+      "id": "rest-menu",
+      "from": "rest",
+      "to": "menu",
+      "label": "Theme pressed"
+    },
+    {
+      "id": "menu-applied",
+      "from": "menu",
+      "to": "applied",
+      "label": "choice made"
+    },
+    {
+      "id": "menu-rest",
+      "from": "menu",
+      "to": "rest",
+      "label": "Escape/outside, focus returns"
+    },
+    {
+      "id": "applied-rest",
+      "from": "applied",
+      "to": "rest",
+      "label": "next visit: head script",
+      "variant": "dashed"
+    },
+    {
+      "id": "rest-sheet",
+      "from": "rest",
+      "to": "sheet",
+      "label": "Index pressed"
+    },
+    {
+      "id": "sheet-section",
+      "from": "sheet",
+      "to": "section",
+      "label": "anchor chosen"
+    },
+    {
+      "id": "sheet-rest",
+      "from": "sheet",
+      "to": "rest",
+      "label": "Escape/Close, focus returns"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Theme (R14)",
+      "items": [
+        "Follows prefers-color-scheme until the visitor picks one",
+        "Dark or Light is saved under axiom-theme; System removes the key",
+        "The head script applies the saved choice before first paint, so no flash"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Broker dialog (R10)",
+      "items": [
+        "No form fields; nothing is stored or sent",
+        "Address shown as text, Copy button, mailto link with the subject",
+        "Focus trapped while open; Escape returns focus to Talk to the desk",
+        "Clipboard denied: no error state; the address stays selectable"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Overlays to tokens (R13, R19)",
+      "items": [
+        "Hairline borders, no shadow, radius 4px or less",
+        "Targets at least 48px; 2px focus ring with 2px offset",
+        "Nav sheet only below 1024px; the rail lists sections from 1024"
+      ]
+    }
+  ]
+}
