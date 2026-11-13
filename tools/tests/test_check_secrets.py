@@ -164,3 +164,25 @@ def test_a_key_in_a_file_git_calls_binary_is_still_found(tmp_path: Path) -> None
     result = staged_scan(repo)
     assert result.returncode == 1, result.stderr
     assert "blob.dat" in result.stderr
+
+
+def test_an_added_key_file_is_refused_by_name_without_its_contents(tmp_path: Path) -> None:
+    repo = fresh_repo(tmp_path)
+    marker = "opaque-keystore-body"
+    names = ["cert.p12", "cert.pfx", "store.jks", "release.keystore", "UPPER.P12"]
+    for name in names:
+        (repo / name).write_bytes(b"\x30\x82" + marker.encode() + b"\x00")
+    git(repo, "add", ".")
+    result = staged_scan(repo)
+    assert result.returncode == 1, result.stderr
+    for name in names:
+        assert f"{name}: possible key file" in result.stderr
+    assert marker not in result.stderr + result.stdout
+
+
+def test_a_key_file_extension_inside_a_name_is_not_a_key_file(tmp_path: Path) -> None:
+    repo = fresh_repo(tmp_path)
+    (repo / "notes.p12.md").write_text("x = 1\n")
+    git(repo, "add", ".")
+    result = staged_scan(repo)
+    assert result.returncode == 0, result.stderr

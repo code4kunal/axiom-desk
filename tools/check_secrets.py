@@ -3,7 +3,8 @@
 Usage: check_secrets.py            (scans `git diff --cached`)
        check_secrets.py --stdin    (scans a unified diff on stdin)
        check_secrets.py --range A..B   (scans each commit in the range)
-Prints only the file and line number of each hit, never the matched value.
+Prints only the file and line number of each hit, never the matched value. An added key file
+(.p12, .pfx, .jks, .keystore) is refused by its path alone.
 """
 
 import re
@@ -34,14 +35,20 @@ PATTERNS: dict[str, re.Pattern[str]] = {
     "password in a connection url": re.compile(r"[a-z][a-z0-9+.-]*://[^:/\s@]+:[^@\s/${<]{3,}@"),
 }
 
+KEY_FILE = re.compile(r"\.(?:p12|pfx|jks|keystore)$", re.IGNORECASE)
+
 
 def scan(diff: str) -> list[str]:
     hits: list[str] = []
     path = "?"
     line_no = 0
+    prev = ""
     for raw in diff.splitlines():
+        prev, was = raw, prev
         if raw.startswith("+++ "):
             path = raw[6:] if raw.startswith("+++ b/") else raw[4:]
+            if was == "--- /dev/null" and KEY_FILE.search(path):
+                hits.append(f"{path}: possible key file")
             continue
         if raw.startswith("@@"):
             match = re.search(r"\+(\d+)", raw)
