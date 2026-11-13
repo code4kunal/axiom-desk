@@ -9,6 +9,8 @@ export type GateInputs = {
 
 // Everything except WebGL, which can only be probed after load. Self-contained (no outer
 // references): its source is inlined into the blocking head script that reserves the pin box.
+// No "3g" check here: Chrome's estimate drifts to 3g on ordinary Wi-Fi, and the pinned poster costs no
+// download; gate() still keeps three.js off on 3g.
 export function pinGate(i: Omit<GateInputs, "webgl2">): boolean {
   return (
     !i.reducedMotion &&
@@ -16,7 +18,6 @@ export function pinGate(i: Omit<GateInputs, "webgl2">): boolean {
     i.saveData !== true &&
     i.effectiveType !== "slow-2g" &&
     i.effectiveType !== "2g" &&
-    i.effectiveType !== "3g" &&
     // Keeps portrait phones, excludes landscape phones.
     i.viewportHeight >= 600
   );
@@ -24,7 +25,7 @@ export function pinGate(i: Omit<GateInputs, "webgl2">): boolean {
 
 // The 3D ring loads only when this holds; otherwise the poster is final.
 export function gate(i: GateInputs): boolean {
-  return i.webgl2 && pinGate(i);
+  return i.webgl2 && i.effectiveType !== "3g" && pinGate(i); // three.js stays off on 3g (KTD4)
 }
 
 type Nav = Navigator & { deviceMemory?: number; connection?: { saveData?: boolean; effectiveType?: string } };
