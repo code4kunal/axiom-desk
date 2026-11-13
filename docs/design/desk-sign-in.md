@@ -97,7 +97,7 @@ Voice: second person, past tense for what happened, imperative for what to do, n
 
 ### Desk service unreachable (`/auth/me` non-401 failure)
 
-Same rail (without Sign out: the session state is unknown), same column. Caption `DESK SERVICE`, h1 "The desk is not responding", error block as above with label `SERVICE UNREACHABLE` (geru label, top rule, `role="alert"`), message: "We could not load your session. Your sign-in is not affected." Message: "We could not reach the desk service." Then: "Reload to try again. If it keeps failing, tell your desk admin." Button: primary **Reload** = `<a href="/desk">` (full-page GET, no JS). Title: `Desk unavailable | Axiom`. No auto-refresh, no timer.
+Same rail (without Sign out: the session state is unknown), same column. Caption `DESK SERVICE`, h1 "The desk is not responding", error block as above with label `SERVICE UNREACHABLE` (geru label, top rule, `role="alert"`), message: "We could not reach the desk service." Then: "Reload to try again. If it keeps failing, tell your desk admin." Button: primary **Reload** = `<a href="/desk">` (full-page GET, no JS). Title: `Desk unavailable | Axiom`. No auto-refresh, no timer.
 
 ## Pending state
 
