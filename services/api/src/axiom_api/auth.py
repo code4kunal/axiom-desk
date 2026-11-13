@@ -43,6 +43,17 @@ def _refused(code: str) -> RedirectResponse:
 def register_auth(
     app: FastAPI, sessions: SessionStore, pending: PendingLogins, settings: Settings | None
 ) -> None:
+    async def me(request: Request) -> JSONResponse:
+        token = request.cookies.get(SESSION_COOKIE)
+        try:
+            if not token:
+                raise Unauthenticated("invalid")
+            principal, name = sessions.describe(token)
+        except Unauthenticated as e:
+            return JSONResponse({"error": e.reason}, status_code=401, headers=NO_STORE)
+        return JSONResponse({"name": name, "tenant": principal.tenant_id}, headers=NO_STORE)
+
+    app.add_api_route("/auth/me", me, methods=["GET"])  # also without sign-in configured
     if settings is None:
 
         async def not_configured() -> Response:
@@ -72,7 +83,7 @@ def register_auth(
             return _refused("cancelled" if error == "access_denied" else "failed")
         handle = request.cookies.get(LOGIN_COOKIE)
         started = pending.take(handle) if handle else None
-        if started is None or not secrets.compare_digest(started.state, state):
+        if started is None or not secrets.compare_digest(started.state.encode(), state.encode()):
             return _refused("expired")
         if not code:
             return _refused("failed")
@@ -105,17 +116,6 @@ def register_auth(
         _set(response, SESSION_COOKIE, "", 0)
         return response
 
-    async def me(request: Request) -> JSONResponse:
-        token = request.cookies.get(SESSION_COOKIE)
-        try:
-            if not token:
-                raise Unauthenticated("invalid")
-            principal, name = sessions.describe(token)
-        except Unauthenticated as e:
-            return JSONResponse({"error": e.reason}, status_code=401, headers=NO_STORE)
-        return JSONResponse({"name": name, "tenant": principal.tenant_id}, headers=NO_STORE)
-
     app.add_api_route("/auth/login", login, methods=["GET"])
     app.add_api_route("/auth/callback", callback, methods=["GET"])
     app.add_api_route("/auth/logout", logout, methods=["POST"])
-    app.add_api_route("/auth/me", me, methods=["GET"])

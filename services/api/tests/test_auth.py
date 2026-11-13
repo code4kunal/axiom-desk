@@ -209,6 +209,12 @@ def test_a_state_other_than_the_pending_ones_gives_expired(desk: TestClient) -> 
     assert_refused_with(desk.get(callback), "expired")
 
 
+def test_a_non_ascii_state_gives_expired_not_a_server_error(desk: TestClient) -> None:
+    callback = at_provider(start(desk), "mfa")
+
+    assert_refused_with(desk.get(callback.replace("state=", "state=%C3%A9")), "expired")
+
+
 # --- failures map to a fixed code
 
 
@@ -287,6 +293,13 @@ def test_login_with_sign_in_not_configured_gives_failed(services: Services) -> N
 
     assert r.status_code == 303
     assert r.headers["location"] == "/sign-in?error=failed"
+
+
+def test_session_read_with_sign_in_not_configured_says_signed_out(services: Services) -> None:
+    # The desk then shows the sign-in screen, not "the desk is not responding".
+    desk = TestClient(create_app(services), base_url=ORIGIN, follow_redirects=False)
+
+    assert desk.get("/auth/me").status_code == 401
 
 
 # --- what is audited

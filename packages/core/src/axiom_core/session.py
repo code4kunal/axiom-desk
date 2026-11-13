@@ -95,15 +95,19 @@ class SessionStore:
             )
 
     def resolve(self, token: str) -> Principal:
+        return self.describe(token)[0]
+
+    def describe(self, token: str) -> tuple[Principal, str]:
+        """Principal and display name; refuses a missing, expired or orphaned session."""
         key = _digest(token)
         row = self._conn.execute(
-            "SELECT tenant_id, user_id, authenticated_at, expires_at FROM sessions"
+            "SELECT tenant_id, user_id, authenticated_at, expires_at, display_name FROM sessions"
             " WHERE token_hash = ?",
             (key,),
         ).fetchone()
         if row is None:
             raise Unauthenticated("invalid")
-        tenant_id, user_id, authenticated_at, expires_at = row
+        tenant_id, user_id, authenticated_at, expires_at, name = row
         reason: Reason | None = None
         if self._clock() >= expires_at:
             reason = "expired"
@@ -113,15 +117,7 @@ class SessionStore:
             with self._conn:
                 self._conn.execute("DELETE FROM sessions WHERE token_hash = ?", (key,))
             raise Unauthenticated(reason)
-        return Principal(PrincipalKind.USER, tenant_id, user_id, authenticated_at)
-
-    def describe(self, token: str) -> tuple[Principal, str]:
-        """The session's principal and display name, refused exactly as resolve refuses."""
-        principal = self.resolve(token)
-        (name,) = self._conn.execute(
-            "SELECT display_name FROM sessions WHERE token_hash = ?", (_digest(token),)
-        ).fetchone()
-        return principal, name
+        return Principal(PrincipalKind.USER, tenant_id, user_id, authenticated_at), name
 
     def resolve_request(self, token: str, params: Mapping[str, str]) -> Principal:
         principal = self.resolve(token)
