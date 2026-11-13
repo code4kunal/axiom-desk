@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Hind, Martel, Martian_Mono } from "next/font/google";
+import { Anek_Latin, Eczar, Martian_Mono } from "next/font/google";
 import type { ReactNode } from "react";
 import { meta, shell } from "@/landing/content";
 import { Nav } from "@/landing/Nav";
@@ -9,8 +9,8 @@ import { pinScript } from "@/landing/hero/gate";
 import { posterPreloadScript } from "@/landing/hero/Poster";
 import "./globals.css";
 
-const display = Martel({ weight: ["700", "800"], subsets: ["latin"], display: "optional", variable: "--ff-display" });
-const body = Hind({ weight: ["400", "500", "600"], subsets: ["latin"], display: "swap", variable: "--ff-body" });
+const display = Eczar({ weight: ["700", "800"], subsets: ["latin"], display: "optional", variable: "--ff-display" });
+const body = Anek_Latin({ weight: ["400", "500", "600"], subsets: ["latin"], display: "swap", variable: "--ff-body" });
 const mono = Martian_Mono({ weight: ["400", "500"], subsets: ["latin"], display: "swap", variable: "--ff-mono" });
 
 export const metadata: Metadata = {

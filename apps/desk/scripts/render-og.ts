@@ -17,13 +17,13 @@ const out = join(import.meta.dirname, "../public/og");
 mkdirSync(out, { recursive: true });
 
 const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: { width: 1200, height: 630 }, colorScheme: "dark" });
+const page = await browser.newPage({ viewport: { width: 1200, height: 630 }, colorScheme: "light" });
 await page.goto(base);
 await page.evaluate(
   ({ statement, rail }) => {
     document.body.innerHTML = `
     <div style="position:fixed;inset:0;display:grid;grid-template-columns:630px 1fr;background:var(--color-ground);color:var(--color-ink)">
-      <img src="/hero/poster-0-dark.webp" style="width:630px;height:630px;display:block" alt="">
+      <img src="/hero/poster-0-light.webp" style="width:630px;height:630px;display:block" alt="">
       <div style="display:flex;flex-direction:column;justify-content:space-between;padding:56px 56px 48px 40px">
         <p style="font:800 30px/1 var(--font-display);letter-spacing:-0.03em">Axiom</p>
         <p style="font:800 44px/1.02 var(--font-display);letter-spacing:-0.02em;text-wrap:balance">${statement}</p>

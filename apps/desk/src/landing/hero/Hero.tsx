@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { Caption } from "../Caption";
 import { hero } from "../content";
 import { HedgeCard } from "../HedgeCard";
@@ -5,6 +6,31 @@ import { Poster } from "./Poster";
 import { RingIsland } from "./RingIsland";
 
 const caption = "mt-3 font-mono text-caption uppercase text-ink-dim";
+
+const MARKS = ["equity", "gilts", "gold", "cash", "intl"] as const;
+
+// Five hairline cells, a 3px colour bar each; the island cuts the numbers to "after" at dock 70.
+function Legend() {
+  const { labels, before } = hero.legend;
+  return (
+    <dl className="hero-legend col-span-4 mt-3 grid grid-cols-5 border-y border-hairline">
+      {labels.map((label, i) => (
+        <div
+          key={label}
+          data-k={i}
+          style={{ "--c": `var(--color-${MARKS[i]}-mark)` } as CSSProperties}
+          className="border-l border-hairline py-2.5 pl-1.5 font-mono text-label uppercase text-ink-dim before:mb-2 before:block before:h-[3px] before:bg-(--c) before:content-[''] first:border-l-0 first:pl-0 data-[hot]:text-ink sm:pl-3"
+        >
+          <dt>{label}</dt>
+          <dd className="mt-1.5 text-[20px] font-medium leading-none tracking-normal text-ink tabular-nums sm:text-[22px]">
+            {before[i]}
+            <span className="text-label text-ink-dim">%</span>
+          </dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
 
 // Stacked default (no JS, reduced motion, or gate fails): four plates as ordinary content.
 // html[data-hero=pin] restyles the same DOM into the pinned box (docs/design/landing-hero-pin-spec.md).
@@ -43,6 +69,7 @@ export function Hero() {
             <Poster p={0} />
             <RingIsland />
           </div>
+          <Legend />
           <figcaption className={`hero-rail col-span-4 ${caption} max-md:mt-2 max-md:border-t max-md:border-hairline max-md:pt-3`}>
             <Caption text={p0!.caption} state={p0!.state} tone={p0!.tone} />
           </figcaption>

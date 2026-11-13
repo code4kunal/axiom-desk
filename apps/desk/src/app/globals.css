@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
-/* Only DESIGN.md tokens exist: Tailwind's default palette, radii and shadows are removed. */
-@theme {
+/* Only DESIGN.md tokens exist: Tailwind's default palette, radii and shadows are removed.
+   static: emit every token, including those read only through var() in inline styles and the ring. */
+@theme static {
   --color-*: initial;
   --radius-*: initial;
   --shadow-*: initial;
@@ -9,22 +10,35 @@
   --drop-shadow-*: initial;
   --blur-*: initial;
 
-  /* Dark is primary; light overrides below. */
-  --color-ground: #14100d;
-  --color-raised: #1f1915;
-  --color-hairline: #3a322b;
-  --color-ink: #ede6da;
-  --color-ink-dim: #a89e90;
-  --color-ink-faint: #6e655b;
-  --color-brass: #e2b457;
-  --color-brass-mark: #e2b457;
-  --color-brass-line: #e2b457;
-  --color-geru: #d9674a;
-  --color-monsoon: #5fb08a;
-  --color-on-brass: #14100d;
+  /* Light (white) is primary; dark overrides below. Palette v2 (docs/design/landing-palette-v2.md).
+     Base tokens are for text (4.5:1+); -mark tokens are for graphics only (3:1+). */
+  --color-ground: #ffffff;
+  --color-raised: #f2f4f7;
+  --color-hairline: #d7dce2;
+  --color-ink: #0e1319;
+  --color-ink-dim: #4e5966;
+  --color-ink-faint: #7b8692;
+  --color-brass: #0e1319;
+  --color-brass-mark: #0e1319;
+  --color-brass-line: #0e1319;
+  --color-on-brass: #ffffff;
+  --color-monsoon: #107a3a;
+  --color-monsoon-mark: #1e9a4a;
+  --color-geru: #bf3d12;
+  --color-geru-mark: #e0501c;
+  --color-equity: #0e1319;
+  --color-equity-mark: #0e1319;
+  --color-gilts: #0f7b7a;
+  --color-gilts-mark: #149892;
+  --color-gold: #956208;
+  --color-gold-mark: #b97d0c;
+  --color-cash: #636e7a;
+  --color-cash-mark: #808d9b;
+  --color-intl: #b8206f;
+  --color-intl-mark: #d42e7e;
   --color-stamp-cnf: var(--color-monsoon);
-  --color-stamp-rac: var(--color-brass-line);
-  --color-stamp-wl: var(--color-geru);
+  --color-stamp-rac: var(--color-gold);
+  --color-stamp-wl: var(--color-cash);
 
   --font-display: var(--ff-display), serif;
   --font-body: var(--ff-body), sans-serif;
@@ -33,27 +47,30 @@
   --radius-1: 2px;
   --radius-2: 4px;
 
-  /* Fluid between 390 and 1440 wide. */
-  --text-statement: clamp(40px, 22.17px + 4.571vw, 88px);
-  --text-statement--line-height: 0.98;
-  --text-statement--letter-spacing: -0.03em;
-  --text-section-head: clamp(30px, 21.83px + 2.095vw, 52px);
+  /* Fluid between 375 and 1280 wide (palette v2 §3). */
+  --text-statement: clamp(38px, 25.57px + 3.315vw, 68px);
+  --text-statement--line-height: 1;
+  --text-statement--letter-spacing: -0.02em;
+  --text-regime: clamp(22px, 3vw, 34px);
+  --text-regime--line-height: 1;
+  --text-regime--letter-spacing: -0.01em;
+  --text-section-head: clamp(32px, 23.71px + 2.21vw, 52px);
   --text-section-head--line-height: 1.03;
   --text-section-head--letter-spacing: -0.02em;
   --text-legal-h1: clamp(30px, 26.29px + 0.952vw, 40px);
   --text-legal-h1--line-height: 1.1;
   --text-legal-h1--letter-spacing: -0.015em;
-  --text-subline: clamp(17px, 15.89px + 0.286vw, 20px);
+  --text-subline: clamp(18px, 16.76px + 0.331vw, 21px);
   --text-subline--line-height: 1.45;
-  --text-body: clamp(16px, 15.26px + 0.19vw, 18px);
+  --text-body: clamp(18px, 17.17px + 0.221vw, 20px);
   --text-body--line-height: 1.55;
   --text-legal-body: clamp(16px, 15.63px + 0.095vw, 17px);
   --text-legal-body--line-height: 1.65;
-  --text-ui: 16px;
+  --text-ui: 17px;
   --text-ui--line-height: 1.2;
-  --text-small: 14px;
+  --text-small: 15px;
   --text-small--line-height: 1.5;
-  --text-caption: clamp(12px, 11.63px + 0.095vw, 13px);
+  --text-caption: 13px;
   --text-caption--line-height: 1.4;
   --text-caption--letter-spacing: 0.06em;
   --text-label: 12px;
@@ -64,39 +81,65 @@
 }
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
-:root[data-theme="light"] {
-  color-scheme: light;
-  --color-ground: #f5e6dc;
-  --color-raised: #fbf1ea;
-  --color-hairline: #c9b3a2;
-  --color-ink: #1c1714;
-  --color-ink-dim: #5c524a;
-  --color-ink-faint: #b8a99b;
-  --color-brass: #8a5a14;
-  --color-brass-mark: #c8963e;
-  --color-brass-line: #8a5a14;
-  --color-geru: #a63e26;
-  --color-monsoon: #2e6b4f;
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-ground: #0e1114;
+  --color-raised: #171b20;
+  --color-hairline: #2b313a;
+  --color-ink: #f1f3f5;
+  --color-ink-dim: #a7afb9;
+  --color-ink-faint: #6e7884;
+  --color-brass: #f1f3f5;
+  --color-brass-mark: #f1f3f5;
+  --color-brass-line: #f1f3f5;
+  --color-on-brass: #0e1114;
+  --color-monsoon: #49c27a;
+  --color-monsoon-mark: #49c27a;
+  --color-geru: #f5805a;
+  --color-geru-mark: #f5805a;
+  --color-equity: #f1f3f5;
+  --color-equity-mark: #f1f3f5;
+  --color-gilts: #3dbdb9;
+  --color-gilts-mark: #3dbdb9;
+  --color-gold: #e3ac3c;
+  --color-gold-mark: #e3ac3c;
+  --color-cash: #98a2ae;
+  --color-cash-mark: #98a2ae;
+  --color-intl: #ee6cab;
+  --color-intl-mark: #ee6cab;
 }
 
 /* JavaScript off: no data-theme, so follow the system. Same values as the block above. */
-@media (prefers-color-scheme: light) {
+@media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
-    color-scheme: light;
-    --color-ground: #f5e6dc;
-    --color-raised: #fbf1ea;
-    --color-hairline: #c9b3a2;
-    --color-ink: #1c1714;
-    --color-ink-dim: #5c524a;
-    --color-ink-faint: #b8a99b;
-    --color-brass: #8a5a14;
-    --color-brass-mark: #c8963e;
-    --color-brass-line: #8a5a14;
-    --color-geru: #a63e26;
-    --color-monsoon: #2e6b4f;
+    color-scheme: dark;
+    --color-ground: #0e1114;
+    --color-raised: #171b20;
+    --color-hairline: #2b313a;
+    --color-ink: #f1f3f5;
+    --color-ink-dim: #a7afb9;
+    --color-ink-faint: #6e7884;
+    --color-brass: #f1f3f5;
+    --color-brass-mark: #f1f3f5;
+    --color-brass-line: #f1f3f5;
+    --color-on-brass: #0e1114;
+    --color-monsoon: #49c27a;
+    --color-monsoon-mark: #49c27a;
+    --color-geru: #f5805a;
+    --color-geru-mark: #f5805a;
+    --color-equity: #f1f3f5;
+    --color-equity-mark: #f1f3f5;
+    --color-gilts: #3dbdb9;
+    --color-gilts-mark: #3dbdb9;
+    --color-gold: #e3ac3c;
+    --color-gold-mark: #e3ac3c;
+    --color-cash: #98a2ae;
+    --color-cash-mark: #98a2ae;
+    --color-intl: #ee6cab;
+    --color-intl-mark: #ee6cab;
   }
 }
 
@@ -216,7 +259,8 @@ html[data-hero="pin"] #season {
   --d: calc(var(--box) - 100svh);
   --pt: 16px;
   --plate: min(300px, 30svh);
-  --rail-top: calc(48px + var(--pt) + var(--plate) + 12px);
+  --legend-h: 0px;
+  --rail-top: calc(48px + var(--pt) + var(--plate) + 12px + var(--legend-h));
   --ring-col: 1 / -1;
   height: var(--box);
   padding-block: 0;
@@ -224,8 +268,8 @@ html[data-hero="pin"] #season {
   & > .grid {
     height: calc(var(--box) - 48px);
     row-gap: 0;
-    /* poster · rail · statement · subline+buttons · track 40 · track 70 · hedge track */
-    grid-template-rows: auto auto auto auto 1fr 1fr calc(100svh - var(--rail-top));
+    /* poster · rail · statement · subline+buttons · legend · track 40 · track 70 · hedge track */
+    grid-template-rows: auto auto auto auto auto 1fr 1fr calc(100svh - var(--rail-top));
   }
   .hero-fig0,
   .hero-plates {
@@ -241,7 +285,14 @@ html[data-hero="pin"] #season {
   }
   .hero-text > div {
     grid-row: 4;
-    padding-block: 24px 40px;
+    padding-block: 24px;
+  }
+  /* <768 the legend follows the buttons in flow; from 768 it docks under the ring. */
+  .hero-legend {
+    grid-row: 5;
+    grid-column: 1 / -1;
+    align-self: start;
+    margin: 0 0 40px;
   }
   .hero-poster {
     grid-row: 1;
@@ -300,19 +351,34 @@ html[data-hero="pin"] #season {
   .hero-track > figcaption {
     text-wrap: balance;
   }
-  .hero-track:nth-child(1) { grid-row: 5; }
-  .hero-track:nth-child(2) { grid-row: 6; }
-  .hero-track:nth-child(3) { grid-row: 7; }
+  .hero-track:nth-child(1) { grid-row: 6; }
+  .hero-track:nth-child(2) { grid-row: 7; }
+  .hero-track:nth-child(3) { grid-row: 8; }
 
   @media (width >= 48rem) {
     --box: 300lvh;
+    --legend-h: 76px;
     --pt: 40px;
     --plate: calc((100vw - 232px) / 2 + 72px);
     --ring-col: 5 / 9;
 
     & > .grid {
-      /* ring column: poster · rail (docks 0) · 40 at .4d · 70 at .7d · hedge at d */
-      grid-template-rows: auto calc(0.4 * var(--d)) calc(0.3 * var(--d)) calc(0.3 * var(--d)) calc(100svh - var(--rail-top));
+      /* ring column: poster · legend · rail (docks 0) · 40 at .4d · 70 at .7d · hedge at d */
+      grid-template-rows: auto var(--legend-h) calc(0.4 * var(--d)) calc(0.3 * var(--d)) calc(0.3 * var(--d)) calc(100svh - var(--rail-top));
+    }
+    .hero-legend {
+      grid-row: 2;
+      grid-column: var(--ring-col);
+      position: sticky;
+      top: calc(var(--rail-top) - var(--legend-h));
+      z-index: 2;
+      height: var(--legend-h);
+      margin: 0;
+      border-bottom: 0; /* the rail's top rule closes it */
+      background: var(--color-ground);
+    }
+    .hero-rail {
+      grid-row: 3;
     }
     .hero-text {
       display: block;
@@ -337,9 +403,9 @@ html[data-hero="pin"] #season {
         gap: 0;
       }
     }
-    .hero-track:nth-child(1) { grid-row: 3; }
-    .hero-track:nth-child(2) { grid-row: 4; }
-    .hero-track:nth-child(3) { grid-row: 5; }
+    .hero-track:nth-child(1) { grid-row: 4; }
+    .hero-track:nth-child(2) { grid-row: 5; }
+    .hero-track:nth-child(3) { grid-row: 6; }
   }
 
   @media (width >= 64rem) {

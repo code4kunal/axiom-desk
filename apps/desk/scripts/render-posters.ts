@@ -1,5 +1,5 @@
 // Renders the hero ring at 0/40/70/100 in both themes with the real ring module, then encodes the
-// posters (AVIF + WebP, 1200×1200). Run: node scripts/render-posters.ts  (from apps/desk)
+// posters (AVIF + WebP, 960×960). Run: node scripts/render-posters.ts  (from apps/desk)
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
@@ -7,8 +7,8 @@ import { chromium } from "@playwright/test";
 import ts from "typescript";
 
 const require = createRequire(import.meta.url);
-// Only the encoder calls used here; sharp has no types resolvable from this package.
-type Encoder = { avif(o: object): Encoder; webp(o: object): Encoder; jpeg(o: object): Encoder; toBuffer(): Promise<Buffer> };
+// Only the encoder calls used here (resize included); sharp has no types resolvable from this package.
+type Encoder = { resize(w: number): Encoder; avif(o: object): Encoder; webp(o: object): Encoder; jpeg(o: object): Encoder; toBuffer(): Promise<Buffer> };
 // sharp ships with Next; borrow it rather than adding a dependency for a build-time script.
 const sharp = createRequire(require.resolve("next/package.json"))("sharp") as (input: Buffer) => Encoder;
 
@@ -17,19 +17,26 @@ const threeBuild = dirname(require.resolve("three")); // three/build/three.cjs
 const out = join(root, "public/hero");
 mkdirSync(out, { recursive: true });
 
-// Token values straight from globals.css: dark in @theme, light under [data-theme="light"].
+// Token values straight from globals.css: light (primary) in @theme, dark under [data-theme="dark"].
 const css = readFileSync(join(root, "src/app/globals.css"), "utf8");
-function tokens(block: string) {
+function tokens(block: string, dark: boolean) {
   const get = (name: string) => {
     const m = block.match(new RegExp(`--color-${name}:\\s*(#[0-9a-f]{6})`, "i"));
     if (!m) throw new Error(`token ${name} not found`);
     return m[1]!;
   };
-  return { raised: get("raised"), inkDim: get("ink-dim"), brass: get("brass-mark"), geru: get("geru") };
+  return {
+    ground: get("ground"),
+    ink: get("ink"),
+    inkFaint: get("ink-faint"),
+    geruMark: get("geru-mark"),
+    marks: ["equity", "gilts", "gold", "cash", "intl"].map((k) => get(`${k}-mark`)),
+    dark,
+  };
 }
 const palettes = {
-  dark: tokens(css.slice(css.indexOf("@theme"), css.indexOf(":root {"))),
-  light: tokens(css.slice(css.indexOf(':root[data-theme="light"]'))),
+  light: tokens(css.slice(css.indexOf("@theme"), css.indexOf(":root {")), false),
+  dark: tokens(css.slice(css.indexOf(':root[data-theme="dark"]')), true),
 };
 
 const ringJs = ts.transpileModule(readFileSync(join(root, "src/landing/hero/ring.ts"), "utf8"), {
@@ -42,11 +49,12 @@ const html = `<!doctype html><script type="importmap">{"imports":{"three":"/thre
 import { createRing } from "/ring.js";
 window.render = (palette, p) => {
   const c = document.getElementById("c");
-  const ring = window.ring ??= createRing(c, palette, { dpr: 1, preserveDrawingBuffer: true });
-  ring.resize(1200, 1200);
+  // 480 CSS px at DPR 2.5 = 1200 device px: dots and needle match the live canvas at display size.
+  const ring = window.ring ??= createRing(c, palette, { dpr: 2.5, narrow: false, preserveDrawingBuffer: true });
+  ring.resize(480, 480);
   ring.setPalette(palette);
   ring.setProgress(p);
-  ring.frame(1);
+  ring.frame(10, 0); // a long dt settles the tilt; t 0 freezes the breath
   return c.toDataURL("image/png");
 };
 window.ready = true;
@@ -74,8 +82,9 @@ for (const theme of ["dark", "light"] as const)
     );
     const png = Buffer.from(url.split(",")[1]!, "base64");
     const base = join(out, `poster-${p}-${theme}`);
-    writeFileSync(`${base}.avif`, await sharp(png).avif({ quality: 50, effort: 6 }).toBuffer());
-    writeFileSync(`${base}.webp`, await sharp(png).webp({ quality: 78 }).toBuffer());
+    // 960px covers the largest display (479 CSS px) at DPR 2; the dot field makes AVIF q40 the size knee.
+    writeFileSync(`${base}.avif`, await sharp(png).resize(960).avif({ quality: 40, effort: 6 }).toBuffer());
+    writeFileSync(`${base}.webp`, await sharp(png).resize(960).webp({ quality: 75 }).toBuffer());
     if (process.argv.includes("--png")) writeFileSync(`${base}.png`, png);
   }
 

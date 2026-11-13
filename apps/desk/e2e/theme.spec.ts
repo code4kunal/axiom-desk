@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
-const LIGHT_GROUND = "rgb(245, 230, 220)";
-const DARK_GROUND = "rgb(20, 16, 13)";
+const LIGHT_GROUND = "rgb(255, 255, 255)";
+const DARK_GROUND = "rgb(14, 17, 20)";
 
 test.describe("theme before first paint", () => {
   test.use({ colorScheme: "dark" });

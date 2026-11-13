@@ -6,59 +6,27 @@ Source of truth until then: `docs/design/landing-direction.md` ("Yantra", approv
 
 ## 1. Colour tokens
 
-CSS custom properties on `:root[data-theme]`. Dark is primary. Hex values are the direction's Colour table, verbatim.
+**Superseded by palette v2 (user ruling 2026-11-13: no pink paper; white ground, colour as data, larger type).** The full token table with WCAG ratios is `docs/design/landing-palette-v2.md` §2; the values ship in `apps/desk/src/app/globals.css` (`@theme static` = light, `:root[data-theme="dark"]` = dark). Light is primary.
 
-| Token | Dark | Light | Role |
-|---|---|---|---|
-| `--ground` | `#14100D` | `#F5E6DC` | page background (basalt / pink paper) |
-| `--raised` | `#1F1915` | `#FBF1EA` | cards, dialogs, sheets, specimen cells |
-| `--hairline` | `#3A322B` | `#C9B3A2` | 1px rules, borders, cell dividers (light was `#D9C8BB`, 1.33:1 on pink paper; raised to 1.65:1, user-approved 2026-11-13) |
-| `--ink` | `#EDE6DA` | `#1C1714` | primary text, wordmark |
-| `--ink-dim` | `#A89E90` | `#5C524A` | secondary text, captions, nav items at rest |
-| `--ink-faint` | `#6E655B` | `#B8A99B` | tick marks, inactive arcs, decorative rules only |
-| `--brass` | `#E2B457` | `#8A5A14` | brass as **text**: links, active nav item, RAC label |
-| `--brass-mark` | `#E2B457` | `#C8963E` | brass as **decorative mark**: i-tick, needle, scale ticks, button fill, current-nav underline |
-| `--brass-line` | `#E2B457` | `#8A5A14` | brass as **functional line** that must meet 3:1: focus ring, RAC stamp outline |
-| `--geru` | `#D9674A` | `#A63E26` | deterioration state, WL stamp; always with a word or glyph |
-| `--monsoon` | `#5FB08A` | `#2E6B4F` | expansion state, CNF stamp; always with a word or glyph |
-| `--on-brass` | `#14100D` | `#14100D` | text on a brass-mark button (dark ink in both themes) |
-
-Why three brass tokens: in light mode brass marks (`#C8963E`) are 2.18:1 on pink paper, under the 4.5 text floor and under the 3:1 WCAG 2.2 floor for focus indicators. So `--brass` is text-safe, `--brass-line` is the same hex as `--brass` and carries only lines that must be perceivable (focus, stamp outlines), and `--brass-mark` is decorative only. In dark mode all three resolve to `#E2B457`.
-
-**Contrast rules (direction figures, plus the three computed here with the WCAG relative-luminance formula).**
-- May carry text: `--ink` (15.26 / 14.58), `--ink-dim` (7.17 dark on ground, 6.59 on raised; 6.24 light), `--brass` (9.82 / 4.85 on ground, 5.31 on light raised), `--geru` (5.40 / 5.16; 4.96 dark on raised), `--monsoon` (7.27 / 5.17), `--on-brass` on `--brass-mark` button fill (9.82 dark / 7.11 light).
-- Never carry text: `--ink-faint` (3.31 dark), `--brass-mark` in light (2.18), `--hairline`.
-- Non-text lines that must be perceived (focus ring, stamp outlines) use `--brass-line`, `--geru`, `--monsoon`: all ≥ 3:1 on both grounds. `--brass-mark` lines are decoration only.
-- Minimum text size on `--geru` / `--monsoon` / light `--brass`: 14px Hind 500 or 12px Martian Mono 500 (ratios are above 4.5 but under 7).
-- No colour outside this table anywhere in `apps/desk`. No alpha tints except `--hairline` at 100%; disabled = `--ink-dim`, not opacity.
+- Ground `#FFFFFF` / dark `#0E1114`; ink `#0E1319` / `#F1F3F5`. `--brass*` keeps its role (links, primary button, focus) and now resolves to ink.
+- Asset colours, base for text (≥4.5:1), `-mark` for points, bars and outlines only (≥3:1): equity = ink, gilts `#0F7B7A`, gold `#956208`, cash `#636E7A`, intl `#B8206F`.
+- Regime: `--monsoon` `#107A3A` (the word EXPANSION only), `--geru` `#BF3D12` (deterioration word; `--geru-mark` on the rim after the sweep and the wordmark i-tick). Never fills.
+- `@theme static` is required: plain `@theme` drops tokens only read through `var()` (the ring reads `-mark` tokens from JS), which left the light band invisible.
+- No purple, indigo or blue. No gradient. No colour outside the token set in `apps/desk`.
 
 ## 2. Type
 
-Self-hosted via `next/font/google`, latin subset (KTD10). `font-display: optional` for Martel, `swap` for Hind and Martian Mono.
+**Superseded by palette v2** (`docs/design/landing-palette-v2.md` §3). Self-hosted via `next/font/google`, latin subset.
 
-| Token | Family | Weights | Use |
-|---|---|---|---|
-| `--font-display` | Martel | 700, 800 | statement, section heads, wordmark, 404 and legal h1 |
-| `--font-body` | Hind | 400, 500, 600 | body, buttons, nav sheet labels, legal body |
-| `--font-mono` | Martian Mono | 400, 500 | every number, caption rail, evidence cells, stamps, nav anchors, ordinals |
+| Token | Family | Weights |
+|---|---|---|
+| `--font-display` | Eczar | 700, 800 |
+| `--font-body` | Anek Latin | 400, 500, 600 |
+| `--font-mono` | Martian Mono | 400, 500 |
 
-Scale (px / line-height / tracking). Fluid between 390 and 1440 via `clamp()`; the two columns are the clamp ends.
+Scale at 375 → 1280: statement 38 → 68 (capped at 9svh from 1024), regime word 22 → 34, section head 32 → 52, subline 18 → 21, body 18 → 20, ui 17, small 15, caption 13, label 12.
 
-| Step | 390 | 1440 | Face |
-|---|---|---|---|
-| `statement` | 40 / 0.98 / -0.02em | 88 / 0.98 / -0.03em | Martel 800 |
-| `section-head` | 30 / 1.05 / -0.015em | 52 / 1.02 / -0.02em | Martel 700 |
-| `legal-h1` | 30 / 1.1 / -0.01em | 40 / 1.1 / -0.015em | Martel 700 |
-| `subline` | 17 / 1.45 | 20 / 1.45 | Hind 400 |
-| `body` | 16 / 1.55 | 18 / 1.55 | Hind 400 |
-| `legal-body` | 16 / 1.65 | 17 / 1.65, measure 64ch | Hind 400 |
-| `ui` | 16 / 1.2 | 16 / 1.2 | Hind 500 (buttons, sheet items) |
-| `small` | 14 / 1.5 | 14 / 1.5 | Hind 400 (footer body, disclaimer, legal notice body) |
-| `caption` | 12 / 1.4 / +0.06em | 13 / 1.4 / +0.06em | Martian Mono 400, uppercase |
-| `label` | 12 / 1 / +0.10em | 12 / 1 / +0.10em | Martian Mono 500, uppercase (nav anchors, stamps, ordinals) |
-
-- Wordmark: "Axiom", Martel 800, 20px at 390, 24px at 1440, tracking -0.03em; the i's dot is a 2px × 0.34em rectangle (about 2×7–8px) in `--brass-mark` over a dotless i, with a gap above the stem; 10px could not clear the stem under the ascender (user-approved 2026-11-13). Never animates.
-- Numbers: Martian Mono only, `font-variant-numeric: tabular-nums`. They cut, never count up.
+- Numbers: Martian Mono only, `tabular-nums`. They cut, never count up.
 - Floor: nothing under 12px; 12px only in Martian Mono 500 uppercase.
 
 ## 3. Space, shape, surface
@@ -69,7 +37,7 @@ Scale (px / line-height / tracking). Fluid between 390 and 1440 via `clamp()`; t
 - Radius: `--r-1: 2px` (stamps, cells), `--r-2: 4px` (buttons, cards, dialogs, sheets). **Ceiling 4px.** No pills, no circles except the ring.
 - Shadows: none. Elevation is `--raised` over `--ground` plus a `--hairline` border. No `box-shadow`, no `backdrop-filter`, no blur.
 - Hairline rules: `1px solid var(--hairline)`; at DPR ≥ 2 keep 1px (never 0.5px, mid-range LCDs drop it). Section dividers run full content width; cell dividers inside specimen cards are hairline on all four sides, cells butt (`border-collapse`-style, no double rules).
-- Buttons: 48px tall minimum (52px full-width on the hero at 390), padding 0 24px, radius 4px, Hind 500 16px. Primary: fill `--brass-mark`, text `--on-brass`. Ghost: 1px `--hairline` border, text `--ink`, hover border `--ink-dim` (colour only). No lift, no shadow, no scale.
+- Buttons: 48px tall minimum (52px full-width on the hero at 390), padding 0 24px, radius 4px, Anek Latin 500 17px. Primary: fill `--brass-mark` (ink), text `--on-brass`. Ghost: 1px `--hairline` border, text `--ink`, hover border `--ink-dim` (colour only). No lift, no shadow, no scale.
 - Links in body: `--brass` text, underline 1px offset 3px; hover switches underline colour to `--ink` (colour only).
 - Targets: 48×48 minimum, 8px clear on every side. Icon-only controls carry a visible or `aria-label` word.
 - Focus: `outline: 2px solid var(--brass-line); outline-offset: 2px; border-radius: inherit`. Never removed, never replaced by a box-shadow. The 2px offset puts the ring on `--ground`, so it stays visible on a brass button too.
@@ -80,9 +48,9 @@ Outline stamps, never filled. Martian Mono 500 12px uppercase, tracking 0.12em, 
 
 | Grade | Meaning | Outline | Text |
 |---|---|---|---|
-| `CNF` | out-of-sample confirmed | `--monsoon` | `--monsoon` |
-| `RAC` | in-sample only | `--brass-line` | `--brass` |
-| `WL` | insufficient evidence | `--geru` | `--geru` |
+| `CNF` | out-of-sample confirmed | `--monsoon-mark` | `--monsoon` |
+| `RAC` | in-sample only | `--gold-mark` | `--gold` |
+| `WL` | insufficient evidence | `--cash-mark` | `--cash` |
 
 Tokens: `--stamp-cnf`, `--stamp-rac`, `--stamp-wl` alias the outline colours above so a theme change cannot split them. Every stamp carries its three-letter word; colour is never the only signal.
 
@@ -100,4 +68,4 @@ Gradients (fill, text, border); purple, indigo, violet, any blue-black ground; I
 
 ## 7. Calibration guard (R21)
 
-Both themes must keep the second voice or the build has drifted: `--geru` and `--monsoon` as real state colours on the page, the CNF / RAC / WL outline stamps, and pink paper (`#F5E6DC`) as the light ground. Brass alone on basalt is the "near-black with one glow" cluster; it is not this design.
+Both themes must keep the second voice or the build has drifted: `--geru` and `--monsoon` as real state colours on the page, the CNF / RAC / WL outline stamps, and the five asset colours carrying data on a white ground. Ink alone on white with one accent is the stock-fintech cluster; it is not this design.
