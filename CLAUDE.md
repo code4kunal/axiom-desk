@@ -14,4 +14,5 @@ Skip a step only when the feature has no part for it (no UI, no backend), and sa
 ## UI constraints
 
 - G5 is a start gate: no `apps/desk` screen work before `DESIGN.md` and the TASTE file (3 likes + 3 hates from the desk) exist. The U14 renderer spike is exempt.
+- Allowed UI stack additions: three.js, HyperFrames, 21st.dev components. 21st.dev components are restyled to `DESIGN.md` tokens, never shipped in their stock shadcn look. three.js and HyperFrames stay off chart panes, which keep the renderer's frame budget.
 - The global UI rules still apply: no stock default stack, screenshots at 375/768/1280 in light and dark before "done".
