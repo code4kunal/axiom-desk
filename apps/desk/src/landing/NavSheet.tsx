@@ -73,7 +73,7 @@ export function NavSheet() {
                       target.current = s.id;
                       setOpen(false);
                     }}
-                    className="relative flex h-14 items-center gap-4 font-body text-[20px] font-medium text-ink focus-visible:outline-offset-[-2px] aria-[current=location]:before:absolute aria-[current=location]:before:inset-y-3 aria-[current=location]:before:-left-4 aria-[current=location]:before:w-0.5 aria-[current=location]:before:bg-ink aria-[current=location]:before:content-['']"
+                    className="relative flex h-14 items-center gap-4 pl-3 font-body text-[20px] font-medium text-ink focus-visible:outline-offset-[-2px] aria-[current=location]:before:absolute aria-[current=location]:before:inset-y-3 aria-[current=location]:before:left-0 aria-[current=location]:before:w-0.5 aria-[current=location]:before:bg-ink aria-[current=location]:before:content-['']"
                   >
                     <span className="w-6 font-mono text-label font-normal text-ink-dim">{ordinal(i)}</span>
                     {s.label}

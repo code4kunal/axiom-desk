@@ -153,6 +153,6 @@ export const brokers = {
   copy: "Copy address",
   copied: "Copied",
   copiedStatus: "Address copied",
-  copyFailed: "Select and copy",
+  copyFailed: "Address selected. Copy it with your keyboard or menu.",
   mail: "Write an email",
 };

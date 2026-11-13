@@ -42,6 +42,26 @@ test("the theme menu offers System, Dark and Light; Light persists across a relo
   await expect(themeTrigger(page)).toContainText(shell.themeChoices.light);
 });
 
+test("the keyboard-highlighted theme item draws a visible ring", async ({ page }) => {
+  await page.goto("/");
+  await themeTrigger(page).focus();
+  await page.keyboard.press("Enter");
+  await page.keyboard.press("ArrowDown");
+  const item = page.locator("[role=menuitemradio][data-highlighted]");
+  await expect(item).toHaveCount(1);
+  expect(await item.evaluate((el) => getComputedStyle(el).outlineStyle)).toBe("solid");
+});
+
+test("the theme trigger's hit area is at least 48px tall", async ({ page }) => {
+  await page.goto("/");
+  const t = themeTrigger(page);
+  const hit = await t.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    return [r.top - 3.5, r.bottom + 3.5].map((py) => el.contains(document.elementFromPoint(r.left + r.width / 2, py)));
+  });
+  expect(hit).toEqual([true, true]);
+});
+
 test.describe("broker dialog", () => {
   const talk = (page: Page) => page.getByRole("link", { name: brokers.action });
 
@@ -65,6 +85,7 @@ test.describe("broker dialog", () => {
     await talk(page).click();
     const dialog = page.getByRole("dialog", { name: brokers.action });
     await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole("button", { name: brokers.copy })).toBeFocused();
     for (let i = 0; i < 8; i++) {
       await page.keyboard.press("Tab");
       expect(await dialog.evaluate((d) => d.contains(document.activeElement))).toBe(true);
@@ -72,6 +93,19 @@ test.describe("broker dialog", () => {
     await page.keyboard.press("Escape");
     await expect(dialog).toHaveCount(0);
     await expect(talk(page)).toBeFocused();
+  });
+
+  test("a denied clipboard selects the address and says how to copy it", async ({ page }) => {
+    await page.addInitScript(() => {
+      navigator.clipboard.writeText = () => Promise.reject(new DOMException("denied", "NotAllowedError"));
+    });
+    await page.goto("/");
+    await talk(page).click();
+    const dialog = page.getByRole("dialog", { name: brokers.action });
+    await dialog.getByRole("button", { name: brokers.copy }).click();
+    await expect(dialog.getByText(brokers.copyFailed, { exact: true }).first()).toBeVisible();
+    await expect(dialog.locator("[aria-live=polite]")).toHaveText(brokers.copyFailed);
+    expect(await page.evaluate(() => getSelection()?.toString())).toBe(brokers.contact);
   });
 
   test("without JavaScript the trigger is a working mailto link", async ({ browser, baseURL }) => {
