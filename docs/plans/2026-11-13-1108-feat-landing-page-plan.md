@@ -301,13 +301,15 @@ apps/desk/
 - **Goal:** the three clip slots with placeholders, and the theme menu, broker dialog and nav sheet, restyled to tokens.
 - **Requirements:** R10, R12, R13, R14, R19; KTD7, KTD9.
 - **Dependencies:** U2, U3.
-- **Files:** `src/landing/ClipSlot.tsx`, `ThemeMenu.tsx`, `BrokerDialog.tsx`, `NavSheet.tsx`, `src/components/ui/*`, `public/clips/*`, `e2e/actions.spec.ts`.
+- **Files:** `src/landing/ClipSlot.tsx`, `ThemeMenu.tsx`, `BrokerDialog.tsx`, `NavSheet.tsx`, `src/components/ui/*`, `public/clips/*`, `e2e/actions.spec.ts`; also `src/landing/Nav.tsx`, `src/landing/content.ts` (step 5).
 - **Approach:**
   1. Run `shadcn init` and add the three primitives per KTD9; review the token diff before anything else.
   2. Restyle per R13. No hover lift or shadow growth (direction § Motion grammar).
   3. `ClipSlot` renders the placeholder still labelled `CLIP PLACEHOLDER` at a fixed size (R12, KTD7). It is a server component, not a client island.
   4. `BrokerDialog` implements R10 with the address from `content.ts`.
+  5. Added 2026-11-13 (user decision, palette v2 review): a compact theme control in the header's right slot at every width, as the v2 comp shows (after the index list from 1024, left of INDEX below 1024; 40px tall, label type, hairline border). Remove the `{ id: "footer", label: "Footer" }` nav item: "Footer" is not a destination.
 - **Test scenarios:**
+  - Theme control is visible in the header at 375, 768 and 1280, switches the theme, and the nav lists no "Footer" item.
   - Covers AE4. Opening the dialog shows the address as text; Copy writes it to the clipboard; the `mailto:` link carries the subject.
   - The dialog traps focus while open, closes on Escape, and returns focus to "Talk to the desk".
   - The theme menu offers System, Dark and Light; choosing Light persists across a reload.
