@@ -1,0 +1,309 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Axiom desk sign-in: login, callback, session, sign out (planned)",
+    "subtitle": "Planned behaviour from the desk sign-in plan (KTD1, KTD2, KTD5, KTD7, KTD8, KTD10, KTD11). Not yet implemented.",
+    "locale": "en",
+    "output": "docs/diagrams/desk-sign-in.html",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    {
+      "id": "browser",
+      "type": "external",
+      "label": "Browser",
+      "sublabel": "desk user"
+    },
+    {
+      "id": "next",
+      "type": "frontend",
+      "label": "Next desk",
+      "sublabel": "same origin, rewrites /auth/*"
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "FastAPI /auth",
+      "sublabel": "OIDC client"
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "records DB",
+      "sublabel": "pending_logins, sessions"
+    },
+    {
+      "id": "idp",
+      "type": "security",
+      "label": "OIDC provider",
+      "sublabel": "MFA, token, JWKS"
+    }
+  ],
+  "segments": [
+    {
+      "from": 148,
+      "to": 382,
+      "label": "Start sign-in"
+    },
+    {
+      "from": 479,
+      "to": 570,
+      "label": "Provider MFA"
+    },
+    {
+      "from": 603,
+      "to": 1171,
+      "label": "Callback"
+    },
+    {
+      "from": 1224,
+      "to": 1411,
+      "label": "Signed in"
+    },
+    {
+      "from": 1413,
+      "to": 1579,
+      "label": "Sign out"
+    }
+  ],
+  "messages": [
+    {
+      "id": "click-sign-in",
+      "from": "browser",
+      "to": "next",
+      "y": 160,
+      "label": "Sign in: GET /auth/login",
+      "variant": "emphasis"
+    },
+    {
+      "id": "rewrite-login",
+      "from": "next",
+      "to": "api",
+      "y": 190,
+      "label": "rewrite /auth/*",
+      "variant": "default",
+      "note": "Same origin: Next rewrites() proxies /auth/* to the API, passing Set-Cookie through. Cookies stay first-party, no CORS."
+    },
+    {
+      "id": "insert-pending",
+      "from": "api",
+      "to": "db",
+      "y": 284,
+      "label": "purge expired, insert pending_logins",
+      "variant": "default",
+      "note": "Row holds state, nonce, PKCE verifier; keyed by SHA-256 of a random handle; expires in 10 min."
+    },
+    {
+      "id": "redirect-authorize",
+      "from": "api",
+      "to": "browser",
+      "y": 366,
+      "label": "303 to provider authorize",
+      "variant": "return",
+      "note": "PKCE S256, state, nonce, prompt=login, max_age=28800. Set-Cookie __Host-axiom_login. Alt: discovery unreachable -> /sign-in?error=provider_unavailable; auth not configured -> error=failed."
+    },
+    {
+      "id": "authorize-mfa",
+      "from": "browser",
+      "to": "idp",
+      "y": 491,
+      "label": "authorize + MFA",
+      "variant": "emphasis",
+      "note": "prompt=login: credentials and MFA asked every time."
+    },
+    {
+      "id": "redirect-callback",
+      "from": "idp",
+      "to": "browser",
+      "y": 554,
+      "label": "302 /auth/callback?code&state",
+      "variant": "return",
+      "note": "Alt: access_denied -> /sign-in?error=cancelled."
+    },
+    {
+      "id": "get-callback",
+      "from": "browser",
+      "to": "next",
+      "y": 615,
+      "label": "GET /auth/callback",
+      "variant": "default",
+      "note": "Login cookie sent (Lax, top-level GET)."
+    },
+    {
+      "id": "rewrite-callback",
+      "from": "next",
+      "to": "api",
+      "y": 672,
+      "label": "rewrite /auth/*",
+      "variant": "default"
+    },
+    {
+      "id": "consume-pending",
+      "from": "api",
+      "to": "db",
+      "y": 702,
+      "label": "DELETE pending_logins RETURNING",
+      "variant": "security",
+      "note": "Single use, and only for the browser that started it. Alt: row missing, used or expired -> error=expired."
+    },
+    {
+      "id": "token-jwks",
+      "from": "api",
+      "to": "idp",
+      "y": 789,
+      "label": "POST token + GET JWKS",
+      "variant": "dashed",
+      "note": "Both run in a worker thread; JWKS cached. Alt: unreachable or timeout -> error=provider_unavailable."
+    },
+    {
+      "id": "tokens",
+      "from": "idp",
+      "to": "api",
+      "y": 874,
+      "label": "ID token + keys, then verified",
+      "variant": "return",
+      "note": "API verifies signature, nonce, tenant claim; amr has mfa. Alt: invalid, nonce or tenant -> error=failed; no mfa -> error=mfa_required."
+    },
+    {
+      "id": "insert-session",
+      "from": "api",
+      "to": "db",
+      "y": 974,
+      "label": "Directory has user? insert session",
+      "variant": "default",
+      "note": "Stores sha256(token) only; audit record. Alt: Directory does not know tenant and sub -> error=unknown_user."
+    },
+    {
+      "id": "failure-exit",
+      "from": "api",
+      "to": "browser",
+      "y": 1062,
+      "label": "any failure: 303 /sign-in?error=code",
+      "variant": "return",
+      "note": "Codes: cancelled, expired, provider_unavailable, failed, mfa_required, unknown_user. Fixed codes, never provider text."
+    },
+    {
+      "id": "redirect-desk",
+      "from": "api",
+      "to": "browser",
+      "y": 1155,
+      "label": "success: 303 /desk",
+      "variant": "return",
+      "note": "Set-Cookie __Host-axiom_session (HttpOnly, Secure, Lax, 8 h absolute); login cookie cleared."
+    },
+    {
+      "id": "get-desk",
+      "from": "browser",
+      "to": "next",
+      "y": 1236,
+      "label": "GET /desk",
+      "variant": "emphasis"
+    },
+    {
+      "id": "get-me",
+      "from": "next",
+      "to": "api",
+      "y": 1266,
+      "label": "GET /auth/me",
+      "variant": "default",
+      "note": "Server Component forwards the cookie, cache no-store. 401 -> redirect /sign-in; other failure -> desk-service-unreachable message."
+    },
+    {
+      "id": "me-ok",
+      "from": "api",
+      "to": "next",
+      "y": 1365,
+      "label": "200 {name, tenant}",
+      "variant": "return"
+    },
+    {
+      "id": "signed-in",
+      "from": "next",
+      "to": "browser",
+      "y": 1395,
+      "label": "signed-in page",
+      "variant": "return"
+    },
+    {
+      "id": "post-logout",
+      "from": "browser",
+      "to": "next",
+      "y": 1425,
+      "label": "Sign out: POST /auth/logout",
+      "variant": "emphasis",
+      "note": "Plain form POST; works without JS."
+    },
+    {
+      "id": "rewrite-logout",
+      "from": "next",
+      "to": "api",
+      "y": 1480,
+      "label": "rewrite /auth/*",
+      "variant": "default",
+      "note": "Same-origin check runs first."
+    },
+    {
+      "id": "delete-session",
+      "from": "api",
+      "to": "db",
+      "y": 1533,
+      "label": "delete session row",
+      "variant": "default"
+    },
+    {
+      "id": "logout-redirect",
+      "from": "api",
+      "to": "browser",
+      "y": 1563,
+      "label": "303 /sign-in, cookie cleared",
+      "variant": "return",
+      "note": "Provider-side logout is deferred."
+    }
+  ],
+  "activations": [
+    {
+      "participant": "api",
+      "from": 185,
+      "to": 374,
+      "type": "backend"
+    },
+    {
+      "participant": "api",
+      "from": 667,
+      "to": 1163,
+      "type": "backend"
+    },
+    {
+      "participant": "api",
+      "from": 1261,
+      "to": 1373,
+      "type": "backend"
+    },
+    {
+      "participant": "api",
+      "from": 1475,
+      "to": 1571,
+      "type": "backend"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Single-use, same browser",
+      "items": [
+        "pending_logins row is deleted with RETURNING on callback",
+        "Only the browser holding __Host-axiom_login can complete it",
+        "Session token stored only as its SHA-256"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Failure exits",
+      "items": [
+        "Every failure is a 303 to /sign-in?error=code",
+        "Six fixed codes; provider text never reaches the URL"
+      ]
+    }
+  ]
+}

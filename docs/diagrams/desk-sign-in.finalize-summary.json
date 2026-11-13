@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "sequence",
+  "quality": "showcase",
+  "specification": {
+    "path": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/u14-renderer-spike-dabe9f/docs/diagrams/src/desk-sign-in.sequence.json",
+    "sha256": "48076ce095c77aecc31f29a42842b3d8d672b86cedc8a23c2f15fffc5d60b4ca",
+    "bytes": 7832
+  },
+  "artifact": {
+    "path": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/u14-renderer-spike-dabe9f/docs/diagrams/desk-sign-in.html",
+    "sha256": "85a2363253417b26dd1520eac46bcbce064645ad7bd73c74df79abc5367706df",
+    "bytes": 851520
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/u14-renderer-spike-dabe9f/docs/diagrams/desk-sign-in.finalize.json",
+    "summaryReceipt": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/u14-renderer-spike-dabe9f/docs/diagrams/desk-sign-in.finalize-summary.json",
+    "browserCheckReceipt": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/u14-renderer-spike-dabe9f/docs/diagrams/desk-sign-in.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-11-13T05:57:44.956Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 20576,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}
