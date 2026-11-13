@@ -35,9 +35,9 @@ def test_clean_diff_passes() -> None:
 
 VALUE = "q1" * 12
 SAMPLES: dict[str, list[str]] = {
-    "aws access key": [AWS_KEY],
+    "aws access key": [AWS_KEY, "ASIA" + "Z" * 16],
     "private key block": [PEM],
-    "github token": [GH_TOKEN],
+    "github token": [GH_TOKEN, "github_pat_11" + "A" * 20 + "_" + "b" * 59],
     "anthropic key": [ANTHROPIC_KEY],
     "assigned key or secret": [
         f'api_key = "{VALUE}"',
@@ -47,7 +47,12 @@ SAMPLES: dict[str, list[str]] = {
         f"client_secret = '{VALUE}'",
         f"aws_secret_access_key = {VALUE}",
         f"pass{'word'}: {VALUE}",
+        f'const accessToken = "{VALUE}";',
+        f'clientSecret: "{VALUE}",',
+        f'stripeApiKey = "{VALUE}"',
     ],
+    "env-style key": [f"VITE_SCICHART_LICENSE_KEY={VALUE}", f'OPENAI_KEY="{VALUE}"'],
+    "bearer token": ["Authorization: Bearer " + "eyJ" + "a1b2" * 10],
     "password in a connection url": ["postgres://app:" + "s3cr" + "et@db.internal/axiom"],
 }
 
@@ -79,6 +84,11 @@ def test_ordinary_code_is_not_a_secret() -> None:
         "password = prompt_for_password_interactively()",
         "url = 'postgres://app:${DB_PASS}@db/axiom'",
         "SECRET_NAME = 'axiom/prod/records-db'",
+        "cache_key = 'user-profile-region-main'",
+        "accessTokenUrl = 'https://example.invalid/oauth/token'",
+        'headers={"Authorization": f"Bearer {token}"}',
+        "KEYBOARD_LAYOUT=us-international-2026",
+        'var RAIL_COLLAPSED_KEY = "archify-rail-collapsed";',
     ):
         result = run(diff_adding(line))
         assert result.returncode == 0, (line, result.stderr)
@@ -122,3 +132,35 @@ def test_removed_lines_are_ignored() -> None:
 def test_output_never_echoes_the_secret() -> None:
     result = run(diff_adding(AWS_KEY))
     assert AWS_KEY not in result.stderr + result.stdout
+
+
+def staged_scan(repo: Path) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [sys.executable, str(SCRIPT)], cwd=repo, capture_output=True, text=True, check=False
+    )
+
+
+def fresh_repo(repo: Path) -> Path:
+    git(repo, "init", "-q")
+    git(repo, "config", "user.email", "t@example.invalid")
+    git(repo, "config", "user.name", "t")
+    return repo
+
+
+def test_forced_colour_in_git_config_does_not_hide_a_staged_key(tmp_path: Path) -> None:
+    repo = fresh_repo(tmp_path)
+    git(repo, "config", "color.diff", "always")
+    (repo / "a.py").write_text(f"key = '{AWS_KEY}'\n")
+    git(repo, "add", ".")
+    result = staged_scan(repo)
+    assert result.returncode == 1, result.stderr
+    assert "a.py:1: possible aws access key" in result.stderr
+
+
+def test_a_key_in_a_file_git_calls_binary_is_still_found(tmp_path: Path) -> None:
+    repo = fresh_repo(tmp_path)
+    (repo / "blob.dat").write_bytes(f"k={AWS_KEY}\n".encode() + b"\x00bin\n")
+    git(repo, "add", ".")
+    result = staged_scan(repo)
+    assert result.returncode == 1, result.stderr
+    assert "blob.dat" in result.stderr
