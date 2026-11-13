@@ -1,0 +1,174 @@
+@import "tailwindcss";
+
+/* Only DESIGN.md tokens exist: Tailwind's default palette, radii and shadows are removed. */
+@theme {
+  --color-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+  --blur-*: initial;
+
+  /* Dark is primary; light overrides below. */
+  --color-ground: #14100d;
+  --color-raised: #1f1915;
+  --color-hairline: #3a322b;
+  --color-ink: #ede6da;
+  --color-ink-dim: #a89e90;
+  --color-ink-faint: #6e655b;
+  --color-brass: #e2b457;
+  --color-brass-mark: #e2b457;
+  --color-brass-line: #e2b457;
+  --color-geru: #d9674a;
+  --color-monsoon: #5fb08a;
+  --color-on-brass: #14100d;
+  --color-stamp-cnf: var(--color-monsoon);
+  --color-stamp-rac: var(--color-brass-line);
+  --color-stamp-wl: var(--color-geru);
+
+  --font-display: var(--ff-display), serif;
+  --font-body: var(--ff-body), sans-serif;
+  --font-mono: var(--ff-mono), monospace;
+
+  --radius-1: 2px;
+  --radius-2: 4px;
+
+  /* Fluid between 390 and 1440 wide. */
+  --text-statement: clamp(40px, 22.17px + 4.571vw, 88px);
+  --text-statement--line-height: 0.98;
+  --text-statement--letter-spacing: -0.03em;
+  --text-section-head: clamp(30px, 21.83px + 2.095vw, 52px);
+  --text-section-head--line-height: 1.03;
+  --text-section-head--letter-spacing: -0.02em;
+  --text-legal-h1: clamp(30px, 26.29px + 0.952vw, 40px);
+  --text-legal-h1--line-height: 1.1;
+  --text-legal-h1--letter-spacing: -0.015em;
+  --text-subline: clamp(17px, 15.89px + 0.286vw, 20px);
+  --text-subline--line-height: 1.45;
+  --text-body: clamp(16px, 15.26px + 0.19vw, 18px);
+  --text-body--line-height: 1.55;
+  --text-legal-body: clamp(16px, 15.63px + 0.095vw, 17px);
+  --text-legal-body--line-height: 1.65;
+  --text-ui: 16px;
+  --text-ui--line-height: 1.2;
+  --text-small: 14px;
+  --text-small--line-height: 1.5;
+  --text-caption: clamp(12px, 11.63px + 0.095vw, 13px);
+  --text-caption--line-height: 1.4;
+  --text-caption--letter-spacing: 0.06em;
+  --text-label: 12px;
+  --text-label--line-height: 1;
+  --text-label--letter-spacing: 0.1em;
+
+  --ease-reveal: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+:root {
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --color-ground: #f5e6dc;
+  --color-raised: #fbf1ea;
+  --color-hairline: #d9c8bb;
+  --color-ink: #1c1714;
+  --color-ink-dim: #5c524a;
+  --color-ink-faint: #b8a99b;
+  --color-brass: #8a5a14;
+  --color-brass-mark: #c8963e;
+  --color-brass-line: #8a5a14;
+  --color-geru: #a63e26;
+  --color-monsoon: #2e6b4f;
+}
+
+/* JavaScript off: no data-theme, so follow the system. Same values as the block above. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    color-scheme: light;
+    --color-ground: #f5e6dc;
+    --color-raised: #fbf1ea;
+    --color-hairline: #d9c8bb;
+    --color-ink: #1c1714;
+    --color-ink-dim: #5c524a;
+    --color-ink-faint: #b8a99b;
+    --color-brass: #8a5a14;
+    --color-brass-mark: #c8963e;
+    --color-brass-line: #8a5a14;
+    --color-geru: #a63e26;
+    --color-monsoon: #2e6b4f;
+  }
+}
+
+@layer base {
+  html {
+    scroll-padding-top: 48px;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--color-ground);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+  }
+  html {
+    caret-color: var(--color-brass);
+    accent-color: var(--color-brass-mark);
+    scrollbar-color: var(--color-ink-faint) var(--color-ground);
+    font-variant-numeric: tabular-nums;
+  }
+  ::selection {
+    background: var(--color-brass-mark);
+    color: var(--color-on-brass);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-brass-line);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    /* Theme switch: colour only. */
+    *,
+    *::before {
+      transition-property: color, background-color, border-color;
+      transition-duration: 160ms;
+      transition-timing-function: linear;
+    }
+  }
+}
+
+@utility frame {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 1280px;
+  padding-inline: 16px;
+  @media (width >= 48rem) {
+    padding-inline: 32px;
+  }
+  @media (width >= 64rem) {
+    padding-inline: 48px;
+  }
+}
+
+@utility stamp {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 3px 6px 2px;
+  border: 1.5px solid currentColor;
+  border-radius: var(--radius-1);
+}
+
+@utility link {
+  color: var(--color-brass);
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  &:hover {
+    text-decoration-color: var(--color-ink);
+  }
+}

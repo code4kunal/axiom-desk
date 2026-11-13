@@ -8,7 +8,7 @@ export default defineConfig({
   reporter: "list",
   use: { baseURL: `http://localhost:${port}` },
   webServer: {
-    command: `pnpm build && pnpm start --port ${port}`,
+    command: `next build && next start --port ${port}`,
     port,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
