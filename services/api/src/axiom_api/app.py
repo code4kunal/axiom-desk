@@ -48,7 +48,12 @@ def build_services(conn: sqlite3.Connection, clock: Callable[[], float]) -> Serv
 
 
 def create_app(svc: Services) -> FastAPI:
-    def call_capability(
+    # async on purpose: every request then runs on the event loop thread, one at a time. A sync
+    # route runs in a thread pool, and on the one shared sqlite connection a failing request's
+    # rollback would also undo another request's uncommitted audit write.
+    # shortcut: DB work blocks the loop, fine for one desk; use a connection per request (or a
+    # Postgres pool) before concurrent traffic grows.
+    async def call_capability(
         name: str,
         body: Annotated[dict[str, Any], Body()],
         authorization: Annotated[str | None, Header()] = None,

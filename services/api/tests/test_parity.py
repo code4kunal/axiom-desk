@@ -1,6 +1,7 @@
 import sqlite3
 from collections.abc import Iterator
 from datetime import UTC, datetime
+from typing import Any
 
 import pytest
 from axiom_api.app import Services, build_services, create_app
@@ -100,3 +101,45 @@ def test_generated_artifacts_match_the_registry(services: Services) -> None:
     from axiom_api import codegen
 
     assert codegen.drift(services.registry) == []
+
+
+def test_requests_never_touch_the_shared_connection_at_the_same_time(
+    services: Services, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # One sqlite connection serves every request; a transaction belongs to the connection, so
+    # two requests inside it at once can roll back each other's committed-looking writes.
+    import threading
+    import time as _time
+    from concurrent.futures import ThreadPoolExecutor
+
+    inside, peak, lock = 0, 0, threading.Lock()
+    real_call = services.registry.call
+
+    def watched(*args: Any, **kwargs: Any) -> Any:
+        nonlocal inside, peak
+        with lock:
+            inside += 1
+            peak = max(peak, inside)
+        try:
+            _time.sleep(0.02)  # widen the window so overlapping requests would be seen
+            return real_call(*args, **kwargs)
+        finally:
+            with lock:
+                inside -= 1
+
+    monkeypatch.setattr(services.registry, "call", watched)
+    services.runs.publish("regime", AS_OF, {"state": "risk-on"}, (Source("nse-eod", "public"),))
+    token = sign_in(services, "ana")
+    with TestClient(create_app(services)) as client:
+
+        def post(_: int) -> int:
+            return client.post(
+                "/capabilities/runs_latest",
+                json={"kind": "regime"},
+                headers={"Authorization": f"Bearer {token}"},
+            ).status_code
+
+        with ThreadPoolExecutor(8) as pool:
+            codes = list(pool.map(post, range(8)))
+    assert codes == [200] * 8
+    assert peak == 1
