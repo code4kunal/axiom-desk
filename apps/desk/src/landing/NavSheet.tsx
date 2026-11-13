@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Dialog } from "radix-ui";
 import { useRef, useState } from "react";
 import { sections, shell } from "./content";
@@ -14,6 +15,7 @@ export function NavSheet() {
   const [open, setOpen] = useState(false);
   const [current, setCurrent] = useState<string | null>(null);
   const target = useRef<string | null>(null);
+  const router = useRouter();
 
   function onOpenChange(next: boolean) {
     // The rail's links carry the observer's aria-current even while hidden below 1024.
@@ -43,9 +45,11 @@ export function NavSheet() {
           onCloseAutoFocus={(e) => {
             const id = target.current;
             target.current = null;
-            const el = id && document.getElementById(id);
-            if (!el) return; // closed without a choice: focus returns to INDEX
+            if (!id) return; // closed without a choice: focus returns to INDEX
             e.preventDefault();
+            const el = document.getElementById(id);
+            // Legal pages and the 404 share this header but not the sections: go to the home page.
+            if (!el) return router.push(`/#${id}`);
             history.pushState(null, "", `/#${id}`);
             el.scrollIntoView();
             el.setAttribute("tabindex", "-1");

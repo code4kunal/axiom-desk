@@ -135,6 +135,15 @@ test.describe("nav sheet at 375", () => {
     await expect(page.locator(`#${target.id}`)).toBeFocused();
   });
 
+  test("on a page without the sections, a choice goes to that section on the home page", async ({ page }) => {
+    await page.goto("/privacy");
+    await page.getByRole("link", { name: shell.indexTrigger }).click();
+    const target = sections[2]!;
+    await page.getByRole("dialog", { name: shell.navLabel }).getByRole("link", { name: new RegExp(target.label) }).click();
+    await expect(page).toHaveURL(new RegExp(`/#${target.id}$`));
+    await expect(page.locator(`#${target.id}`)).toBeInViewport();
+  });
+
   test("Escape closes the sheet and returns focus to Index", async ({ page }) => {
     await page.goto("/");
     const index = page.getByRole("link", { name: shell.indexTrigger });
