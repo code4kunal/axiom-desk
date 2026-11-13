@@ -60,12 +60,15 @@ test("the theme menu offers System, Dark and Light; Light persists across a relo
 
 test("the keyboard-highlighted theme item draws a visible ring", async ({ page }) => {
   await page.goto("/");
+  // Keys pressed before hydration are lost (slow CI runner); data-observing is set once the client islands run.
+  await page.waitForFunction(() => "observing" in document.documentElement.dataset);
   await themeTrigger(page).focus();
   await page.keyboard.press("Enter");
+  await expect(page.getByRole("menu")).toBeVisible();
   await page.keyboard.press("ArrowDown");
   const item = page.locator("[role=menuitemradio][data-highlighted]");
   await expect(item).toHaveCount(1);
-  expect(await item.evaluate((el) => getComputedStyle(el).outlineStyle)).toBe("solid");
+  await expect(item).toHaveCSS("outline-style", "solid");
 });
 
 test("the theme trigger's hit area is at least 48px tall", async ({ page }) => {
