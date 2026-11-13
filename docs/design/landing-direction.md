@@ -79,17 +79,17 @@ Statement: **"Markets have seasons. Axiom reads the season, reweights the basket
 
 Two depths in every section: a plain Hind line for the newcomer, then a Martian Mono caption for the desk.
 
-02 **Problem.** "Equity-only tools go quiet when the season turns. The warning arrives after the fall." A flat chart greys while the needle keeps reading.
+02 **Problem.** "Equity-only tools go quiet when the season turns. By the time they flag the turn, prices have already fallen." A flat chart greys while the needle keeps reading.
 
 03 **Charts.** "Every pattern on the chart tells you how often it has worked before, or says it can't tell yet." Caption: `BASE RATE · SAMPLE SIZE · UP TO 8 SYNCED CHARTS`. HyperFrames clip: a pattern stamping its evidence grade.
 
 04 **Options and Vol Lab.** "Every options price comes from one consistent model, so the numbers agree everywhere." Caption: `ONE ARBITRAGE-FREE SURFACE · SSVI`. Clip: the surface turning once, a chain reading from it.
 
-05 **Hedge.** "When regime confidence shifts, Axiom drafts the hedge. It never places it. A human confirms every order." The hero's hedge card, now with its evidence grid.
+05 **Hedge.** "When regime confidence shifts, Axiom drafts the hedge. It never places an order; a human confirms each one." The hero's hedge card, now with its evidence grid.
 
 06 **Cited agent.** "Ask what changed since yesterday's close. The agent answers with citations to the same numbers the screens show." Clip: the answer assembling with footnotes.
 
-07 **Evidence standard.** "Base rate. Sample size. Out-of-sample proof. Every claim carries all three, or carries the words: insufficient evidence." A specimen card in hairline cells: `BASE RATE 0.58 · N 212 · OOS 0.54 · AS OF 2026-11-13 · ILLUSTRATIVE`. Grades as stamp outlines: **CNF** out-of-sample confirmed, **RAC** in-sample only, **WL** insufficient evidence.
+07 **Evidence standard.** "Every claim shows its base rate, sample size and out-of-sample result. When it can't show all three, it says so: insufficient evidence." A specimen card in hairline cells: `BASE RATE 0.58 · N 212 · OOS 0.54 · AS OF 2026-11-13 · ILLUSTRATIVE`. Grades as stamp outlines: **CNF** out-of-sample confirmed, **RAC** in-sample only, **WL** insufficient evidence.
 
 08 **Brokers.** "White-label Axiom for your clients. Your SEBI-registered analysts author every basket and call. Talk to the desk." Brass button "Talk to the desk". For the public, a plain line under it: "Investing with a broker? Ask them for Axiom." No form, no trading sign-up, no pricing.
 

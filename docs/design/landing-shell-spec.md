@@ -64,7 +64,7 @@ Not stock SaaS: no four-column link farm, no "Product / Company / Resources"; th
 Copy, in order:
 - `caption` step, `--ink-dim`: `STATUS 404 · NO PAGE AT THIS ADDRESS`
 - h1, `legal-h1` step, Martel 700, `--ink`: **No reading at this address.**
-- body, `body` step, `--ink-dim`, max 48ch: **The page you asked for is not on the instrument. The address may have changed, or it never existed.**
+- body, `body` step, `--ink-dim`, max 48ch: **There is no page here. The address may have changed, or it never existed.**
 - Primary button (48px, `--brass-mark` fill): **Go to the start** → `/`.
 - Beneath, `small` step: **Or pick a section from the index above.** ("above" is true on every viewport: the rail is sticky.)
 

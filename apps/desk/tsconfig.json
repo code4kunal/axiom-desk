@@ -39,6 +39,7 @@
     "next-env.d.ts",
     "src",
     "test",
+    "scripts",
     "e2e",
     "*.ts",
     ".next/types/**/*.ts",

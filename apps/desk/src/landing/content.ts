@@ -29,7 +29,7 @@ export const notFound = {
   title: "Page not found",
   caption: "STATUS 404 · NO PAGE AT THIS ADDRESS",
   heading: "No reading at this address.",
-  body: "The page you asked for is not on the instrument. The address may have changed, or it never existed.",
+  body: "There is no page here. The address may have changed, or it never existed.",
   home: "Go to the start",
   hint: "Or pick a section from the index above.",
 };
@@ -82,7 +82,7 @@ export const hero = {
 
 export const problem = {
   heading: "Equity-only tools go quiet when the season turns.",
-  lede: "The warning arrives after the fall.",
+  lede: "By the time they flag the turn, prices have already fallen.",
 };
 
 export const charts = {
@@ -99,7 +99,7 @@ export const options = {
 
 export const hedge = {
   heading: "When regime confidence shifts, Axiom drafts the hedge.",
-  lede: "It never places it. A human confirms every order.",
+  lede: "It never places an order; a human confirms each one.",
   card: hedgeCard,
   // The same example figures as the evidence specimen: one number everywhere.
   grid: [
@@ -119,8 +119,8 @@ export const agent = {
 };
 
 export const evidence = {
-  heading: "Base rate. Sample size. Out-of-sample proof.",
-  lede: "Every claim carries all three, or carries the words: insufficient evidence.",
+  heading: "Every claim shows its base rate, sample size and out-of-sample result.",
+  lede: "When it can’t show all three, it says so: insufficient evidence.",
   specimen: "BASE RATE 0.58 · N 212 · OOS 0.54 · AS OF 2026-11-13 · ILLUSTRATIVE",
   grades: [
     { stamp: "CNF", meaning: "out-of-sample confirmed" },

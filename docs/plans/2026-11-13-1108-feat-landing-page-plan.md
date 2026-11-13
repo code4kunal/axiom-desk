@@ -52,7 +52,7 @@ Axiom has no public face. The platform plan of record covers desk screens only, 
 
 **Hero**
 
-- R6. The hero shows the ring's 0% state as a static poster that is the LCP element and is never unmounted; when the 3D gate passes (KTD4), a three.js ring fades over it and scroll drives the 0/40/70/100 states with their captions.
+- R6. The hero shows the ring's 0% state as a static poster that is never unmounted, and the LCP element is the statement or that poster (amended 2026-11-13, user-approved: the approved statement outsizes the poster at 375/412/1280, so the LCP is the statement or the poster, whichever is larger); when the 3D gate passes (KTD4), a three.js ring fades over it and scroll drives the 0/40/70/100 states with their captions.
 - R7. When the 3D gate fails, or WebGL loses its context mid-scroll, the poster stays and the captions stay readable; nothing breaks or blanks.
 - R8. Under `prefers-reduced-motion: reduce`, there is no pin and no scrub: four static posters (0/40/70/100) with the same captions, as normal sections.
 - R9. The hedge card text "a human confirms every order" is in the DOM from first paint, whatever the scroll position.
@@ -85,7 +85,7 @@ Axiom has no public face. The platform plan of record covers desk screens only, 
 
 - AE1. Covers R6, R7. **Given** a phone reporting `saveData: true`, **when** the page loads, **then** no three.js or GSAP chunk is requested and the poster with captions is final.
 - AE2. Covers R15. **Given** a visitor opens `/#hedge` on desktop, **when** the hero pin is set up after load, **then** section 05 sits at the top of the viewport and no layout shift above 0.05 is recorded.
-- AE3. Covers R14. **Given** the system is dark and the visitor chose Light last time, **when** the page loads, **then** the first painted frame is light and the light poster is the LCP image.
+- AE3. Covers R14. **Given** the system is dark and the visitor chose Light last time, **when** the page loads, **then** the first painted frame is light, the light poster is the only poster fetched, and the LCP (statement or poster) lands under 2.5 s (amended 2026-11-13, user-approved: the approved statement outsizes the poster at 375/412/1280, so the LCP is the statement or the poster, whichever is larger).
 - AE4. Covers R10. **Given** a desktop with no mail client, **when** the visitor opens "Talk to the desk", **then** the address is visible as text and Copy puts it on the clipboard.
 - AE5. Covers R8. **Given** reduced motion, **when** the visitor scrolls the hero, **then** there is no pinned region and the four posters appear as ordinary sections.
 
@@ -289,7 +289,7 @@ apps/desk/
   - Forcing `WEBGL_lose_context` mid-scroll leaves the poster visible and the captions readable, with no console errors.
   - With WebGL2 unavailable but the other inputs passing, the poster stays sticky in the reserved box, all four captions scroll past in order, and CLS stays under 0.05 after `load`.
   - With JavaScript disabled, the stacked layout shows the four posters with their captions and the hedge card, with no empty reserved space.
-  - Covers AE3. With the system dark and stored Light, the only poster fetched is the light one, and it is the LCP element.
+  - Covers AE3. With the system dark and stored Light, the only poster fetched is the light one, and the LCP element is the statement or that poster, under 2.5 s (amended 2026-11-13, user-approved: the approved statement outsizes the poster at 375/412/1280, so the LCP is the statement or the poster, whichever is larger).
   - At 375px, the nav-sheet trigger is visible at hero scroll positions 0, 40, 70 and 100.
   - The `og:image` is 1200×630 and under 300 KB.
   - Back navigation from a later section restores the same section in view.
@@ -331,7 +331,7 @@ apps/desk/
   - Every interactive element is at least 48×48 CSS px.
   - Initial JS is at most 200 KB gz, app-owned at most 65 KB gz, and the three.js chunk under 160 KB gz.
   - On the poster path (`saveData` emulated), every resource loaded totals under 320 KB gz.
-  - Lighthouse mobile: LCP under 2.5 s and CLS under 0.05, with the poster as the LCP element.
+  - Lighthouse mobile: LCP under 2.5 s and CLS under 0.05, with the statement or the poster as the LCP element (amended 2026-11-13, user-approved: the approved statement outsizes the poster at 375/412/1280, so the LCP is the statement or the poster, whichever is larger).
   - At 844×390 landscape, no pinned element exists.
 - **Verification:** all gates pass and the screenshots are committed under `apps/desk/e2e/__screenshots__/`.
 

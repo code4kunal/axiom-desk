@@ -5,6 +5,8 @@ import { meta, shell } from "@/landing/content";
 import { Nav } from "@/landing/Nav";
 import { Footer } from "@/landing/sections/Footer";
 import { themeScript } from "@/landing/theme";
+import { pinScript } from "@/landing/hero/gate";
+import { posterPreloadScript } from "@/landing/hero/Poster";
 import "./globals.css";
 
 const display = Martel({ weight: ["700", "800"], subsets: ["latin"], display: "optional", variable: "--ff-display" });
@@ -12,10 +14,18 @@ const body = Hind({ weight: ["400", "500", "600"], subsets: ["latin"], display: 
 const mono = Martian_Mono({ weight: ["400", "500"], subsets: ["latin"], display: "swap", variable: "--ff-mono" });
 
 export const metadata: Metadata = {
+  // shortcut: falls back to localhost until a domain exists; set SITE_URL at deploy so cards resolve.
+  metadataBase: new URL(process.env.SITE_URL ?? "http://localhost:3000"),
   title: { default: meta.title, template: "%s · Axiom" },
   description: meta.description,
-  openGraph: { title: meta.ogTitle, description: meta.ogDescription, type: "website", locale: "en_IN" },
-  twitter: { card: "summary_large_image", title: meta.ogTitle, description: meta.ogDescription },
+  openGraph: {
+    title: meta.ogTitle,
+    description: meta.ogDescription,
+    type: "website",
+    locale: "en_IN",
+    images: [{ url: "/og/og-1200x630.jpg", width: 1200, height: 630, alt: meta.ogDescription }],
+  },
+  twitter: { card: "summary_large_image", title: meta.ogTitle, description: meta.ogDescription, images: ["/og/og-1200x630.jpg"] },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -23,7 +33,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     // data-theme is set by the head script before hydration, so React must not flag it.
     <html lang="en-IN" suppressHydrationWarning className={`${display.variable} ${body.variable} ${mono.variable}`}>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: `${themeScript}document.documentElement.dataset.js="";` }} />
+        <script dangerouslySetInnerHTML={{ __html: `${themeScript}document.documentElement.dataset.js="";${pinScript}${posterPreloadScript}` }} />
       </head>
       <body>
         <a

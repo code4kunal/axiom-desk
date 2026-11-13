@@ -35,12 +35,12 @@ Poster slot (U3 stand-in, U4 swaps a 1200×1200 AVIF/WebP `<img alt="">` of iden
 
 | § | id | h2 (Martel) | Lede (Hind) | Caption (Martian Mono) | Media |
 |---|---|---|---|---|---|
-| 02 | problem | Equity-only tools go quiet when the season turns. | The warning arrives after the fall. | — | none in U3 (the "flat chart greys while the needle keeps reading" is scroll motion, U4; if U4 drops it, 02 stays type-only) |
+| 02 | problem | Equity-only tools go quiet when the season turns. | By the time they flag the turn, prices have already fallen. | — | none in U3 (the "flat chart greys while the needle keeps reading" is scroll motion, U4; if U4 drops it, 02 stays type-only) |
 | 03 | charts | Every pattern on the chart tells you how often it has worked before, or says it can't tell yet. | — | `BASE RATE · SAMPLE SIZE · UP TO 8 SYNCED CHARTS` | clip, landscape 1200×760 |
 | 04 | options | Every options price comes from one consistent model, so the numbers agree everywhere. | — | `ONE ARBITRAGE-FREE SURFACE · SSVI` | clip, portrait 720×900 |
-| 05 | hedge | When regime confidence shifts, Axiom drafts the hedge. | It never places it. A human confirms every order. | — | evidence card (§5) |
+| 05 | hedge | When regime confidence shifts, Axiom drafts the hedge. | It never places an order; a human confirms each one. | — | evidence card (§5) |
 | 06 | agent | Ask what changed since yesterday's close. | The agent answers with citations to the same numbers the screens show. | none given (see Proposed) | clip, portrait 720×900 |
-| 07 | evidence | Base rate. Sample size. Out-of-sample proof. | Every claim carries all three, or carries the words: insufficient evidence. | — | specimen card + stamp legend (§5) |
+| 07 | evidence | Every claim shows its base rate, sample size and out-of-sample result. | When it can't show all three, it says so: insufficient evidence. | — | specimen card + stamp legend (§5) |
 | 08 | brokers | White-label Axiom for your clients. | Your SEBI-registered analysts author every basket and call. | — | button + public line (§6) |
 
 08: the direction line's third sentence "Talk to the desk." is rendered once, as the button, not repeated in the lede.

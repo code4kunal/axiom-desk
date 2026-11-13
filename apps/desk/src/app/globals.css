@@ -192,3 +192,172 @@ html[data-js] [data-reveal]:not([data-shown]) {
     text-decoration-color: var(--color-ink);
   }
 }
+
+/* Posters: the theme's picture shows; the other is display:none and lazy, so it is never fetched. */
+:root[data-theme="light"] [data-poster="dark"],
+:root[data-theme="dark"] [data-poster="light"] {
+  display: none;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) [data-poster="dark"] {
+    display: none;
+  }
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) [data-poster="light"] {
+    display: none;
+  }
+}
+
+/* Pinned hero (docs/design/landing-hero-pin-spec.md). html[data-hero=pin] is set before paint by the
+   head script; CSS sticky does all pinning, GSAP only paints the ring. Unlayered, so it beats utilities. */
+html[data-hero="pin"] #season {
+  --box: 200lvh;
+  --d: calc(var(--box) - 100svh);
+  --pt: 16px;
+  --plate: min(300px, 30svh);
+  --rail-top: calc(48px + var(--pt) + var(--plate) + 12px);
+  --ring-col: 1 / -1;
+  height: var(--box);
+  padding-block: 0;
+
+  & > .grid {
+    height: calc(var(--box) - 48px);
+    row-gap: 0;
+    /* poster · rail · statement · subline+buttons · track 40 · track 70 · hedge track */
+    grid-template-rows: auto auto auto auto 1fr 1fr calc(100svh - var(--rail-top));
+  }
+  .hero-fig0,
+  .hero-plates {
+    display: contents;
+  }
+  .hero-text > h1 {
+    grid-row: 3;
+    padding-top: 16px;
+  }
+  /* <768: 24px between subline and buttons (mt-8 stacked) keeps the primary inside the first 844px. */
+  .hero-text > div > div {
+    margin-top: 24px;
+  }
+  .hero-text > div {
+    grid-row: 4;
+    padding-block: 24px 40px;
+  }
+  .hero-poster {
+    grid-row: 1;
+    grid-column: var(--ring-col);
+    position: sticky;
+    top: 48px;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    max-width: none;
+    margin: 0;
+    padding: var(--pt) 0 12px;
+    background: var(--color-ground);
+  }
+  .hero-poster .hero-plate {
+    width: var(--plate);
+    max-width: 100%;
+    height: var(--plate);
+  }
+  .hero-rail,
+  .hero-track {
+    grid-column: var(--ring-col);
+    align-self: start;
+    position: sticky;
+    top: var(--rail-top);
+    min-height: 72px;
+    margin: 0;
+    background: var(--color-ground);
+  }
+  .hero-rail {
+    grid-row: 2;
+    z-index: 2;
+    min-height: 0; /* tracks keep 72px, so they still cover it */
+    border-top: 1px solid var(--color-hairline);
+    padding: 12px 0;
+  }
+  .hero-track {
+    z-index: 3;
+    scroll-margin-top: calc(var(--rail-top) - 48px);
+    & > .hero-plate {
+      display: none;
+    }
+    & > figcaption {
+      margin: 0;
+      padding: 12px 0;
+    }
+    &:not(:last-child) > figcaption {
+      border-top: 1px solid var(--color-hairline);
+    }
+    /* The card's own top border lands on the rail line. */
+    &:last-child > figcaption {
+      padding-top: 0;
+    }
+  }
+  .hero-rail,
+  .hero-track > figcaption {
+    text-wrap: balance;
+  }
+  .hero-track:nth-child(1) { grid-row: 5; }
+  .hero-track:nth-child(2) { grid-row: 6; }
+  .hero-track:nth-child(3) { grid-row: 7; }
+
+  @media (width >= 48rem) {
+    --box: 300lvh;
+    --pt: 40px;
+    --plate: calc((100vw - 232px) / 2 + 72px);
+    --ring-col: 5 / 9;
+
+    & > .grid {
+      /* ring column: poster · rail (docks 0) · 40 at .4d · 70 at .7d · hedge at d */
+      grid-template-rows: auto calc(0.4 * var(--d)) calc(0.3 * var(--d)) calc(0.3 * var(--d)) calc(100svh - var(--rail-top));
+    }
+    .hero-text {
+      display: block;
+      grid-column: 1 / 5;
+      grid-row: 1 / -1;
+      align-self: start;
+      position: sticky;
+      top: 48px;
+      padding-top: var(--pt);
+      & > h1 {
+        padding-top: 0;
+        font-size: var(--text-section-head);
+        line-height: var(--text-section-head--line-height);
+      }
+      & > div {
+        margin-top: 24px;
+        padding-bottom: 0;
+      }
+      & > div > div {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0;
+      }
+    }
+    .hero-track:nth-child(1) { grid-row: 3; }
+    .hero-track:nth-child(2) { grid-row: 4; }
+    .hero-track:nth-child(3) { grid-row: 5; }
+  }
+
+  @media (width >= 64rem) {
+    --pt: 64px;
+    --plate: calc((min(100vw, 1280px) - 360px) * 5 / 12 + 96px);
+    --ring-col: 8 / 13;
+
+    .hero-text {
+      grid-column: 1 / 8;
+      & > h1 {
+        font-size: min(var(--text-statement), 9svh);
+        line-height: var(--text-statement--line-height);
+      }
+      & > div > div {
+        flex-direction: row;
+        align-items: center;
+        gap: 24px;
+      }
+    }
+  }
+}
