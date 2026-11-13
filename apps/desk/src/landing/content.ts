@@ -2,13 +2,13 @@
 
 export const sections = [
   { id: "season", label: "Season" },
-  { id: "problem", label: "Problem" },
+  { id: "one-desk", label: "Desk" },
+  { id: "sectors", label: "Sectors" },
   { id: "charts", label: "Charts" },
   { id: "options", label: "Options" },
-  { id: "hedge", label: "Hedge" },
+  { id: "strategies", label: "Strategies" },
+  { id: "baskets", label: "Baskets" },
   { id: "agent", label: "Agent" },
-  { id: "evidence", label: "Evidence" },
-  { id: "brokers", label: "Brokers" },
 ] as const;
 
 export const shell = {
@@ -17,7 +17,7 @@ export const shell = {
   indexTrigger: "Index",
   disclaimer: "Research tool. Not investment advice. No performance is promised.",
   footerIndexLabel: "Section index",
-  footerCaption: "AXIOM · EN-IN · ILLUSTRATIVE FIGURES ONLY",
+  footerCaption: "AXIOM · EN-IN · ILLUSTRATIVE SCREENS ONLY",
   theme: "Theme",
   themeChoices: { system: "System", dark: "Dark", light: "Light" },
   close: "Close",
@@ -107,8 +107,8 @@ export const terms = {
 };
 
 const statement = "Markets have seasons. Axiom reads the season, reweights the basket, and shows its evidence.";
-const subline = "A research instrument for Indian investors. It drafts; a human confirms every order.";
-const hedgeCard = "HEDGE DRAFT · INDEX PROTECTION · ILLUSTRATIVE · a human confirms every order";
+const subline = "A research desk for Indian investors. It drafts every trade; a person confirms it.";
+const hedgeCard = "HEDGE DRAFT · INDEX PROTECTION · ILLUSTRATIVE · Cover that softens a fall. Nothing is placed until a person confirms it.";
 
 export const meta = {
   title: "Axiom",
@@ -122,78 +122,147 @@ export const hero = {
   subline,
   primary: "See how it reads a market",
   brokers: "For brokers",
-  // Stacked plates 0 / 40 / 70 / 100; the last plate's caption is the hedge card.
+  // Stacked plates 0 / 40 / 70 / 100; the last plate's caption is the hedge card. Season names follow
+  // the regime engine (R39): Risk-on, Early deterioration (said here as "early warning"), Risk-off, Recovery.
   plates: [
-    { caption: "REGIME EXPANSION · CONF 0.74 · N 212 · ILLUSTRATIVE", state: "EXPANSION", tone: "monsoon" },
-    { caption: "EARLY DETERIORATION · CONF 0.68 · N 212 · ILLUSTRATIVE", state: "EARLY DETERIORATION", tone: "geru" },
-    { caption: "EQUITY 61 → 42 · GILTS 18 → 29 · GOLD 9 → 17 · ILLUSTRATIVE" },
+    { caption: "SEASON · RISK-ON · ILLUSTRATIVE", state: "RISK-ON", tone: "monsoon" },
+    { caption: "SEASON · EARLY WARNING · ILLUSTRATIVE", state: "EARLY WARNING", tone: "geru" },
+    { caption: "LESS EQUITY · MORE GILTS AND GOLD · ILLUSTRATIVE" },
   ],
   hedgeCard,
-  // The regime reading in the ring's hole: 0 at dock 0, 1 from dock 40 on. Covered by the rail captions (COVERED_BY).
-  hole: [
-    { word: "Expansion", conf: "CONF 0.74 · N 212", tone: "monsoon" },
-    { word: "Early deterioration", conf: "CONF 0.68 · N 212", tone: "geru" },
+  // One plain sentence per dock (0, 40, 70, 100), above each mono caption, so the pin reads as a story.
+  steps: [
+    { label: "STEP 1 OF 4", say: "Risk-on. Most sectors are rising, so the basket leans on equity." },
+    { label: "STEP 2 OF 4", say: "Early warning. Fewer sectors are rising, and Axiom flags the change." },
+    { label: "STEP 3 OF 4", say: "Axiom moves money out of equity and into gilts and gold." },
+    { label: "STEP 4 OF 4", say: "It drafts a hedge. Nothing is placed until a person confirms it." },
   ],
-  // Basket legend under the ring; numbers cut from before to after at dock 70.
+  // The season in the ring's hole: 0 at dock 0, 1 from dock 40 on.
+  hole: [
+    { word: "Risk-on", note: "MOST SECTORS RISING", tone: "monsoon" },
+    { word: "Early warning", note: "FEWER SECTORS RISING", tone: "geru" },
+  ],
+  // Basket legend under the ring, in words; it cuts from before to after at dock 70.
+  // test/ring.test.ts holds the words to the weights the ring draws.
   legend: {
-    labels: ["Equity", "Gilts", "Gold", "Cash", "Intl"],
-    before: ["61", "18", "9", "7", "5"],
-    after: ["42", "29", "17", "7", "5"],
+    labels: ["Equity", "Gilts", "Gold", "Cash", "Global"],
+    before: ["Most", "Some", "Some", "Low", "Low"],
+    after: ["Less", "More", "More", "Same", "Same"],
   },
 };
 
-export const problem = {
-  heading: "Equity-only tools go quiet when the season turns.",
-  lede: "By the time they flag the turn, prices have already fallen.",
+// 02: the whole desk on one sheet; each item links to the story that shows it.
+export const oneDesk = {
+  heading: "One desk instead of four tools.",
+  lede: "Most investors keep a charting site, a screener, an options tool and a spreadsheet open at once. Axiom puts the whole job in one place.",
+  items: [
+    { name: "Sector rotation", say: "See which sectors are leading and which are fading.", href: "#sectors" },
+    { name: "Smart-money flows", say: "Who is moving money: foreign investors, funds and company owners.", href: "#sectors" },
+    { name: "Macro tracker", say: "Global and Indian macro, next to the sectors it moves.", href: "#sectors" },
+    { name: "Morning view", say: "One screen before the open: the season, the sectors, what changed.", href: "#sectors" },
+    { name: "Live chart signals", say: "Signals on the chart as they happen, each with its track record.", href: "#charts" },
+    { name: "Screener", say: "Finds stock trades with a suggested entry and exit.", href: "#charts" },
+    { name: "Daily watchlist", say: "A short list picked for you each morning.", href: "#charts" },
+    { name: "Option chain", say: "A deep, live chain with flows and open interest.", href: "#options" },
+    { name: "Volatility premium", say: "Ranks option trades by how much premium they carry.", href: "#options" },
+    { name: "Strategies and backtests", say: "Build a strategy and test it on past markets.", href: "#strategies" },
+    { name: "Multi-asset baskets", say: "Equity, gilts, gold, cash and global assets in one basket.", href: "#baskets" },
+    { name: "Hedges", say: "Drafted when the season turns. You confirm.", href: "#baskets" },
+    { name: "AI agent", say: "Ask for a screen or an option trade in plain words.", href: "#agent" },
+  ],
+  proof: "Every signal says how often it has worked before. When there is not enough history, it says so.",
+};
+
+export const sectors = {
+  heading: "See which sectors have the wind behind them.",
+  lede: "Volume shows what everyone sees. Axiom watches who is moving the money: foreign investors (FIIs), mutual funds and company owners. It reads the economy at home and abroad alongside, and each morning shows which sectors are gaining, leading or fading.",
+  caption: "SECTOR ROTATION · SMART-MONEY FLOWS · MACRO · MORNING VIEW",
+  clip: { label: "ILLUSTRATIVE", shape: "landscape" },
+  // The four seasons of the regime engine, in the order a cycle runs.
+  cycle: [
+    { name: "Risk-on", say: "Most sectors rise." },
+    { name: "Early warning", say: "Fewer sectors join in." },
+    { name: "Risk-off", say: "Most sectors fall." },
+    { name: "Recovery", say: "Leaders start to rise again." },
+  ],
+  scene: {
+    title: "SECTOR ROTATION",
+    leading: "LEADING",
+    fading: "FADING",
+    before: ["Banks", "IT", "Autos", "Metals", "Pharma", "FMCG"],
+    after: ["Pharma", "FMCG", "Banks", "Autos", "IT", "Metals"],
+  },
 };
 
 export const charts = {
-  heading: "Every pattern on the chart tells you how often it has worked before, or says it can’t tell yet.",
-  caption: "BASE RATE · SAMPLE SIZE · UP TO 8 SYNCED CHARTS",
-  clip: { label: "CLIP PLACEHOLDER", shape: "landscape" },
+  heading: "Charts that tell you how often a signal has worked.",
+  lede: "Your charts move together. Signals appear as they happen, the screener finds stock trades with an entry and an exit, and a short watchlist is ready each morning.",
+  caption: "LIVE SIGNALS · SCREENER · DAILY WATCHLIST",
+  clip: { label: "ILLUSTRATIVE", shape: "landscape" },
+  // Tags the clip pins on two of its panes: one signal with a record, one it cannot vouch for.
+  scene: { title: "SYNCED CHARTS", known: "HAS A TRACK RECORD", unknown: "NOT ENOUGH HISTORY" },
 };
 
 export const options = {
-  heading: "Every options price comes from one consistent model, so the numbers agree everywhere.",
-  caption: "ONE ARBITRAGE-FREE SURFACE · SSVI",
-  clip: { label: "CLIP PLACEHOLDER", shape: "portrait" },
+  heading: "A deep option chain, and option trades ranked for you.",
+  lede: "See every option as prices move. Axiom ranks option trades by how much extra price they carry over the moves the market is likely to make. Traders call this the volatility premium, or VRP.",
+  caption: "OPTION CHAIN · TRADES RANKED BY PREMIUM · ONE PRICE EVERYWHERE",
+  clip: { label: "ILLUSTRATIVE", shape: "portrait" },
+  // Strategy types, not instruments: the clip ranks kinds of trade, it does not recommend one.
+  scene: {
+    title: "TRADES RANKED BY PREMIUM",
+    rows: [
+      { trade: "Short strangle", grade: "Rich" },
+      { trade: "Iron condor", grade: "Rich" },
+      { trade: "Calendar spread", grade: "Fair" },
+      { trade: "Covered call", grade: "Fair" },
+      { trade: "Long straddle", grade: "Thin" },
+    ],
+    key: "Rich: options cost more than the likely move. Thin: they cost less.",
+  },
 };
 
-export const hedge = {
-  heading: "When regime confidence shifts, Axiom drafts the hedge.",
-  lede: "It never places an order; a human confirms each one.",
-  card: hedgeCard,
-  // The same example figures as the evidence specimen: one number everywhere.
-  grid: [
-    { label: "TRIGGER", value: "EARLY DETERIORATION" },
-    { label: "BASE RATE", value: "0.58" },
-    { label: "N", value: "212" },
-    { label: "OOS", value: "0.54" },
-    { label: "GRADE", value: "CNF" },
-  ],
+export const strategies = {
+  heading: "Test a strategy on past markets before you use it.",
+  lede: "Build it on screen or in Python. The backtest counts costs and checks the result on years it never saw.",
+  caption: "STRATEGY BUILDER · BACKTESTS · PYTHON LAB",
+  clip: { label: "ILLUSTRATIVE", shape: "portrait" },
+  scene: {
+    title: "BACKTEST",
+    unseen: "UNSEEN YEARS",
+    note: "Built on these years, then checked on years it never saw. Falls show up too.",
+    checks: ["Costs counted", "Checked on unseen years", "Same rules as live"],
+  },
+};
+
+export const baskets = {
+  heading: "Spread your money across more than stocks.",
+  lede: "A basket holds equity, gilts, gold, cash and global assets. When the season turns, Axiom drafts the change and a hedge. A person confirms every order.",
+  caption: "MULTI-ASSET BASKETS · HEDGE DRAFTS",
+  before: "RISK-ON BASKET",
+  after: "EARLY-WARNING BASKET",
 };
 
 export const agent = {
-  heading: "Ask what changed since yesterday’s close.",
-  lede: "The agent answers with citations to the same numbers the screens show.",
-  caption: "CITATIONS · SAME NUMBERS AS THE SCREENS",
-  clip: { label: "CLIP PLACEHOLDER", shape: "portrait" },
-};
-
-export const evidence = {
-  heading: "Every claim shows its base rate, sample size and out-of-sample result.",
-  lede: "When it can’t show all three, it says so: insufficient evidence.",
-  specimen: "BASE RATE 0.58 · N 212 · OOS 0.54 · AS OF 2026-11-13 · ILLUSTRATIVE",
-  grades: [
-    { stamp: "CNF", meaning: "out-of-sample confirmed" },
-    { stamp: "RAC", meaning: "in-sample only" },
-    { stamp: "WL", meaning: "insufficient evidence" },
-  ],
+  heading: "Ask in plain words. It shows its sources.",
+  lede: "Ask for a screen, an option trade or what changed overnight. The agent answers from the same readings the screens show, and links to each one.",
+  caption: "PLAIN QUESTIONS · CITED ANSWERS",
+  clip: { label: "ILLUSTRATIVE", shape: "portrait" },
+  scene: {
+    question: "What changed since yesterday’s close?",
+    answer: [
+      { text: "The season moved from risk-on to early warning.", cite: "1" },
+      { text: "Fewer sectors are rising. Banks and IT are fading.", cite: "2" },
+      { text: "The basket draft moves money from equity into gilts and gold.", cite: "3" },
+    ],
+    sources: ["SEASON READING", "SECTOR ROTATION", "BASKET DRAFT"],
+    footnote: "It drafts. A person confirms every order.",
+  },
 };
 
 export const brokers = {
-  heading: "White-label Axiom for your clients.",
-  lede: "Your SEBI-registered analysts author every basket and call.",
+  heading: "Offer Axiom to your clients under your own name.",
+  lede: "Your SEBI-registered analysts write every basket and call your clients see.",
   action: "Talk to the desk",
   // Reserved placeholder until the real desk address exists; the launch check fails on it.
   contact: "desk@axiom.invalid",

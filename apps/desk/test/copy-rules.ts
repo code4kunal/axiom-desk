@@ -37,7 +37,7 @@ export const bannedHit = (s: string) => s.match(bannedRe)?.[0] ?? null;
 
 // A data figure: a date, or a number. Ordinals are not in content.ts (they're computed), and the
 // capability count and the HTTP status are not data.
-const EXEMPT = [/UP TO \d+ SYNCED CHARTS/i, /STATUS 404/];
+const EXEMPT = [/UP TO \d+ SYNCED CHARTS/i, /STATUS 404/, /^STEP \d OF \d$/]; // counts and codes, not data
 const FIGURE = /\d{4}-\d{2}-\d{2}|\d+(?:\.\d+)?/g;
 
 export function figures(s: string): string[] {
@@ -48,9 +48,10 @@ export function figures(s: string): string[] {
 // Figures without their own label, and the caption the page renders right beside them. Listed by hand:
 // sharing an object with some ILLUSTRATIVE string says nothing about what the visitor sees next to it.
 export const COVERED_BY: Record<string, string> = {
-  "hedge.grid": "hedge.card", // HedgeCard prints the card line above the grid
   "hero.hole": "hero.plates", // the ring's hole reading sits beside the rail captions
   "hero.legend": "hero.plates", // the legend under the ring, same captions
+  "charts.scene": "charts.clip", // the clip's ILLUSTRATIVE tag sits in the same frame
+  "agent.scene": "agent.clip", // the clip's ILLUSTRATIVE tag sits in the same frame
 };
 
 const marked = (s: string) => /\bILLUSTRATIVE\b/.test(s);

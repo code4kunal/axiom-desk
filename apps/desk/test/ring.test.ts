@@ -21,9 +21,11 @@ test("money moves between 44% and 74%, and the tilt flattens by 100%", () => {
   assert.deepEqual(at("tilt"), [1, 1.6, 1.6, 0]);
 });
 
-test("the ring draws the same weights the legend shows", () => {
-  assert.deepEqual(WEIGHTS_A.map(String), hero.legend.before);
-  assert.deepEqual(WEIGHTS_B.map(String), hero.legend.after);
+// The legend says the move in words (no figures on screen); the words must match what the ring draws.
+test("the legend words match the weights the ring draws", () => {
+  const top = Math.max(...WEIGHTS_A);
+  assert.deepEqual(WEIGHTS_A.map((w) => (w === top ? "Most" : w >= 9 ? "Some" : "Low")), hero.legend.before);
+  assert.deepEqual(WEIGHTS_A.map((a, k) => (WEIGHTS_B[k]! < a ? "Less" : WEIGHTS_B[k]! > a ? "More" : "Same")), hero.legend.after);
 });
 
 test("keyframe maps scroll px to ring progress through the dock points", () => {

@@ -1,4 +1,3 @@
-import { Fragment } from "react";
 import { hero } from "../content";
 
 // The ring rendered offline at one state (scripts/render-posters.ts), one picture per theme, sitting on
@@ -41,15 +40,8 @@ export function Poster({ p }: { p: 0 | 40 | 70 | 100 }) {
         >
           {hole.word}
         </b>
-        <span className="max-w-[40%] font-mono max-sm:hidden text-label text-ink-dim tabular-nums">
-          {/* Breaks only between "CONF 0.74" and "N 212". Hidden <640: the hole is too small and the caption repeats it. */}
-          {hole.conf.split(" · ").map((part, i) => (
-            <Fragment key={part}>
-              {i > 0 && " · "}
-              <span className="whitespace-nowrap">{part}</span>
-            </Fragment>
-          ))}
-        </span>
+        {/* Hidden <640: the hole is too small and the step line says it. */}
+        <span className="max-w-[50%] font-mono max-sm:hidden text-label text-balance text-ink-dim">{hole.note}</span>
       </div>
     </div>
   );

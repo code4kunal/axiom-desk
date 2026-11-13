@@ -1,12 +1,13 @@
 import { expect, test } from "@playwright/test";
-import { meta, sections } from "../src/landing/content";
+import { hero, meta, sections } from "../src/landing/content";
 
 test.describe("with JavaScript disabled", () => {
   test.use({ javaScriptEnabled: false });
 
   test("the hedge line is in the page before any script runs", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByText("a human confirms every order").first()).toBeVisible();
+    const confirm = hero.hedgeCard.slice(hero.hedgeCard.lastIndexOf(" · ") + 3);
+    await expect(page.getByText(confirm).first()).toBeVisible();
   });
 
   test("every nav anchor has a section to land on", async ({ page }) => {

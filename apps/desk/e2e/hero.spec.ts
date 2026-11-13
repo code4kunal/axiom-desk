@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { hero } from "../src/landing/content";
 
 // WebGL2 in headless Chromium comes from SwiftShader.
 test.use({ launchOptions: { args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"] } });
@@ -81,15 +82,15 @@ test.describe("AE5: reduced motion", () => {
 test.describe("1280×800", () => {
   test.use({ viewport: { width: 1280, height: 800 } });
 
-  test("AE2: /#hedge lands on section 05 with CLS under 0.05", async ({ page }) => {
+  test("AE2: /#baskets lands on section 07 with CLS under 0.05", async ({ page }) => {
     await trackCls(page);
-    await page.goto("/#hedge");
+    await page.goto("/#baskets");
     // The ring is off screen here, so it may never draw a frame; wait for the island to attach it.
     await page.locator("#season canvas").waitFor({ state: "attached" });
     await page.waitForTimeout(1000);
     // Lands where the browser puts any section: under the 48px nav plus the section's own scroll margin.
     const [top, want] = await page
-      .locator("#hedge")
+      .locator("#baskets")
       .evaluate((el) => [el.getBoundingClientRect().top, 48 + parseFloat(getComputedStyle(el).scrollMarginTop)]);
     expect(Math.abs(top! - want!)).toBeLessThan(2);
     expect(await cls(page)).toBeLessThan(0.05);
@@ -285,4 +286,14 @@ test("og:image is a 1200×630 JPEG under 300 KB", async ({ page, request }) => {
   let i = 2;
   while (body[i + 1]! < 0xc0 || body[i + 1]! > 0xc3) i += 2 + body.readUInt16BE(i + 2);
   expect([body.readUInt16BE(i + 7), body.readUInt16BE(i + 5)]).toEqual([1200, 630]);
+});
+
+test("each pin step says where the reader is and what just happened", async ({ page }) => {
+  await page.goto("/");
+  const docks = page.locator("#season .hero-rail, #season .hero-track");
+  await expect(docks).toHaveCount(hero.steps.length);
+  for (const [i, step] of hero.steps.entries()) {
+    await expect(docks.nth(i).getByText(step.label, { exact: true })).toHaveCount(1);
+    await expect(docks.nth(i).getByText(step.say, { exact: true })).toHaveCount(1);
+  }
 });
