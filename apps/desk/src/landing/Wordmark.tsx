@@ -4,7 +4,7 @@ export function Wordmark({ className = "" }: { className?: string }) {
     <span
       role="img"
       aria-label="Axiom"
-      className={`font-display font-extrabold tracking-[-0.03em] leading-none text-ink ${className}`}
+      className={`whitespace-nowrap font-display font-extrabold tracking-[-0.03em] leading-none text-ink ${className}`}
     >
       Ax
       <span className="relative inline-block">

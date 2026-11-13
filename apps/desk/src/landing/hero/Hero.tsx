@@ -7,6 +7,17 @@ import { RingIsland } from "./RingIsland";
 
 const caption = "mt-3 font-mono text-caption uppercase text-ink-dim";
 
+// Plain step line above each mono caption: where the reader is in the pin and what just happened.
+function Step({ i }: { i: number }) {
+  const { label, say } = hero.steps[i]!;
+  return (
+    <span className="hero-step mb-2 block normal-case">
+      <span className="block font-mono text-label font-medium text-ink-dim">{label}</span>
+      <span className="mt-1 block font-body text-ui font-medium tracking-normal text-ink">{say}</span>
+    </span>
+  );
+}
+
 const MARKS = ["equity", "gilts", "gold", "cash", "intl"] as const;
 
 // Five hairline cells, a 3px colour bar each; the island cuts the numbers to "after" at dock 70.
@@ -22,10 +33,7 @@ function Legend() {
           className="border-l border-hairline py-2.5 pl-1.5 font-mono text-label uppercase text-ink-dim before:mb-2 before:block before:h-[3px] before:bg-(--c) before:content-[''] first:border-l-0 first:pl-0 data-[hot]:text-ink sm:pl-3"
         >
           <dt>{label}</dt>
-          <dd className="mt-1.5 text-[20px] font-medium leading-none tracking-normal text-ink tabular-nums sm:text-[22px]">
-            {before[i]}
-            <span className="text-label text-ink-dim">%</span>
-          </dd>
+          <dd className="mt-1.5 min-w-0 text-[15px] font-medium leading-none tracking-normal text-ink sm:text-[20px]">{before[i]}</dd>
         </div>
       ))}
     </dl>
@@ -71,6 +79,7 @@ export function Hero() {
           </div>
           <Legend />
           <figcaption className={`hero-rail col-span-4 ${caption} max-md:mt-2 max-md:border-t max-md:border-hairline max-md:pt-3`}>
+            <Step i={0} />
             <Caption text={p0!.caption} state={p0!.state} tone={p0!.tone} />
           </figcaption>
         </figure>
@@ -79,18 +88,21 @@ export function Hero() {
           <figure id="reading" className="hero-track scroll-mt-16">
             <Poster p={40} />
             <figcaption className={caption}>
+              <Step i={1} />
               <Caption text={p40!.caption} state={p40!.state} tone={p40!.tone} />
             </figcaption>
           </figure>
           <figure className="hero-track">
             <Poster p={70} />
             <figcaption className={caption}>
+              <Step i={2} />
               <Caption text={p70!.caption} />
             </figcaption>
           </figure>
           <figure className="hero-track">
             <Poster p={100} />
             <figcaption className="mt-3">
+              <Step i={3} />
               <HedgeCard text={hero.hedgeCard} />
             </figcaption>
           </figure>

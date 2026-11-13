@@ -1,20 +1,29 @@
 """Sessions: the only source of a request's tenant, user and role.
 
 Sign-in exchanges claims already verified by the desk's OIDC provider for an opaque session
-token. Request parameters never choose the principal.
+token. Request parameters never choose the principal. Sessions and pending sign-ins live in the
+records database, keyed by the SHA-256 of the token or handle the browser holds.
 """
 
+import hashlib
 import secrets
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
+from typing import Literal
 
+from axiom_core.audit import AuditLog
 from axiom_core.authz import Forbidden
+from axiom_core.db import Connection
 from axiom_core.principals import Principal, PrincipalKind
 from axiom_core.tenancy import Directory
 
+Reason = Literal["mfa_required", "unknown_user", "expired", "invalid"]
+
 
 class Unauthenticated(Exception):
-    pass
+    def __init__(self, reason: Reason) -> None:
+        super().__init__(reason)
+        self.reason: Reason = reason
 
 
 @dataclass(frozen=True)
@@ -24,45 +33,91 @@ class VerifiedClaims:
     subject: str
     tenant_id: str
     amr: tuple[str, ...]
+    display_name: str
+    auth_time: float | None
 
 
-@dataclass
-class _Session:
-    tenant_id: str
-    user_id: str
-    authenticated_at: float
-    expires_at: float
+def _digest(secret: str) -> str:
+    return hashlib.sha256(secret.encode()).hexdigest()
 
 
 class SessionStore:
     TTL_SECONDS = 8 * 3600.0
 
-    # shortcut: sessions live in process memory, so a restart signs everyone out and a second
-    # API process cannot see them; move to the records database before running more than one.
-    def __init__(self, directory: Directory, clock: Callable[[], float]) -> None:
+    def __init__(
+        self,
+        conn: Connection,
+        directory: Directory,
+        audit: AuditLog,
+        clock: Callable[[], float],
+    ) -> None:
+        self._conn = conn
         self._directory = directory
+        self._audit = audit
         self._clock = clock
-        self._sessions: dict[str, _Session] = {}
 
     def sign_in(self, claims: VerifiedClaims) -> str:
-        self._require_mfa_user(claims)
+        user = Principal(PrincipalKind.USER, claims.tenant_id, claims.subject)
+        reason = self._refusal(claims)
+        if reason is not None:
+            self._audit.record(user, "sign_in", "refused", {"reason": reason})
+            raise Unauthenticated(reason)
         token = secrets.token_urlsafe(32)
         now = self._clock()
-        self._sessions[token] = _Session(
-            claims.tenant_id, claims.subject, now, now + self.TTL_SECONDS
-        )
+        with self._conn:
+            self._conn.execute("DELETE FROM sessions WHERE expires_at <= ?", (now,))
+            self._conn.execute(
+                "INSERT INTO sessions (token_hash, tenant_id, user_id, display_name,"
+                " authenticated_at, expires_at) VALUES (?, ?, ?, ?, ?, ?)",
+                (
+                    _digest(token),
+                    claims.tenant_id,
+                    claims.subject,
+                    claims.display_name,
+                    claims.auth_time,
+                    now + self.TTL_SECONDS,
+                ),
+            )
+        self._audit.record(user, "sign_in", "allowed", {})
         return token
 
     def reauthenticate(self, token: str, claims: VerifiedClaims) -> None:
-        session = self._live(token)
-        self._require_mfa_user(claims)
+        session = self.resolve(token)
+        reason = self._refusal(claims)
+        if reason is not None:
+            raise Unauthenticated(reason)
         if (claims.tenant_id, claims.subject) != (session.tenant_id, session.user_id):
-            raise Unauthenticated("re-authentication must be by the session's own user")
-        session.authenticated_at = self._clock()
+            raise Unauthenticated("invalid")
+        with self._conn:
+            self._conn.execute(
+                "UPDATE sessions SET authenticated_at = ? WHERE token_hash = ?",
+                (claims.auth_time, _digest(token)),
+            )
 
     def resolve(self, token: str) -> Principal:
-        s = self._live(token)
-        return Principal(PrincipalKind.USER, s.tenant_id, s.user_id, s.authenticated_at)
+        return self.describe(token)[0]
+
+    def describe(self, token: str) -> tuple[Principal, str]:
+        """Principal and display name; refuses a missing, expired or orphaned session."""
+        key = _digest(token)
+        row = self._conn.execute(
+            "SELECT tenant_id, user_id, authenticated_at, expires_at, display_name FROM sessions"
+            " WHERE token_hash = ?",
+            (key,),
+        ).fetchone()
+        if row is None:
+            raise Unauthenticated("invalid")
+        tenant_id, user_id, authenticated_at, expires_at, name = row
+        reason: Reason | None = None
+        if self._clock() >= expires_at:
+            reason = "expired"
+        elif not self._directory.has_user(tenant_id, user_id):
+            reason = "unknown_user"
+        if reason is not None:
+            with self._conn:
+                self._conn.execute("DELETE FROM sessions WHERE token_hash = ?", (key,))
+            raise Unauthenticated(reason)
+        return Principal(PrincipalKind.USER, tenant_id, user_id, authenticated_at), name
 
     def resolve_request(self, token: str, params: Mapping[str, str]) -> Principal:
         principal = self.resolve(token)
@@ -72,23 +127,61 @@ class SessionStore:
         return principal
 
     def agent_principal(self, token: str) -> Principal:
-        s = self._live(token)
-        return Principal(PrincipalKind.AGENT, s.tenant_id, s.user_id)
+        user = self.resolve(token)
+        return Principal(PrincipalKind.AGENT, user.tenant_id, user.user_id)
 
     def sign_out(self, token: str) -> None:
-        self._sessions.pop(token, None)
+        with self._conn:
+            row = self._conn.execute(
+                "DELETE FROM sessions WHERE token_hash = ? RETURNING tenant_id, user_id",
+                (_digest(token),),
+            ).fetchone()
+        if row is not None:
+            self._audit.record(Principal(PrincipalKind.USER, *row), "sign_out", "allowed", {})
 
-    def _live(self, token: str) -> _Session:
-        session = self._sessions.get(token)
-        if session is None:
-            raise Unauthenticated("no such session")
-        if self._clock() >= session.expires_at:
-            del self._sessions[token]
-            raise Unauthenticated("session expired")
-        return session
-
-    def _require_mfa_user(self, claims: VerifiedClaims) -> None:
+    def _refusal(self, claims: VerifiedClaims) -> Reason | None:
         if "mfa" not in claims.amr:
-            raise Unauthenticated("multi-factor sign-in required")
+            return "mfa_required"
         if not self._directory.has_user(claims.tenant_id, claims.subject):
-            raise Unauthenticated("unknown user")
+            return "unknown_user"
+        return None
+
+
+@dataclass(frozen=True)
+class PendingLogin:
+    state: str
+    nonce: str
+    verifier: str
+
+
+class PendingLogins:
+    """Sign-ins started and not finished; each completes once, by the browser holding its handle."""
+
+    TTL_SECONDS = 600.0
+
+    def __init__(self, conn: Connection, clock: Callable[[], float]) -> None:
+        self._conn = conn
+        self._clock = clock
+
+    def create(self, *, state: str, nonce: str, verifier: str) -> str:
+        handle = secrets.token_urlsafe(32)
+        now = self._clock()
+        with self._conn:
+            self._conn.execute("DELETE FROM pending_logins WHERE expires_at <= ?", (now,))
+            self._conn.execute(
+                "INSERT INTO pending_logins (handle_hash, state, nonce, verifier, expires_at)"
+                " VALUES (?, ?, ?, ?, ?)",
+                (_digest(handle), state, nonce, verifier, now + self.TTL_SECONDS),
+            )
+        return handle
+
+    def take(self, handle: str) -> PendingLogin | None:
+        with self._conn:
+            row = self._conn.execute(
+                "DELETE FROM pending_logins WHERE handle_hash = ?"
+                " RETURNING state, nonce, verifier, expires_at",
+                (_digest(handle),),
+            ).fetchone()
+        if row is None or self._clock() >= row[3]:
+            return None
+        return PendingLogin(*row[:3])

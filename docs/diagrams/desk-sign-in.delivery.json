@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "636c045b-579a-497e-ae42-602e4c4d7f5b",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/u14-renderer-spike-dabe9f/docs/diagrams/src/desk-sign-in.sequence.json",
+  "output": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/u14-renderer-spike-dabe9f/docs/diagrams/desk-sign-in.html",
+  "specification": {
+    "sha256": "48076ce095c77aecc31f29a42842b3d8d672b86cedc8a23c2f15fffc5d60b4ca",
+    "bytes": 7832
+  },
+  "artifact": {
+    "sha256": "85a2363253417b26dd1520eac46bcbce064645ad7bd73c74df79abc5367706df",
+    "bytes": 851520
+  }
+}

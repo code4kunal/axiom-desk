@@ -305,9 +305,9 @@ html[data-hero="pin"] #season {
   --pt: 16px;
   --plate: min(300px, 30svh);
   --legend-h: 0px;
-  /* From 768 the plate is also capped by height so the caption rail (~62px) stays above the fold on
+  /* From 768 the plate is also capped by height so the caption rail (~120px with its step line) stays above the fold on
      short desktops (1366×768 minus browser chrome, 1024×600). */
-  --rail-room: 80px;
+  --rail-room: 132px; /* step line + say line + two caption lines */
   --plate-max: calc(100svh - 48px - var(--pt) - 12px - var(--legend-h) - var(--rail-room));
   --rail-top: calc(48px + var(--pt) + var(--plate) + 12px + var(--legend-h));
   --ring-col: 1 / -1;
@@ -369,14 +369,14 @@ html[data-hero="pin"] #season {
     align-self: start;
     position: sticky;
     top: var(--rail-top);
-    min-height: 72px;
+    min-height: 120px;
     margin: 0;
     background: var(--color-ground);
   }
   .hero-rail {
     grid-row: 2;
     z-index: 2;
-    min-height: 0; /* tracks keep 72px, so they still cover it */
+    min-height: 0; /* tracks keep 120px, so they still cover it */
     border-top: 1px solid var(--color-hairline);
     padding: 12px 0;
   }
@@ -390,12 +390,8 @@ html[data-hero="pin"] #season {
       margin: 0;
       padding: 12px 0;
     }
-    &:not(:last-child) > figcaption {
+    & > figcaption {
       border-top: 1px solid var(--color-hairline);
-    }
-    /* The card's own top border lands on the rail line. */
-    &:last-child > figcaption {
-      padding-top: 0;
     }
   }
   .hero-rail,
@@ -408,6 +404,7 @@ html[data-hero="pin"] #season {
 
   @media (width >= 48rem) {
     --box: 300lvh;
+    --rail-room: 168px; /* the step 4 track: step lines + the hedge card */
     --legend-h: 76px;
     --pt: 40px;
     --plate: min(calc((100vw - 232px) / 2 + 72px), var(--plate-max));
@@ -480,4 +477,105 @@ html[data-hero="pin"] #season {
       }
     }
   }
+}
+
+/* Clips (src/landing/clips): CSS-only sample screens on a 10s loop. Static styles are the last
+   frame, so reduced motion (and no animation support) shows the finished screen. */
+.clip {
+  container-type: inline-size;
+  --loop: 10s;
+}
+.clip-line {
+  stroke-dasharray: 1;
+  animation: clip-draw var(--loop) var(--ease-reveal) infinite;
+}
+.clip-cross {
+  transform: translateX(var(--to));
+  animation: clip-sweep var(--loop) var(--ease-reveal) infinite;
+}
+.clip-tag,
+.clip-band {
+  animation: clip-in var(--loop) var(--ease-reveal) infinite;
+}
+.clip-tag-unknown {
+  animation-name: clip-in-late;
+}
+.clip-step {
+  animation: clip-step-0 var(--loop) var(--ease-reveal) infinite;
+}
+/* The scene fades out at the end of each loop, so the reset to frame 0 never shows as a jump. */
+.clip > :not(p) {
+  animation: clip-loop var(--loop) linear infinite;
+}
+@keyframes clip-loop {
+  0%, 94% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes clip-draw {
+  0% { stroke-dashoffset: 1; }
+  25%, 100% { stroke-dashoffset: 0; }
+}
+@keyframes clip-sweep {
+  0%, 22% { transform: translateX(16px); }
+  60%, 100% { transform: translateX(var(--to)); }
+}
+@keyframes clip-in {
+  0%, 55% { opacity: 0; }
+  62%, 100% { opacity: 1; }
+}
+@keyframes clip-in-late {
+  0%, 68% { opacity: 0; }
+  75%, 100% { opacity: 1; }
+}
+/* One keyframe set per line (percentages cannot come from a variable): line i lands at (4 + 10i)%. */
+@keyframes clip-step-0 {
+  0%, 4% { opacity: 0; translate: 0 8px; }
+  9%, 100% { opacity: 1; translate: 0 0; }
+}
+@keyframes clip-step-1 {
+  0%, 14% { opacity: 0; translate: 0 8px; }
+  19%, 100% { opacity: 1; translate: 0 0; }
+}
+@keyframes clip-step-2 {
+  0%, 24% { opacity: 0; translate: 0 8px; }
+  29%, 100% { opacity: 1; translate: 0 0; }
+}
+@keyframes clip-step-3 {
+  0%, 34% { opacity: 0; translate: 0 8px; }
+  39%, 100% { opacity: 1; translate: 0 0; }
+}
+@keyframes clip-step-4 {
+  0%, 44% { opacity: 0; translate: 0 8px; }
+  49%, 100% { opacity: 1; translate: 0 0; }
+}
+@keyframes clip-step-5 {
+  0%, 54% { opacity: 0; translate: 0 8px; }
+  59%, 100% { opacity: 1; translate: 0 0; }
+}
+/* Clips start from frame 0 when their section is revealed, not at page load. */
+html[data-js] [data-reveal]:not([data-shown]) .clip * {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .clip * {
+    animation: none !important;
+  }
+}
+
+/* Sectors clip: each row slides from its risk-on rank to its early-warning rank; the bar follows. */
+.clip-rank {
+  translate: 0 var(--to);
+  animation: clip-rank var(--loop) var(--ease-reveal) infinite;
+}
+.clip-bar {
+  scale: var(--s1) 1;
+  animation: clip-bar var(--loop) var(--ease-reveal) infinite;
+}
+@keyframes clip-rank {
+  0%, 30% { translate: 0 var(--from); }
+  55%, 100% { translate: 0 var(--to); }
+}
+@keyframes clip-bar {
+  0%, 30% { scale: var(--s0) 1; }
+  55%, 100% { scale: var(--s1) 1; }
 }

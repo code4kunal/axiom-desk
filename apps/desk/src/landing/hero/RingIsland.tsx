@@ -40,11 +40,9 @@ export function RingIsland() {
       const word = hole.firstElementChild as HTMLElement;
       word.textContent = h.word;
       word.dataset.tone = h.tone;
-      // Same nowrap segments the server rendered: "CONF 0.68" · "N 212".
-      const parts = h.conf.split(" · ");
-      [...hole.lastElementChild!.children].forEach((el, k) => (el.textContent = parts[k]!));
-      const nums = i >= 2 ? hero.legend.after : hero.legend.before;
-      cells.forEach((c, k) => (c.querySelector("dd")!.firstChild!.textContent = nums[k]!));
+      hole.lastElementChild!.textContent = h.note;
+      const words = i >= 2 ? hero.legend.after : hero.legend.before;
+      cells.forEach((c, k) => (c.querySelector("dd")!.textContent = words[k]!));
     };
     let pending = 0;
     const onScroll = () => {
@@ -119,7 +117,7 @@ export function RingIsland() {
           focused = f;
           cells.forEach((c, k) => c.toggleAttribute("data-hot", k === f));
           tag.classList.toggle("hidden", f < 0);
-          if (f >= 0) tag.textContent = `${hero.legend.labels[f]} · ${cells[f]!.querySelector("dd")!.firstChild!.textContent}%`;
+          if (f >= 0) tag.textContent = `${hero.legend.labels[f]} · ${cells[f]!.querySelector("dd")!.textContent}`;
         }
         raf = requestAnimationFrame(tick);
       };
@@ -160,6 +158,7 @@ export function RingIsland() {
       kick();
 
       cleanup = () => {
+        cleanup = () => {}; // ring.dispose() loses the context, which fires webglcontextlost below
         cancelAnimationFrame(raf);
         stopScroll();
         io.disconnect();

@@ -32,7 +32,7 @@ for (const where of ["rail", "footer"] as const) {
   test(`a keyboard jump from the ${where} index moves the Tab start into that section`, async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto("/");
-    const target = sections.find((s) => s.id === "brokers")!; // has its own Tab stop: Talk to the desk
+    const target = sections.find((s) => s.id === "one-desk")!; // has its own Tab stops: the feature links
     const list = where === "rail" ? page.getByRole("navigation", { name: shell.navLabel }) : page.locator("footer");
     const link = list.locator(`a[href="/#${target.id}"]`);
     await link.focus();
@@ -174,12 +174,18 @@ test.describe("nav sheet at 375", () => {
   });
 });
 
-test("each clip slot shows CLIP PLACEHOLDER and no video is requested on load", async ({ page }) => {
+test("each clip slot shows its sample screen, labelled, and no video is requested on load", async ({ page }) => {
   const media: string[] = [];
   page.on("request", (r) => r.resourceType() === "media" && media.push(r.url()));
   await page.goto("/");
-  const clips = [charts.clip, options.clip, agent.clip];
-  for (const c of new Set(clips.map((c) => c.label))) await expect(page.getByText(c, { exact: true })).toHaveCount(clips.length);
+  for (const [id, clip] of [["charts", charts.clip], ["options", options.clip], ["agent", agent.clip]] as const) {
+    const slot = page.locator(`#${id} .clip`);
+    await expect(slot.getByText(clip.label, { exact: true })).toBeVisible();
+    await expect(slot.getByText("CLIP PLACEHOLDER")).toHaveCount(0);
+    // The scene, not an empty frame: exactly one drawn screen shows at this width.
+    await expect(slot.locator("[data-scene]:visible")).toHaveCount(1);
+  }
+  await expect(page.getByText(agent.scene.question)).toBeVisible();
   await expect(page.locator("video")).toHaveCount(0);
   await page.waitForLoadState("networkidle");
   expect(media).toEqual([]);

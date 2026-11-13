@@ -186,3 +186,50 @@ def test_a_key_file_extension_inside_a_name_is_not_a_key_file(tmp_path: Path) ->
     git(repo, "add", ".")
     result = staged_scan(repo)
     assert result.returncode == 0, result.stderr
+
+
+def test_range_scan_catches_a_file_renamed_to_a_key_file_name(tmp_path: Path) -> None:
+    repo = fresh_repo(tmp_path)
+    (repo / "blob.bin").write_bytes(b"\x30\x82opaque\x00")
+    git(repo, "add", ".")
+    git(repo, "commit", "-qm", "blob")
+    base = git(repo, "rev-parse", "HEAD")
+    git(repo, "mv", "blob.bin", "prod.p12")
+    git(repo, "commit", "-qm", "rename")
+
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), "--range", f"{base}..HEAD"],
+        cwd=repo,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 1, result.stderr
+    assert "prod.p12: possible key file" in result.stderr
+
+
+def test_range_scan_catches_a_secret_added_while_resolving_a_merge(tmp_path: Path) -> None:
+    repo = fresh_repo(tmp_path)
+    (repo / "a.py").write_text("x = 1\n")
+    git(repo, "add", ".")
+    git(repo, "commit", "-qm", "base")
+    base = git(repo, "rev-parse", "HEAD")
+    git(repo, "checkout", "-qb", "side")
+    (repo / "a.py").write_text("x = 2\n")
+    git(repo, "commit", "-qam", "side")
+    git(repo, "checkout", "-q", "-")
+    (repo / "a.py").write_text("x = 3\n")
+    git(repo, "commit", "-qam", "main")
+    subprocess.run(["git", "merge", "-q", "side"], cwd=repo, capture_output=True, check=False)
+    (repo / "a.py").write_text(f"x = 3\nkey = '{AWS_KEY}'\n")
+    git(repo, "commit", "-qam", "merge")
+
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), "--range", f"{base}..HEAD"],
+        cwd=repo,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 1, result.stderr
+    assert "possible aws access key" in result.stderr

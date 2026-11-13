@@ -34,7 +34,11 @@ def services() -> Iterator[Services]:
 
 
 def sign_in(svc: Services, user: str) -> str:
-    return svc.sessions.sign_in(VerifiedClaims(subject=user, tenant_id="desk", amr=("mfa",)))
+    return svc.sessions.sign_in(
+        VerifiedClaims(
+            subject=user, tenant_id="desk", amr=("mfa",), display_name=user, auth_time=None
+        )
+    )
 
 
 @pytest.mark.parity

@@ -40,9 +40,9 @@ def test_analyst_cannot_sign_a_model_spec_and_a_quant_can(
 
 
 def test_agent_acting_for_a_trader_cannot_confirm(
-    authz: Authorizer, sessions: SessionStore
+    authz: Authorizer, sessions: SessionStore, clock: Clock
 ) -> None:
-    token = sessions.sign_in(mfa_claims("desk", "tara"))
+    token = sessions.sign_in(mfa_claims("desk", "tara", clock.now))
     with pytest.raises(Forbidden):
         authz.check(sessions.agent_principal(token), Action.CONFIRM_TICKET, BOOK_ALPHA)
     authz.check(sessions.resolve(token), Action.CONFIRM_TICKET, BOOK_ALPHA)
@@ -59,11 +59,11 @@ def test_only_the_books_own_trader_confirms(
 def test_confirm_needs_recent_reauthentication(
     authz: Authorizer, sessions: SessionStore, clock: Clock
 ) -> None:
-    token = sessions.sign_in(mfa_claims("desk", "tara"))
+    token = sessions.sign_in(mfa_claims("desk", "tara", clock.now))
     clock.now += RECENT_AUTH_SECONDS + 1
     with pytest.raises(Forbidden):
         authz.check(sessions.resolve(token), Action.CONFIRM_TICKET, BOOK_ALPHA)
-    sessions.reauthenticate(token, mfa_claims("desk", "tara"))
+    sessions.reauthenticate(token, mfa_claims("desk", "tara", clock.now))
     authz.check(sessions.resolve(token), Action.CONFIRM_TICKET, BOOK_ALPHA)
 
 

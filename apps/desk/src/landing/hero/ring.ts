@@ -1,3 +1,4 @@
+import { WEIGHTS_A, WEIGHTS_B } from "./weights.ts";
 import {
   BufferAttribute,
   BufferGeometry,
@@ -41,10 +42,7 @@ export type Ring = {
   dispose(): void;
 };
 
-// Basket weights before and after the reweight; content.ts's legend shows the same numbers
-// (test/ring.test.ts holds them equal).
-export const WEIGHTS_A = [61, 18, 9, 7, 5];
-export const WEIGHTS_B = [42, 29, 17, 7, 5];
+export { WEIGHTS_A, WEIGHTS_B };
 
 const TAU = Math.PI * 2;
 const DEG = Math.PI / 180;
@@ -339,6 +337,7 @@ export function createRing(
       disc.dispose();
       [mat, inkMat, keyMat].forEach((m) => m.dispose());
       renderer.dispose();
+      renderer.forceContextLoss(); // dispose() keeps the GL context; free it before GC does
     },
   };
 }

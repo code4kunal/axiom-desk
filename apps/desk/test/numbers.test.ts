@@ -19,6 +19,8 @@ test("every data figure sits in a caption group marked ILLUSTRATIVE", () => {
 test("the figure rules have bite", () => {
   assert.deepEqual(figures("BASE RATE 0.58 · N 212 · AS OF 2026-11-13"), ["0.58", "212", "2026-11-13"]);
   assert.deepEqual(figures("UP TO 8 SYNCED CHARTS"), []);
+  assert.deepEqual(figures("STEP 2 OF 4"), []);
+  assert.deepEqual(figures("STEP 2 OF 4 · N 212"), ["2", "4", "212"]); // only a whole step label is exempt
   const captions = [{ path: "hero.plates.0.caption", value: "N 212 · ILLUSTRATIVE" }];
   assert.equal(covered({ path: "x", value: "N 212 · ILLUSTRATIVE" }, captions), true);
   // A headline figure next to a labelled sibling is not covered: only listed caption groups count.

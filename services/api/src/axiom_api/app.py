@@ -13,11 +13,14 @@ from axiom_core.capabilities import latest_run
 from axiom_core.db import migrate
 from axiom_core.registry import Binding, Entitlements, Registry
 from axiom_core.runs import RunStore
-from axiom_core.session import SessionStore, Unauthenticated
+from axiom_core.session import PendingLogins, SessionStore, Unauthenticated
 from axiom_core.tenancy import Directory
 from fastapi import Body, FastAPI, Header
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
+
+from axiom_api.auth import register_auth
+from axiom_api.oidc import Settings, load_settings
 
 # Surfaces a browser may claim. The agent calls the registry in-process as its own principal.
 HTTP_SURFACES = {b.value: b for b in Binding if b is not Binding.AGENT}
@@ -29,6 +32,7 @@ class Services:
     directory: Directory
     authz: Authorizer
     sessions: SessionStore
+    pending: PendingLogins
     runs: RunStore
     entitlements: Entitlements
     registry: Registry
@@ -42,12 +46,14 @@ def build_services(conn: sqlite3.Connection, clock: Callable[[], float]) -> Serv
     entitlements = Entitlements(conn)
     registry = Registry(authz, entitlements, audit)
     registry.register(latest_run(runs))
-    return Services(
-        audit, directory, authz, SessionStore(directory, clock), runs, entitlements, registry
-    )
+    sessions = SessionStore(conn, directory, audit, clock)
+    pending = PendingLogins(conn, clock)
+    return Services(audit, directory, authz, sessions, pending, runs, entitlements, registry)
 
 
-def create_app(svc: Services) -> FastAPI:
+def create_app(svc: Services, settings: Settings | None = None) -> FastAPI:
+    """Sign-in routes answer only when `settings` is given; /auth/login otherwise refuses."""
+
     # async on purpose: every request then runs on the event loop thread, one at a time. A sync
     # route runs in a thread pool, and on the one shared sqlite connection a failing request's
     # rollback would also undo another request's uncommitted audit write.
@@ -61,7 +67,7 @@ def create_app(svc: Services) -> FastAPI:
     ) -> JSONResponse:
         try:
             if not authorization or not authorization.startswith("Bearer "):
-                raise Unauthenticated("missing bearer token")
+                raise Unauthenticated("invalid")
             claimed = {k: str(body[k]) for k in ("tenant_id", "user_id") if k in body}
             principal = svc.sessions.resolve_request(authorization.removeprefix("Bearer "), claimed)
             surface = HTTP_SURFACES.get(x_axiom_surface)
@@ -80,11 +86,13 @@ def create_app(svc: Services) -> FastAPI:
 
     app = FastAPI(title="Axiom Desk")
     app.add_api_route("/capabilities/{name}", call_capability, methods=["POST"])
+    register_auth(app, svc.sessions, svc.pending, settings)
     return app
 
 
 def default_app() -> FastAPI:
-    """Factory for `uvicorn --factory axiom_api.app:default_app`, records DB from AXIOM_DB."""
+    """Factory for `uvicorn --factory axiom_api.app:default_app`, records DB from AXIOM_DB,
+    sign-in from the AXIOM_OIDC_* and AXIOM_PUBLIC_ORIGIN variables (see axiom_api.oidc)."""
     conn = sqlite3.connect(os.environ.get("AXIOM_DB", "axiom.db"), check_same_thread=False)
     migrate(conn)
-    return create_app(build_services(conn, time.time))
+    return create_app(build_services(conn, time.time), load_settings())

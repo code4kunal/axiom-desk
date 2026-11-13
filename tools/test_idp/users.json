@@ -1,0 +1,7 @@
+{
+  "mfa": {"sub": "user-mfa", "name": "Maya Desk", "amr": ["pwd", "mfa"], "tenant": "axiom-desk"},
+  "nomfa": {"sub": "user-nomfa", "name": "Noah Single", "amr": ["pwd"], "tenant": "axiom-desk"},
+  "stranger": {"sub": "user-stranger", "name": "Sam Outside", "amr": ["pwd", "mfa"], "tenant": "axiom-desk"},
+  "notenant": {"sub": "user-notenant", "name": "Tess Untagged", "amr": ["pwd", "mfa"]},
+  "noauthtime": {"sub": "user-noauthtime", "name": "Theo Timeless", "amr": ["pwd", "mfa"], "tenant": "axiom-desk", "omit_auth_time": true}
+}

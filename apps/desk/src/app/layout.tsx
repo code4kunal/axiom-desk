@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { Anek_Latin, Eczar, Martian_Mono } from "next/font/google";
 import type { ReactNode } from "react";
 import { meta, shell } from "@/landing/content";
-import { Nav } from "@/landing/Nav";
-import { Footer } from "@/landing/sections/Footer";
 import { themeScript } from "@/landing/theme";
 import { pinScript } from "@/landing/hero/gate";
 import { posterPreloadScript } from "@/landing/hero/Poster";
@@ -45,9 +43,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         >
           {shell.skip}
         </a>
-        <Nav />
-        <main id="main">{children}</main>
-        <Footer />
+        {children}
       </body>
     </html>
   );
