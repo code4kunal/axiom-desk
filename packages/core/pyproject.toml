@@ -1,0 +1,13 @@
+[project]
+name = "axiom-core"
+version = "0.1.0"
+description = "Axiom Desk core: tenancy, authorization, audit, capability registry, result envelope, published runs and jobs."
+requires-python = ">=3.12,<3.13"
+dependencies = ["pydantic>=2.8"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/axiom_core"]

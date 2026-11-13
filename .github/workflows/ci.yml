@@ -1,0 +1,49 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --python 3.12
+      - name: secrets in every pushed commit
+        run: |
+          if [ "${{ github.event_name }}" = pull_request ]; then
+            range="origin/${{ github.base_ref }}..HEAD"
+          elif [ "${{ github.event.before }}" = 0000000000000000000000000000000000000000 ]; then
+            range="origin/${{ github.event.repository.default_branch }}..${{ github.sha }}"
+          else
+            range="${{ github.event.before }}..${{ github.sha }}"
+          fi
+          uv run python tools/check_secrets.py --range "$range"
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pyright
+      - name: registry check and generated files current
+        run: uv run python -m axiom_api.codegen --check
+      - run: uv run pytest
+      - run: uv run pytest -m parity
+      # exit 5 means no golden tests exist yet; any other failure still fails the step
+      - run: uv run pytest -m golden || test $? -eq 5
+
+  typescript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          # 24 runs .ts tests natively (type stripping)
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -r typecheck
+      - run: pnpm -r lint
+      - run: pnpm -r test
