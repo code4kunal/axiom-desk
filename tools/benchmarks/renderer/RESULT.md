@@ -16,7 +16,8 @@ Both implement the same `ChartRenderer` interface in `src/types.ts`, so either c
 ## Method
 
 - `src/main.ts` lays out N charts (default 8, 4×2), each fed by a seeded 1-minute random-walk replay (20,000 history bars, 30 ticks per bar) on a timer, independent of frames.
-- A scripted user moves the crosshair across chart 0 every frame; the sync bus forwards it to the other 7. Range changes (wheel zoom, drag pan) also go over the bus.
+- A scripted user moves the crosshair across chart 0 every frame; the sync bus forwards it to the other 7. Each new bar slides every chart's range so the live bar stays on screen (set per chart, not over the bus). Wheel zoom and drag pan use the bus but are not scripted, so bus range sync is untested under load.
+- `ticksPerSecDelivered` records the tick rate chart 0 actually got in the measured window.
 - After a 2 s warmup it records every `requestAnimationFrame` delta for the run, plus Chromium long tasks.
 - `bench.ts` opens each renderer in headed Google Chrome (real GPU) at 1920×1080 through Playwright and prints one JSON line per run.
 
@@ -32,17 +33,21 @@ Machine: darwin-arm64 (Apple Silicon), 120 Hz display, Chrome 157, Node 24.22.3,
 
 A 120 Hz display gives an 8.33 ms frame budget, so p50 = 8.3 ms means locked at refresh rate.
 
-| Renderer | Ticks/s per chart | Run | fps | p50 ms | p95 ms | p99 ms | max ms | frames > 20 ms | long tasks |
+**Corrected 2026-11-13.** The first runs kept a fixed visible range. New bars left the screen within seconds (3 s at 100 ticks/s, 15 s at 20), and the custom renderer skips redraws for off-screen ticks, so most of those runs measured the crosshair alone. They are struck below. The harness now follows the live bar.
+
+| Renderer | Ticks/s per chart (delivered) | Run | fps | p50 ms | p95 ms | p99 ms | max ms | frames > 20 ms | long tasks |
 |---|---|---|---|---|---|---|---|---|---|
-| custom | 20 | 1 | 120.1 | 8.3 | 9.2 | 9.3 | 9.4 | 0% | 1 (54 ms) |
-| custom | 20 | 2 | 120.6 | 8.3 | 9.2 | 10.0 | 33.1 | 0% | 0 |
-| custom | 20 | 3 | 119.9 | 8.3 | 9.2 | 10.4 | 71.8 | 0% | 0 |
-| custom | 100 (5× load) | 1 | 120.2 | 8.3 | 9.3 | 10.2 | 74.1 | 0% | 0 |
+| custom | 20 (20.05) | live edge | 119.95 | 8.3 | 9.2 | 9.3 | 33.6 | 0% | 0 |
+| custom | 100, 5× load (100) | live edge | 119.8 | 8.3 | 9.2 | 9.3 | 58.4 | 0% | 2 (450 ms total) |
+| ~~custom~~ | ~~20~~ | ~~fixed range, 3 runs~~ | ~~120~~ | ~~8.3~~ | ~~9.2~~ | ~~9.3–10.4~~ | ~~9.4–71.8~~ | | invalid: ticks off screen |
+| ~~custom~~ | ~~100~~ | ~~fixed range~~ | ~~120.2~~ | ~~8.3~~ | ~~9.3~~ | ~~10.2~~ | ~~74.1~~ | | invalid: ticks off screen |
 | scichart | 20 | — | NOT RUN: no licence key | | | | | | |
+
+The "frames > 20 ms" column is a rounded share, so a single slow frame shows as 0%; read max ms. Long tasks are counted from page start, warmup included, so they can sit outside the frame window (the 5× run's 450 ms did not show as a 450 ms frame).
 
 Visual check: a screenshot of `?renderer=custom` shows 8 candle charts drawing, with the synced crosshair at the same time on all of them.
 
-Reading: the custom renderer holds refresh rate with 8 charts at 5× the planned tick load, without WebGL. There is a rare single-frame stall (max 33–74 ms in 3 of 4 runs, under 0.05% of frames) with no long task logged. GC is the likely cause; not yet profiled.
+Reading: with the live bar on screen, the custom renderer holds refresh rate with 8 charts at 5× the planned tick load, without WebGL (one run each; repeat before deciding). A rare single-frame stall remains (max 34–58 ms). GC is the likely cause; not yet profiled.
 
 ## R126 timed tasks (two desk users)
 

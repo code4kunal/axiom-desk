@@ -1,5 +1,5 @@
 // Runs each renderer in headed Google Chrome (real GPU) against the vite dev server and prints the results.
-// Usage: pnpm dev (in another shell), then: pnpm bench [custom scichart] [--seconds=20] [--tps=20] [--charts=8]
+// Usage: pnpm dev (in another shell), then: pnpm bench [custom scichart] [--seconds=20] [--tps=20] [--charts=8] [--port=5199]
 import { chromium } from "playwright";
 
 const args = process.argv.slice(2);
@@ -21,7 +21,7 @@ try {
     const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
     const errors: string[] = [];
     page.on("pageerror", (e) => errors.push(e.message));
-    await page.goto(`http://localhost:5199/?renderer=${r}&${qs}`);
+    await page.goto(`http://localhost:${flags.port ?? "5199"}/?renderer=${r}&${qs}`);
     const timeoutMs = (Number(qs.get("seconds")) + 60) * 1000;
     const result = await Promise.race([
       page.waitForFunction(() => window.__bench, null, { timeout: timeoutMs }).then((h) => h.jsonValue()),

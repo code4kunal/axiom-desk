@@ -18,6 +18,7 @@ export interface BenchResult {
   renderer: string;
   charts: number;
   ticksPerSecPerChart: number;
+  ticksPerSecDelivered: number; // chart 0, measured window: setInterval drops calls when drawing is late
   historyBars: number;
   frames: number;
   fps: number;
@@ -57,11 +58,21 @@ async function run() {
     charts.push(c);
   }
 
-  // Ticks arrive on a timer like a socket would, independent of frames.
+  // Ticks arrive on a timer like a socket would, independent of frames. Each new bar slides the
+  // view so the live bar stays on screen, as on a desk; a fixed range lets new bars leave the
+  // screen within seconds, after which a renderer that skips off-screen ticks does no tick redraws.
+  let edge = replays[0]!.history[replays[0]!.history.length - 1]!.time;
+  let measuring = false;
+  let ticksMeasured = 0;
   const tickTimer = setInterval(() => {
     for (let i = 0; i < N; i++) {
       const { bar, isNew } = replays[i]!.next();
       charts[i]!.update(bar, isNew);
+      if (isNew) charts[i]!.setRange(bar.time - 200 * BAR_SECONDS, bar.time + 10 * BAR_SECONDS);
+      if (i === 0) {
+        edge = bar.time;
+        if (measuring) ticksMeasured++;
+      }
     }
   }, 1000 / TICKS_PER_SEC);
 
@@ -79,15 +90,15 @@ async function run() {
     // longtask is Chromium-only; frame times still measure the other engines.
   }
 
-  // A scripted user sweeps the crosshair across chart 0 every frame, so sync runs at full rate.
-  const last = replays[0]!.history[replays[0]!.history.length - 1]!.time;
+  // A scripted user sweeps the crosshair across chart 0's visible bars every frame, so sync runs at full rate.
   const deltas: number[] = [];
   const t0 = performance.now();
   let prev = t0;
   await new Promise<void>((done) => {
     const loop = (now: number) => {
       const el = (now - t0) / 1000;
-      const sweep = last - 200 * BAR_SECONDS + ((el * 40) % 200) * BAR_SECONDS;
+      const sweep = edge - 200 * BAR_SECONDS + ((el * 40) % 200) * BAR_SECONDS;
+      measuring = el > WARMUP;
       charts[0]!.setCrosshair(sweep);
       bus.crosshair(charts[0]!, sweep);
       if (el > WARMUP) deltas.push(now - prev);
@@ -106,6 +117,7 @@ async function run() {
     renderer: name,
     charts: N,
     ticksPerSecPerChart: TICKS_PER_SEC,
+    ticksPerSecDelivered: round(ticksMeasured / SECONDS),
     historyBars: HISTORY,
     frames: deltas.length,
     fps: round(deltas.length / SECONDS),
