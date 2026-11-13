@@ -4,7 +4,7 @@ Scope: the pinned layout only. Copy, ring, posters, motion grammar and a11y are 
 
 ## 0. One mechanism: CSS sticky docks the captions, GSAP only paints the ring
 
-- The box is `section#season` itself: `position: relative; height: var(--box)`; `--box: 300lvh` (`200lvh` below 768). `lvh` so the box never shrinks when a mobile address bar hides (no CLS at the section 02 edge); every sticky `top`/height uses `svh` so the pinned block fits the smallest viewport. `--d: calc(var(--box) - 100svh)` is the scroll distance of the pin; progress p = scrollY / `--d`.
+- The box is `section#season` itself: `position: relative; height: var(--box)`; `--box: 300lvh` from 768; below 768 the box is its content (amended 2026-11-13, user decision: each caption track is one step, `100svh - rail-top`, so a caption enters only after the one before has docked; about 2.9 screens at 375×844, was 200lvh with captions arriving together). `lvh` so the box never shrinks when a mobile address bar hides (no CLS at the section 02 edge); every sticky `top`/height uses `svh` so the pinned block fits the smallest viewport. `--d: calc(var(--box) - 100svh)` is the scroll distance of the pin; progress p = scrollY / `--d`.
 - Nothing is pinned by GSAP. ScrollTrigger runs with `pin: false`, `start: top 48px`, `end: bottom bottom`, `scrub: 0.8`, and scrubs the ring states 0/40/70/100 only. No pin-spacer, no fixed elements, no transform on the section: native hash navigation and back/forward restoration keep working, so KTD5.4's manual scroll restoration is not needed. `ScrollTrigger.refresh()` on orientation change and after fonts load.
 - The four captions (0, 40, 70, hedge card) are four sticky siblings in one grid column, all with the same `top: var(--rail-top)` and `background: var(--color-ground)`. Each later one, further down the document, docks into the same slot and covers the one before: a content **cut**, numbers never interpolate. Their approach is scroll-tied (the only motion the grammar allows for scroll). Identical in both paths; with WebGL the ring states are added on top, without WebGL (or after `webglcontextlost`) the poster plus docking captions is the whole experience. R7 costs nothing.
 - `scroll.ts` reads each track's dock position (`track.offsetTop − rail-top`) and sets the canvas keyframes there, so the ring always changes state the instant its caption docks. At ≥768 those positions are exactly 0.4·d, 0.7·d, 1.0·d by construction; at 375 they follow the text (see §2).
@@ -21,7 +21,7 @@ Grid of the box (same `.frame` and 4/8/12 columns as stacked). Rows of the ring 
 
 | | 375 (content 343) | 768 (8 cols, 340 each half) | 1280 (12 cols, 76.7) |
 |---|---|---|---|
-| Box | `200lvh`, pt 16 | `300lvh`, pt 40 | `300lvh`, pt 64 |
+| Box | content (3 tracks of `100svh - rail-top`), pt 16 | `300lvh`, pt 40 | `300lvh`, pt 64 |
 | What sticks | poster box and rail only (`top: 64px`, z 2); text scrolls under them | left `hero-text` (cols 1–4) and poster (cols 5–8), both `top: 88px` | `hero-text` cols 1–7 and poster cols 8–12, both `top: 112px` |
 | `--plate` | `min(300px, 32svh)` → 270 at 844; 300 only from 938svh up | 340 | 479 |
 | `--rail-top` | 342 | 440 | 603 |

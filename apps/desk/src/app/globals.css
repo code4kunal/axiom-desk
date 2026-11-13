@@ -255,21 +255,22 @@ html[data-js] [data-reveal]:not([data-shown]) {
 /* Pinned hero (docs/design/landing-hero-pin-spec.md). html[data-hero=pin] is set before paint by the
    head script; CSS sticky does all pinning, GSAP only paints the ring. Unlayered, so it beats utilities. */
 html[data-hero="pin"] #season {
-  --box: 200lvh;
   --d: calc(var(--box) - 100svh);
   --pt: 16px;
   --plate: min(300px, 30svh);
   --legend-h: 0px;
   --rail-top: calc(48px + var(--pt) + var(--plate) + 12px + var(--legend-h));
   --ring-col: 1 / -1;
-  height: var(--box);
+  /* <768 the box is its content: each caption track is one step (bottom of the view to the rail), so a
+     caption enters only once the one before has docked. */
+  --step: calc(100svh - var(--rail-top));
+  height: auto;
   padding-block: 0;
 
   & > .grid {
-    height: calc(var(--box) - 48px);
     row-gap: 0;
     /* poster · rail · statement · subline+buttons · legend · track 40 · track 70 · hedge track */
-    grid-template-rows: auto auto auto auto auto 1fr 1fr calc(100svh - var(--rail-top));
+    grid-template-rows: auto auto auto auto auto var(--step) var(--step) var(--step);
   }
   .hero-fig0,
   .hero-plates {
@@ -362,7 +363,10 @@ html[data-hero="pin"] #season {
     --plate: calc((100vw - 232px) / 2 + 72px);
     --ring-col: 5 / 9;
 
+    height: var(--box);
+
     & > .grid {
+      height: calc(var(--box) - 48px);
       /* ring column: poster · legend · rail (docks 0) · 40 at .4d · 70 at .7d · hedge at d */
       grid-template-rows: auto var(--legend-h) calc(0.4 * var(--d)) calc(0.3 * var(--d)) calc(0.3 * var(--d)) calc(100svh - var(--rail-top));
     }

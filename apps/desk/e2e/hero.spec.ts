@@ -209,6 +209,17 @@ test.describe("375×844", () => {
       expect(onTop, `INDEX covered at ${y}`).toBe(true);
     }
   });
+
+  test("captions dock one at a time: the next one is still below the fold when one docks", async ({ page }) => {
+    await page.goto("/");
+    await settle(page);
+    const d = await docks(page);
+    for (let k = 1; k < d.length - 1; k++) {
+      await page.evaluate((y) => scrollTo(0, y), d[k]!);
+      const nextTop = await page.locator("#season .hero-track").nth(k).evaluate((el) => el.getBoundingClientRect().top);
+      expect(nextTop, `caption ${k + 1} visible while caption ${k} docks`).toBeGreaterThanOrEqual(page.viewportSize()!.height - 2);
+    }
+  });
 });
 
 test.describe("JavaScript disabled", () => {
