@@ -132,8 +132,13 @@ test.describe("1280×800", () => {
     await page.evaluate((y) => scrollTo(0, y! + 2), d40);
     const poster = await page.locator("#season .hero-poster").boundingBox();
     expect(poster!.y).toBeCloseTo(48, 0);
+    // Palette v2: the legend band (--legend-h) docks between the poster and the rail.
     const rail = await page.locator("#reading").boundingBox();
-    expect(rail!.y).toBeCloseTo(poster!.y + poster!.height, 0);
+    const legend = await page.locator("#season .hero-legend").boundingBox();
+    const legendH = await page.evaluate(() => parseFloat(getComputedStyle(document.getElementById("season")!).getPropertyValue("--legend-h")));
+    expect(legendH).toBeGreaterThan(0);
+    expect(rail!.y).toBeCloseTo(poster!.y + poster!.height + legendH, 0);
+    expect(legend!.y + legend!.height).toBeCloseTo(rail!.y, 0);
     expect(await cls(page)).toBeLessThan(0.05);
     expect(await loaded()).toEqual({ three: false, gsap: false });
   });

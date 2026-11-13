@@ -2,9 +2,11 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { covered, figures, leaves } from "./copy-rules.ts";
 
-test("the page shows fewer than 20 data figures", () => {
-  const all = leaves().flatMap((l) => figures(l.value).map((f) => `${l.path}: ${f}`));
-  assert.ok(all.length < 20, `${all.length} figures:\n${all.join("\n")}`);
+// R3 (amended 2026-11-13): the hero repeats one reading in the hole, rail and legend, so the cap counts distinct values.
+test("the page shows fewer than 20 distinct data figures", () => {
+  const all = leaves().flatMap((l) => figures(l.value).map((f) => ({ f, at: `${l.path}: ${f}` })));
+  const distinct = new Set(all.map((x) => x.f));
+  assert.ok(distinct.size < 20, `${distinct.size} distinct figures:\n${all.map((x) => x.at).join("\n")}`);
 });
 
 test("every data figure sits in a caption group marked ILLUSTRATIVE", () => {

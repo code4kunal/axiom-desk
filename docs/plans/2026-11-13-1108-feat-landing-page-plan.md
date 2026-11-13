@@ -46,7 +46,7 @@ Axiom has no public face. The platform plan of record covers desk screens only, 
 
 - R1. Route `/` renders the nine storyboard sections 01–09 in order with the exact copy and captions from `docs/design/landing-direction.md` § Scroll storyboard and § First viewport.
 - R2. Every visible string on the page and in the sharing metadata passes a banned-phrase check: returns, guaranteed, profit, buy, sell, tips, beat the market, matched as whole words, case-insensitive.
-- R3. Every data figure on the page is marked `ILLUSTRATIVE`, and the page shows fewer than 20 data figures. Section ordinals and the product-capability count in section 03 ("up to 8 synced charts") are not data figures. Hero state captions are covered by the `ILLUSTRATIVE` that stays in the caption rail at every frame, and the section 07 specimen card by its own `ILLUSTRATIVE` cell.
+- R3. Every data figure on the page is marked `ILLUSTRATIVE`, and the page shows fewer than 20 distinct data figures (amended 2026-11-13, user decision: palette v2 repeats one hero reading in the hole, rail and legend; a repeat of the same value is one figure). Section ordinals and the product-capability count in section 03 ("up to 8 synced charts") are not data figures. Hero state captions are covered by the `ILLUSTRATIVE` that stays in the caption rail at every frame, and the section 07 specimen card by its own `ILLUSTRATIVE` cell.
 - R4. The footer carries "Research tool. Not investment advice. No performance is promised.", the section index, the theme menu, and links to `/privacy` and `/terms`.
 - R5. The document language is `en-IN`.
 
@@ -261,7 +261,7 @@ apps/desk/
 - **Test scenarios:**
   - The banned-phrase test walks every string in `content.ts` (enumerated from the module, not a hand list) and fails when "Buy", "profits" or "guaranteed" is planted in any field.
   - Matching is whole-word and case-insensitive, with plural and -ing forms listed explicitly: "buyer" passes, "buying" and "returns" fail.
-  - The numbers test counts data figures across the strings in `content.ts` (excluding the R3 exemptions), fails at 20 or more, and fails if a data figure sits in a caption group with no `ILLUSTRATIVE` marker: its own caption, the hero caption rail, or the specimen card.
+  - The numbers test counts data figures across the strings in `content.ts` (excluding the R3 exemptions), fails at 20 or more distinct values (R3 amended), and fails if a data figure sits in a caption group with no `ILLUSTRATIVE` marker: its own caption, the hero caption rail, or the specimen card.
   - The launch contact test fails while the desk contact is `desk@axiom.invalid`. It lives under `test/launch/`, outside the `test` script's glob, and runs only through a separate `launch` script, so the merge gate stays green and the launch check is reported as failing or NOT RUN until the real address lands.
   - The launch clips test, enumerating the clip slots from `content.ts`, fails while any slot still shows `CLIP PLACEHOLDER`; it runs only through the `launch` script.
   - The rendered page contains "a human confirms every order" before any script runs (JS disabled in Playwright).
