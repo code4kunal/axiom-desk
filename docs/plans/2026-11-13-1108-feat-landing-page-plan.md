@@ -326,7 +326,7 @@ apps/desk/
 - **Approach:**
   1. axe on `/`, `/privacy`, `/terms` and the 404 in both themes.
   2. The budget spec sums the `encodedBodySize` of scripts loaded before `load`, and checks the hero and GSAP chunks separately. App-owned JS is that total minus a framework baseline measured from U1's empty page under the same build and pins, because Turbopack's content-hashed chunk names give no stable path to split on. Record the baseline as a constant in `budget.spec.ts`, with the command that produced it.
-  3. Lighthouse CI on the mobile throttled preset for LCP and CLS.
+  3. Lighthouse CI on the mobile throttled preset for LCP and CLS, with `throttlingMethod: devtools` (amended 2026-11-13, user decision: the default simulated mode charged the statement for async JS it does not wait on and estimated 2.6 s while applied throttling measured 1.9 s; median of 5 runs).
   4. Screenshots at 375, 768 and 1280 in light and dark, plus 360×640 and 844×390 landscape.
 - **Test scenarios:**
   - axe reports zero serious or critical violations on each page and theme.
