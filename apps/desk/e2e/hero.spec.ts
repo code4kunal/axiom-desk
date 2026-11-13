@@ -224,6 +224,45 @@ test.describe("375×844", () => {
   });
 });
 
+test("rotating a pinned phone to landscape drops the pin and the live ring", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await ringLive(page);
+  await page.setViewportSize({ width: 844, height: 390 });
+  await expect.poll(() => page.evaluate(() => document.documentElement.dataset.hero ?? null)).toBeNull();
+  await expect(page.locator("#season canvas")).toHaveCount(0);
+  for (const plate of await page.locator("#season .hero-plate").all()) await expect(plate).toBeVisible();
+});
+
+// The live ring draws phone density below 768 and desktop density from 768; the poster it fades over must match.
+for (const [width, height, phone] of [[375, 844, true], [800, 1000, false]] as const) {
+  test(`at ${width} wide the 0% poster is the ${phone ? "phone" : "desktop"}-density file`, async ({ browser }) => {
+    const ctx = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: 1, colorScheme: "light" });
+    const page = await ctx.newPage();
+    const posters: string[] = [];
+    page.on("request", (r) => r.url().includes("/hero/poster-0-light") && posters.push(new URL(r.url()).pathname));
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+    expect(posters).toEqual([`/hero/poster-0-light${phone ? "-720" : ""}.avif`]);
+    await ctx.close();
+  });
+}
+
+// Common short desktop viewports: 1366×768 minus browser chrome, and the 600px gate floor.
+for (const [width, height] of [[1366, 650], [1024, 600]] as const) {
+  test(`the caption rail stays on screen at ${width}×${height}`, async ({ page }) => {
+    await page.setViewportSize({ width, height });
+    await page.goto("/");
+    expect(await page.evaluate(() => document.documentElement.dataset.hero)).toBe("pin");
+    const d = await docks(page);
+    for (const y of d.slice(0, 2)) {
+      await page.evaluate((v) => scrollTo(0, v + 2), y);
+      const bottom = await page.locator("#season .hero-rail").evaluate((el) => el.getBoundingClientRect().bottom);
+      expect(bottom, `rail bottom at scroll ${y}`).toBeLessThanOrEqual(height);
+    }
+  });
+}
+
 test.describe("JavaScript disabled", () => {
   test.use({ javaScriptEnabled: false, viewport: { width: 1280, height: 800 } });
   test("stacked layout with no reserved empty space", async ({ page }) => {

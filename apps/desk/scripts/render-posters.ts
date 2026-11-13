@@ -44,14 +44,17 @@ const ringJs = ts.transpileModule(readFileSync(join(root, "src/landing/hero/ring
 }).outputText;
 
 const html = `<!doctype html><script type="importmap">{"imports":{"three":"/three/three.module.js"}}</script>
-<canvas id="c" width="1200" height="1200"></canvas>
+<canvas id="c" width="1200" height="1200"></canvas><canvas id="n" width="720" height="720"></canvas>
 <script type="module">
 import { createRing } from "/ring.js";
-window.render = (palette, p) => {
-  const c = document.getElementById("c");
-  // 480 CSS px at DPR 2.5 = 1200 device px: dots and needle match the live canvas at display size.
-  const ring = window.ring ??= createRing(c, palette, { dpr: 2.5, narrow: false, preserveDrawingBuffer: true });
-  ring.resize(480, 480);
+window.render = (palette, p, phone) => {
+  const c = document.getElementById(phone ? "n" : "c");
+  // Desktop: 480 CSS px at DPR 2.5 = 1200 device px. Phone: the live ring's narrow density at a 256 CSS px
+  // plate (30svh on common 800-930px-tall phones), DPR 2.8125 = 720 device px. Dot size is fixed in CSS
+  // px, so dots match the live canvas exactly at that plate and within ~20% across phones.
+  const key = phone ? "phoneRing" : "ring";
+  const ring = window[key] ??= createRing(c, palette, { dpr: phone ? 720 / 256 : 2.5, narrow: phone, preserveDrawingBuffer: true });
+  ring.resize(phone ? 256 : 480, phone ? 256 : 480);
   ring.setPalette(palette);
   ring.setProgress(p);
   ring.frame(10, 0); // a long dt settles the tilt; t 0 freezes the breath
@@ -76,18 +79,21 @@ await page.waitForFunction(() => (window as unknown as { ready?: boolean }).read
 
 for (const theme of ["dark", "light"] as const)
   for (const p of [0, 40, 70, 100]) {
-    const url = await page.evaluate(
-      ([pal, prog]) => (window as unknown as { render: (a: unknown, b: number) => string }).render(pal, prog),
-      [palettes[theme], p / 100] as const,
-    );
-    const png = Buffer.from(url.split(",")[1]!, "base64");
+    const draw = (phone: boolean) =>
+      page.evaluate(
+        ([pal, prog, ph]) =>
+          (window as unknown as { render: (a: unknown, b: number, c: boolean) => string }).render(pal, prog, ph),
+        [palettes[theme], p / 100, phone] as const,
+      );
+    const png = Buffer.from((await draw(false)).split(",")[1]!, "base64");
+    const phonePng = Buffer.from((await draw(true)).split(",")[1]!, "base64");
     const base = join(out, `poster-${p}-${theme}`);
     // 960px covers the largest display (479 CSS px) at DPR 2; the dot field makes AVIF q40 the size knee.
     writeFileSync(`${base}.avif`, await sharp(png).resize(960).avif({ quality: 40, effort: 6 }).toBuffer());
     writeFileSync(`${base}.webp`, await sharp(png).resize(960).webp({ quality: 75 }).toBuffer());
-    // 720px: the phone plate (<=300 CSS px, ~250 at 844 tall) at DPR <=2.9 (LCP on throttled mobile).
-    writeFileSync(`${base}-720.avif`, await sharp(png).resize(720).avif({ quality: 40, effort: 6 }).toBuffer());
-    writeFileSync(`${base}-720.webp`, await sharp(png).resize(720).webp({ quality: 75 }).toBuffer());
+    // 720px, phones only (<768): the narrow ring the phone draws live (see render() for the plate size).
+    writeFileSync(`${base}-720.avif`, await sharp(phonePng).avif({ quality: 40, effort: 6 }).toBuffer());
+    writeFileSync(`${base}-720.webp`, await sharp(phonePng).webp({ quality: 75 }).toBuffer());
     if (process.argv.includes("--png")) writeFileSync(`${base}.png`, png);
   }
 

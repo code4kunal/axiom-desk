@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { hero } from "../content";
-import { gate, readGateInputs } from "./gate";
+import { gate, pinGate, readGateInputs } from "./gate";
 
 const MARKS = ["equity", "gilts", "gold", "cash", "intl"] as const;
 
@@ -54,6 +54,11 @@ export function RingIsland() {
       });
     };
     const onResize = () => {
+      // Rotated to landscape (or otherwise below the gate): fall back to the stacked hero for good.
+      if (!pinGate(readGateInputs(true))) {
+        delete html.dataset.hero;
+        return unpin();
+      }
       docks = measureDocks(box);
       shown = -1;
       showDock();
@@ -184,14 +189,15 @@ export function RingIsland() {
     if (document.readyState === "complete") run();
     else addEventListener("load", run, { once: true });
 
-    return () => {
+    function unpin() {
       cancelled = true;
       cancelAnimationFrame(pending);
       removeEventListener("load", run);
       removeEventListener("scroll", onScroll);
       removeEventListener("resize", onResize);
       cleanup();
-    };
+    }
+    return unpin;
   }, []);
   return null;
 }

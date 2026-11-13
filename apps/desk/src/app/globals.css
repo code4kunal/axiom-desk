@@ -292,6 +292,10 @@ html[data-hero="pin"] #season {
   --pt: 16px;
   --plate: min(300px, 30svh);
   --legend-h: 0px;
+  /* From 768 the plate is also capped by height so the caption rail (~62px) stays above the fold on
+     short desktops (1366×768 minus browser chrome, 1024×600). */
+  --rail-room: 80px;
+  --plate-max: calc(100svh - 48px - var(--pt) - 12px - var(--legend-h) - var(--rail-room));
   --rail-top: calc(48px + var(--pt) + var(--plate) + 12px + var(--legend-h));
   --ring-col: 1 / -1;
   /* <768 the box is its content: each caption track is one step (bottom of the view to the rail), so a
@@ -393,7 +397,7 @@ html[data-hero="pin"] #season {
     --box: 300lvh;
     --legend-h: 76px;
     --pt: 40px;
-    --plate: calc((100vw - 232px) / 2 + 72px);
+    --plate: min(calc((100vw - 232px) / 2 + 72px), var(--plate-max));
     --ring-col: 5 / 9;
 
     height: var(--box);
@@ -447,7 +451,7 @@ html[data-hero="pin"] #season {
 
   @media (width >= 64rem) {
     --pt: 64px;
-    --plate: calc((min(100vw, 1280px) - 360px) * 5 / 12 + 96px);
+    --plate: min(calc((min(100vw, 1280px) - 360px) * 5 / 12 + 96px), var(--plate-max));
     --ring-col: 8 / 13;
 
     .hero-text {
