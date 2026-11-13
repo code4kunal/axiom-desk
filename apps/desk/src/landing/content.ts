@@ -34,6 +34,57 @@ export const notFound = {
   hint: "Or pick a section from the index above.",
 };
 
+// Desk sign-in. Keys of signInErrors are the fixed codes the API puts in /sign-in?error=.
+const failed = { label: "SIGN-IN FAILED", message: "Sign-in did not complete.", next: "Try again. If it keeps failing, tell your desk admin." };
+
+export const signInErrors = {
+  mfa_required: {
+    label: "SECOND FACTOR NEEDED",
+    message: "Your sign-in did not use multi-factor authentication.",
+    next: "Sign in again and complete the second step at your provider.",
+  },
+  unknown_user: {
+    label: "NOT ON THIS DESK",
+    message: "Your account signed in, but it is not set up on this desk.",
+    next: "Ask your desk admin to add you, then sign in again.",
+  },
+  expired: { label: "LINK EXPIRED", message: "That sign-in expired or was already used.", next: "Start again with Sign in." },
+  cancelled: { label: "SIGN-IN CANCELLED", message: "You cancelled sign-in at your provider.", next: "Sign in again when you are ready." },
+  provider_unavailable: {
+    label: "PROVIDER UNREACHABLE",
+    message: "We could not reach your sign-in provider.",
+    next: "Wait a minute and try again. If it keeps failing, tell your desk admin.",
+  },
+  failed,
+};
+
+export const signIn = {
+  title: "Sign in | Axiom Desk",
+  errorTitle: "Sign-in problem | Axiom Desk",
+  caption: "AXIOM DESK",
+  heading: "Sign in",
+  body: "Use your desk account to open the desk. You will be sent to your sign-in provider and brought back here.",
+  action: "Sign in",
+  hint: "Trouble signing in? Ask your desk admin.",
+};
+
+export const desk = {
+  title: "Desk | Axiom",
+  caption: "SIGNED IN",
+  tenantLabel: "BROKER",
+  body: "The desk is being built. Nothing to open yet.",
+  signOut: "Sign out",
+  unreachable: {
+    title: "Desk unavailable | Axiom",
+    caption: "DESK SERVICE",
+    heading: "The desk is not responding",
+    label: "SERVICE UNREACHABLE",
+    message: "We could not reach the desk service.",
+    next: "Reload to try again. If it keeps failing, tell your desk admin.",
+    reload: "Reload",
+  },
+};
+
 const pending = { stamp: "PENDING", notice: "Text pending legal review.", back: "Back to the start" };
 
 export const privacy = {
