@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Renderer spike</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #111; color: #ddd; font: 12px system-ui; }
+      #grid { display: grid; grid-auto-rows: 1fr; gap: 2px; height: calc(100% - 24px); }
+      .cell { position: relative; min-height: 0; background: #181818; }
+      #out { position: fixed; right: 4px; bottom: 4px; margin: 0; max-height: 50%; overflow: auto; background: #000c; padding: 6px; }
+    </style>
+  </head>
+  <body>
+    <div id="grid"></div>
+    <pre id="out">running…</pre>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
