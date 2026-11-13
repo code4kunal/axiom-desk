@@ -42,9 +42,8 @@ def build_services(conn: sqlite3.Connection, clock: Callable[[], float]) -> Serv
     entitlements = Entitlements(conn)
     registry = Registry(authz, entitlements, audit)
     registry.register(latest_run(runs))
-    return Services(
-        audit, directory, authz, SessionStore(directory, clock), runs, entitlements, registry
-    )
+    sessions = SessionStore(conn, directory, audit, clock)
+    return Services(audit, directory, authz, sessions, runs, entitlements, registry)
 
 
 def create_app(svc: Services) -> FastAPI:
@@ -61,7 +60,7 @@ def create_app(svc: Services) -> FastAPI:
     ) -> JSONResponse:
         try:
             if not authorization or not authorization.startswith("Bearer "):
-                raise Unauthenticated("missing bearer token")
+                raise Unauthenticated("invalid")
             claimed = {k: str(body[k]) for k in ("tenant_id", "user_id") if k in body}
             principal = svc.sessions.resolve_request(authorization.removeprefix("Bearer "), claimed)
             surface = HTTP_SURFACES.get(x_axiom_surface)

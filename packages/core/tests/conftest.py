@@ -57,9 +57,17 @@ def authz(directory: Directory, audit: AuditLog, clock: Clock) -> Authorizer:
 
 
 @pytest.fixture
-def sessions(directory: Directory, clock: Clock) -> SessionStore:
-    return SessionStore(directory, clock)
+def sessions(
+    conn: sqlite3.Connection, directory: Directory, audit: AuditLog, clock: Clock
+) -> SessionStore:
+    return SessionStore(conn, directory, audit, clock)
 
 
-def mfa_claims(tenant: str, user: str) -> VerifiedClaims:
-    return VerifiedClaims(subject=user, tenant_id=tenant, amr=("pwd", "mfa"))
+def mfa_claims(tenant: str, user: str, auth_time: float | None) -> VerifiedClaims:
+    return VerifiedClaims(
+        subject=user,
+        tenant_id=tenant,
+        amr=("pwd", "mfa"),
+        display_name=f"{user.title()} Example",
+        auth_time=auth_time,
+    )
