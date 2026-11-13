@@ -149,7 +149,7 @@ export const brokers = {
   contact: "desk@axiom.invalid",
   subject: "Axiom for brokers",
   publicLine: "Investing with a broker? Ask them for Axiom.",
-  dialogLede: "Write to the desk at this address.",
+  dialogLede: "For brokers licensing Axiom to their clients. Investing on your own? Ask your broker instead.",
   copy: "Copy address",
   copied: "Copied",
   copiedStatus: "Address copied",
