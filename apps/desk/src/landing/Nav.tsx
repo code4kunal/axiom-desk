@@ -20,13 +20,14 @@ export function Nav() {
           <ol className="flex h-full items-stretch gap-4 xl:gap-6">
             {sections.map((s, i) => (
               <li key={s.id} className="flex">
-                <Link
+                {/* Plain anchor: a native fragment jump also moves the Tab start into the section (next/link only scrolls). */}
+                <a
                   href={`/#${s.id}`}
                   className="-mx-2 flex items-center gap-2 border-y-2 border-transparent px-2 font-mono text-label font-medium uppercase text-ink-dim hover:text-ink focus-visible:outline-offset-[-2px] aria-[current=location]:border-b-brass-mark aria-[current=location]:text-brass"
                 >
                   <span className="hidden font-normal xl:inline">{ordinal(i)}</span>
                   {s.label}
-                </Link>
+                </a>
               </li>
             ))}
           </ol>

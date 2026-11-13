@@ -17,6 +17,8 @@ export function Observers() {
       { threshold: 0.2 },
     );
     document.querySelectorAll("[data-reveal]").forEach((el) => reveal.observe(el));
+    // Hands the reveals from the CSS failsafe to this observer.
+    document.documentElement.dataset.observing = "";
 
     const links = document.querySelectorAll<HTMLAnchorElement>("nav a[href^='/#']");
     const current = new IntersectionObserver(

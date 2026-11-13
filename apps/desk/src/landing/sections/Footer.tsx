@@ -16,13 +16,14 @@ export function Footer() {
           <ol className="border-t border-hairline">
             {sections.map((s, i) => (
               <li key={s.id} className="border-b border-hairline">
-                <Link
+                {/* Plain anchor: a native fragment jump also moves the Tab start into the section (next/link only scrolls). */}
+                <a
                   href={`/#${s.id}`}
                   className="flex h-12 items-center gap-3 font-mono text-label font-medium uppercase text-ink-dim hover:text-ink"
                 >
                   <span className="font-normal">{String(i + 1).padStart(2, "0")}</span>
                   {s.label}
-                </Link>
+                </a>
               </li>
             ))}
           </ol>

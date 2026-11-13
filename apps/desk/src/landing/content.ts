@@ -78,7 +78,7 @@ export const hero = {
     { caption: "EQUITY 61 → 42 · GILTS 18 → 29 · GOLD 9 → 17 · ILLUSTRATIVE" },
   ],
   hedgeCard,
-  // The regime reading in the ring's hole: 0 at dock 0, 1 from dock 40 on. Covered by the rail's ILLUSTRATIVE.
+  // The regime reading in the ring's hole: 0 at dock 0, 1 from dock 40 on. Covered by the rail captions (COVERED_BY).
   hole: [
     { word: "Expansion", conf: "CONF 0.74 · N 212", tone: "monsoon" },
     { word: "Early deterioration", conf: "CONF 0.68 · N 212", tone: "geru" },
@@ -88,7 +88,6 @@ export const hero = {
     labels: ["Equity", "Gilts", "Gold", "Cash", "Intl"],
     before: ["61", "18", "9", "7", "5"],
     after: ["42", "29", "17", "7", "5"],
-    note: "ILLUSTRATIVE",
   },
 };
 

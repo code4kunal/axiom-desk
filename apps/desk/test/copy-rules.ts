@@ -1,12 +1,12 @@
 // Shared by the copy, numbers and launch tests: every string the page can show comes from content.ts.
 import * as content from "../src/landing/content.ts";
 
-export type Leaf = { path: string; value: string; ancestors: unknown[] };
+export type Leaf = { path: string; value: string };
 
-export function* walk(node: unknown, path = "", ancestors: unknown[] = []): Generator<Leaf> {
-  if (typeof node === "string") yield { path, value: node, ancestors };
+export function* walk(node: unknown, path = ""): Generator<Leaf> {
+  if (typeof node === "string") yield { path, value: node };
   else if (node && typeof node === "object")
-    for (const [k, v] of Object.entries(node)) yield* walk(v, path ? `${path}.${k}` : k, [...ancestors, node]);
+    for (const [k, v] of Object.entries(node)) yield* walk(v, path ? `${path}.${k}` : k);
 }
 
 export const leaves = () => [...walk(content)];
@@ -45,10 +45,21 @@ export function figures(s: string): string[] {
   return cleaned.match(FIGURE) ?? [];
 }
 
-// A figure is covered when its own string, or a sibling string of any enclosing object, says ILLUSTRATIVE.
-export function covered(leaf: Leaf): boolean {
-  if (/\bILLUSTRATIVE\b/.test(leaf.value)) return true;
-  return leaf.ancestors.some((a) =>
-    Object.values(a as object).some((v) => typeof v === "string" && /\bILLUSTRATIVE\b/.test(v)),
-  );
+// Figures without their own label, and the caption the page renders right beside them. Listed by hand:
+// sharing an object with some ILLUSTRATIVE string says nothing about what the visitor sees next to it.
+export const COVERED_BY: Record<string, string> = {
+  "hedge.grid": "hedge.card", // HedgeCard prints the card line above the grid
+  "hero.hole": "hero.plates", // the ring's hole reading sits beside the rail captions
+  "hero.legend": "hero.plates", // the legend under the ring, same captions
+};
+
+const marked = (s: string) => /\bILLUSTRATIVE\b/.test(s);
+const under = (path: string, prefix: string) => path === prefix || path.startsWith(`${prefix}.`);
+
+// A figure is covered when its own string says ILLUSTRATIVE, or it is listed in COVERED_BY and that
+// caption group says ILLUSTRATIVE.
+export function covered(leaf: Leaf, all: Leaf[] = leaves()): boolean {
+  if (marked(leaf.value)) return true;
+  const by = Object.entries(COVERED_BY).find(([prefix]) => under(leaf.path, prefix))?.[1];
+  return by !== undefined && all.some((l) => under(l.path, by) && marked(l.value));
 }

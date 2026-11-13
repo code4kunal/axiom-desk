@@ -180,11 +180,24 @@
   }
 }
 
-/* Section reveals: hidden only when JS is on (html[data-js]), shown once by the observer. */
-html[data-js] [data-reveal]:not([data-shown]) {
-  opacity: 0;
+/* Section reveals: hidden only when JS is on (html[data-js]), shown once by the observer. Screen only,
+   so print is never blank. Until the observer starts (html[data-observing]) a 3s failsafe shows
+   everything, so a chunk that never loads cannot leave the page empty. */
+@keyframes reveal-failsafe {
+  to {
+    opacity: 1;
+    translate: none;
+  }
 }
-@media (prefers-reduced-motion: no-preference) {
+@media screen {
+  html[data-js] [data-reveal]:not([data-shown]) {
+    opacity: 0;
+  }
+  html[data-js]:not([data-observing]) [data-reveal]:not([data-shown]) {
+    animation: reveal-failsafe 0s 3s forwards;
+  }
+}
+@media screen and (prefers-reduced-motion: no-preference) {
   html[data-js] [data-reveal]:not([data-shown]) {
     translate: 0 16px;
   }

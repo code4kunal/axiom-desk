@@ -19,7 +19,10 @@ test("every data figure sits in a caption group marked ILLUSTRATIVE", () => {
 test("the figure rules have bite", () => {
   assert.deepEqual(figures("BASE RATE 0.58 · N 212 · AS OF 2026-11-13"), ["0.58", "212", "2026-11-13"]);
   assert.deepEqual(figures("UP TO 8 SYNCED CHARTS"), []);
-  const leaf = { path: "x", value: "CONF 0.74", ancestors: [{ caption: "CONF 0.74" }] };
-  assert.equal(covered(leaf), false);
-  assert.equal(covered({ ...leaf, ancestors: [{ rail: "N 212 · ILLUSTRATIVE", s: "CONF 0.74" }] }), true);
+  const captions = [{ path: "hero.plates.0.caption", value: "N 212 · ILLUSTRATIVE" }];
+  assert.equal(covered({ path: "x", value: "N 212 · ILLUSTRATIVE" }, captions), true);
+  // A headline figure next to a labelled sibling is not covered: only listed caption groups count.
+  assert.equal(covered({ path: "hero.statement", value: "Up 23% this year" }, [...captions, { path: "hero.hedgeCard", value: "ILLUSTRATIVE" }]), false);
+  assert.equal(covered({ path: "hero.hole.0.conf", value: "CONF 0.74" }, captions), true);
+  assert.equal(covered({ path: "hero.hole.0.conf", value: "CONF 0.74" }, []), false);
 });

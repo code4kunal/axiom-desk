@@ -28,6 +28,22 @@ test("no nav lists a Footer item: the rail and the sheet list exactly the sectio
   await expect(rail.filter({ hasText: /footer/i })).toHaveCount(0);
 });
 
+for (const where of ["rail", "footer"] as const) {
+  test(`a keyboard jump from the ${where} index moves the Tab start into that section`, async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+    const target = sections.find((s) => s.id === "brokers")!; // has its own Tab stop: Talk to the desk
+    const list = where === "rail" ? page.getByRole("navigation", { name: shell.navLabel }) : page.locator("footer");
+    const link = list.locator(`a[href="/#${target.id}"]`);
+    await link.focus();
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(new RegExp(`#${target.id}$`));
+    await page.keyboard.press("Tab");
+    // The next Tab stop is inside the section, not the next link in the list.
+    expect(await page.evaluate((id) => document.getElementById(id)!.contains(document.activeElement), target.id)).toBe(true);
+  });
+}
+
 test("the theme menu offers System, Dark and Light; Light persists across a reload", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "dark" });
   await page.goto("/");
