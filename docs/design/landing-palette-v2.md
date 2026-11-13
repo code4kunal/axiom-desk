@@ -111,3 +111,5 @@ GSAP does exactly one thing: `ScrollTrigger` scrubs the pinned hero (300vh, 200v
 - Screenshots (Playwright, chromium, SwiftShader, DPR 1): `docs/design/mocks/{375,768,1280}-{light,dark}-{0,40}.png` and `docs/design/mocks/1280-light-70.png`. Pointer answer verified with a real `page.mouse.move` at 1280 light (`focus: 0`, equity tag shown) and 1280 dark state 70 (`focus: 1`, gilts). CTA bottom edge measured with `getBoundingClientRect()`: 740.9px at 375×844, 974.5px at 768×1024.
 - Layout below 1024: ring, statement, subline, CTA, then legend and rail together; `.scene{width:min(100%,280px)}` under 480px, `min(100%,640px,52svh)` from 480 to 1023, `min(100%,640px)` at 1024 and up.
 - UNVERIFIED: Google Fonts shipping of Eczar 700/800, Anek Latin and Anek Devanagari through `next/font/google` (the mock loads them from the Google CSS endpoint and they rendered); tree-shaken three.js chunk size; frame rate on a real mid-range Android.
+
+**Caption labels (2026-11-13, user decision).** The built captions keep the approved copy without the mock's "REGIME" / "REWEIGHT" labels at the 40 and 70 docks. Not drift; do not reopen in review.
