@@ -179,7 +179,9 @@ test.describe("AE3: dark system, stored Light", () => {
     page.on("request", (r) => r.url().includes("/hero/") && posters.push(r.url().split("/").pop()!));
     await page.goto("/");
     await settle(page);
-    expect(posters).toEqual(["poster-0-light.avif"]);
+    // One request, the light 0% poster, in whichever srcset width the viewport picks (720w or 960w).
+    expect(posters).toHaveLength(1);
+    expect(posters[0]).toMatch(/^poster-0-light(-720)?\.avif$/);
     const lcp = await page.evaluate(
       () =>
         new Promise<{ ms: number; statement: boolean; url: string }>((res) =>
@@ -189,7 +191,7 @@ test.describe("AE3: dark system, stored Light", () => {
           }).observe({ type: "largest-contentful-paint", buffered: true }),
         ),
     );
-    expect(lcp.statement || lcp.url.endsWith("/hero/poster-0-light.avif"), JSON.stringify(lcp)).toBe(true);
+    expect(lcp.statement || /\/hero\/poster-0-light(-720)?\.avif$/.test(lcp.url), JSON.stringify(lcp)).toBe(true);
     expect(lcp.ms).toBeLessThan(2500);
   });
 });

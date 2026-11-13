@@ -33,7 +33,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     // data-theme is set by the head script before hydration, so React must not flag it.
     <html lang="en-IN" suppressHydrationWarning className={`${display.variable} ${body.variable} ${mono.variable}`}>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: `${themeScript}document.documentElement.dataset.js="";${pinScript}${posterPreloadScript}` }} />
+        {/* Async, so it runs as soon as parsed instead of waiting for the stylesheet like the inline script
+            below: the LCP poster request starts with the fonts, not after the CSS. It resolves the theme itself. */}
+        <script async src={`data:text/javascript,${encodeURIComponent(themeScript + posterPreloadScript)}`} />
+        <script dangerouslySetInnerHTML={{ __html: `${themeScript}document.documentElement.dataset.js="";${pinScript}` }} />
       </head>
       <body>
         <a

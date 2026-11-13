@@ -85,6 +85,9 @@ for (const theme of ["dark", "light"] as const)
     // 960px covers the largest display (479 CSS px) at DPR 2; the dot field makes AVIF q40 the size knee.
     writeFileSync(`${base}.avif`, await sharp(png).resize(960).avif({ quality: 40, effort: 6 }).toBuffer());
     writeFileSync(`${base}.webp`, await sharp(png).resize(960).webp({ quality: 75 }).toBuffer());
+    // 720px: the phone plate (<=300 CSS px, ~250 at 844 tall) at DPR <=2.9 (LCP on throttled mobile).
+    writeFileSync(`${base}-720.avif`, await sharp(png).resize(720).avif({ quality: 40, effort: 6 }).toBuffer());
+    writeFileSync(`${base}-720.webp`, await sharp(png).resize(720).webp({ quality: 75 }).toBuffer());
     if (process.argv.includes("--png")) writeFileSync(`${base}.png`, png);
   }
 
