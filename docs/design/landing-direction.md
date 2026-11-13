@@ -38,7 +38,7 @@ Dark is primary (the phone at night). One luminous signal: brass, Fulgurite's ro
 |---|---|---|
 | ground | `#14100D` basalt | `#F5E6DC` pink paper |
 | raised | `#1F1915` | `#FBF1EA` |
-| hairline | `#3A322B` | `#D9C8BB` |
+| hairline | `#3A322B` | `#C9B3A2` (amended from `#D9C8BB`, 2026-11-13) |
 | ink | `#EDE6DA` | `#1C1714` |
 | ink-dim | `#A89E90` | `#5C524A` |
 | ink-faint (rules only) | `#6E655B` | `#B8A99B` |
@@ -54,7 +54,7 @@ Contrast, computed: dark ink/ground 15.26, ink-dim/ground 7.17, ink-dim/raised 6
 - **Hind** 400/500/600 (Indian Type Foundry): body and UI. Humanist sans built for Indian screens at 16px on low-DPR LCDs; Devanagari sibling exists.
 - **Martian Mono** 400/500 (Evil Martians): every number, evidence cell and regime label. Tabular; subset to digits, punctuation and capitals.
 
-Wordmark: "Axiom" in Martel 800, tracking -0.03em, the dot of the i replaced by a 2 × 10 px brass tick.
+Wordmark: "Axiom" in Martel 800, tracking -0.03em, the dot of the i replaced by a 2 px × 0.34 em brass tick (amended from 2 × 10 px on 2026-11-13: 10 px touched the stem).
 
 ### First viewport
 

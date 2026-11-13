@@ -12,7 +12,7 @@ CSS custom properties on `:root[data-theme]`. Dark is primary. Hex values are th
 |---|---|---|---|
 | `--ground` | `#14100D` | `#F5E6DC` | page background (basalt / pink paper) |
 | `--raised` | `#1F1915` | `#FBF1EA` | cards, dialogs, sheets, specimen cells |
-| `--hairline` | `#3A322B` | `#D9C8BB` | 1px rules, borders, cell dividers |
+| `--hairline` | `#3A322B` | `#C9B3A2` | 1px rules, borders, cell dividers (light was `#D9C8BB`, 1.33:1 on pink paper; raised to 1.65:1, user-approved 2026-11-13) |
 | `--ink` | `#EDE6DA` | `#1C1714` | primary text, wordmark |
 | `--ink-dim` | `#A89E90` | `#5C524A` | secondary text, captions, nav items at rest |
 | `--ink-faint` | `#6E655B` | `#B8A99B` | tick marks, inactive arcs, decorative rules only |
@@ -57,7 +57,7 @@ Scale (px / line-height / tracking). Fluid between 390 and 1440 via `clamp()`; t
 | `caption` | 12 / 1.4 / +0.06em | 13 / 1.4 / +0.06em | Martian Mono 400, uppercase |
 | `label` | 12 / 1 / +0.10em | 12 / 1 / +0.10em | Martian Mono 500, uppercase (nav anchors, stamps, ordinals) |
 
-- Wordmark: "Axiom", Martel 800, 20px at 390, 24px at 1440, tracking -0.03em; the i's dot is a 2×10px rectangle in `--brass-mark` (rotated 0°, sits on the x-height). Never animates.
+- Wordmark: "Axiom", Martel 800, 20px at 390, 24px at 1440, tracking -0.03em; the i's dot is a 2px × 0.34em rectangle (about 2×7–8px) in `--brass-mark` over a dotless i, with a gap above the stem; 10px could not clear the stem under the ascender (user-approved 2026-11-13). Never animates.
 - Numbers: Martian Mono only, `font-variant-numeric: tabular-nums`. They cut, never count up.
 - Floor: nothing under 12px; 12px only in Martian Mono 500 uppercase.
 
