@@ -16,6 +16,7 @@ Groomed with prompt-coach on 2026-11-13. All choices are the user's, except TAST
 | 21st.dev | Primitives only (menus, dialogs), restyled to tokens |
 | Audience | Brokers in discovery, plus the desk |
 | Hero | Regime → basket → hedge loop |
+| Landing design model | Fable: the ui-ux-pro-max design step for the landing page runs in a subagent with `model: "fable"` |
 | Brand | Typeset "Axiom" wordmark, designed in G5 |
 | Tone | Quant-precise, evidence-first: numbers carry base rates |
 | TASTE | **OPEN:** {{TASTE_LIKES}} / {{TASTE_HATES}}. Nothing starts without it |
