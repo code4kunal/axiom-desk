@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "776a7242-ef86-4178-adee-87e83e414356",
+  "status": "current",
+  "command": "deliver",
+  "type": "lifecycle",
+  "input": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/u14-renderer-spike-dabe9f/docs/diagrams/src/landing-hero-states.lifecycle.json",
+  "output": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/u14-renderer-spike-dabe9f/docs/diagrams/landing-hero-states.html",
+  "specification": {
+    "sha256": "32da62c1fe2cf2abc7270c733b7a34a3366c9e421b9ef4e7588263ed63079996",
+    "bytes": 5108
+  },
+  "artifact": {
+    "sha256": "2ceb3c2de564507d83db09a519de4911fc5dda8f28a3b851778e7bd991a6df50",
+    "bytes": 851166
+  }
+}

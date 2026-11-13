@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "c9ba6e5a-f770-4b8a-a6aa-b3dccce36759",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/u14-renderer-spike-dabe9f/docs/diagrams/src/landing-components.architecture.json",
+  "output": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/u14-renderer-spike-dabe9f/docs/diagrams/landing-components.html",
+  "specification": {
+    "sha256": "6d698d337f2f1cf4eba9d742b1dddb5dfe9f582605a9e3370cf7a1b59ad4905d",
+    "bytes": 5814
+  },
+  "artifact": {
+    "sha256": "41ea50c8b7ba91ddc539c83ea6c552bbb115bd6b34d9cc85c8595b6bbde13f47",
+    "bytes": 867695
+  }
+}
