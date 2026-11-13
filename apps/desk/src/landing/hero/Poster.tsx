@@ -9,7 +9,7 @@ const THEMES = ["dark", "light"] as const;
 export function Poster({ p }: { p: 0 | 40 | 70 | 100 }) {
   const hole = hero.hole[p === 0 ? 0 : 1]!;
   return (
-    <div className="hero-plate relative aspect-square w-full">
+    <div className="hero-plate relative aspect-square w-full [container-type:inline-size]">
       {THEMES.map((t) => (
         <picture key={t} data-poster={t}>
           <source type="image/avif" srcSet={`/hero/poster-${p}-${t}.avif`} />
@@ -30,7 +30,7 @@ export function Poster({ p }: { p: 0 | 40 | 70 | 100 }) {
       >
         <b
           data-tone={hole.tone}
-          className="max-w-[55%] font-display text-regime font-bold text-balance data-[tone=geru]:text-geru data-[tone=monsoon]:text-monsoon"
+          className="max-w-[55%] font-display text-regime text-[length:min(var(--text-regime),7.6cqi)] font-bold text-balance data-[tone=geru]:text-geru data-[tone=monsoon]:text-monsoon"
         >
           {hole.word}
         </b>

@@ -48,7 +48,7 @@ export function Hero() {
           </h1>
 
           <div className="col-span-4 md:row-start-2 lg:col-span-7">
-            <p className="max-w-[46ch] text-subline text-ink">{hero.subline}</p>
+            <p className="max-w-[46ch] text-subline text-ink-dim">{hero.subline}</p>
             <div className="mt-8 flex flex-col gap-2 md:flex-row md:items-center md:gap-6">
               <a
                 href="#reading"

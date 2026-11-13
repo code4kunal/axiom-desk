@@ -72,3 +72,5 @@ Hidden in pin mode (§1). Their figures survive as the tracks, so `id="reading"`
 - At 375 the states compress into the last ~40% of the pin (text passes first); the direction's 200vh cap is kept. If the desk wants 40/70 earlier, the only lever is the box height, not the layout.
 - A docking caption travels visibly before it docks (scroll-tied). `@container scroll-state(stuck)` could hide the travel later; browser support UNVERIFIED, not required.
 - Line counts (6 at 375 and 1280, 6 at 768) are estimates from Martel 800 metrics; measure in U4 screenshots at 375×844, 768×1024, 1280×800, light and dark. `NOT RUN` here.
+
+**Short phones (2026-11-13, v2 review).** At 360×640 the primary button ends at 689px, below the fold; at 360×720 it ends at 713px, inside it. A short-height plate of `min(220px, 26svh)` only reached 664px while shrinking the ring to 166px and the regime word to 12.6px, so it was rejected: below about 700px of height the ring and the statement carry the first screen and the button is one short scroll away. The statement is not shrunk (larger-fonts ruling).

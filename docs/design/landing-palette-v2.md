@@ -1,6 +1,6 @@
 # Landing palette v2: white ground, colour as data
 
-Status: proposal, 2026-11-13. Replaces the colour, type and hero-object sections of `DESIGN.md` once approved. Pin mechanics (`landing-hero-pin-spec.md`: CSS sticky, 4 caption docks, states 0/40/70/100) are kept unchanged. Mock: `docs/design/mocks/landing-v2-hero.html`. Screenshots: `docs/design/mocks/{375,768,1280}-{light,dark}-{0,40}.png` plus `1280-light-70.png`. Revised 2026-11-13 after the impeccable critique (eight fixes applied).
+Status: approved 2026-11-13 ("Approve, build it"), after the ruling: white ground, different colours on white, best fonts, maybe larger; no pink paper. Replaces the colour, type and hero-object sections of `DESIGN.md`. Pin mechanics (`landing-hero-pin-spec.md`: CSS sticky, 4 caption docks, states 0/40/70/100) are kept unchanged. Mock: `docs/design/mocks/landing-v2-hero.html`. Screenshots: `docs/design/mocks/{375,768,1280}-{light,dark}-{0,40}.png` plus `1280-light-70.png`. Revised 2026-11-13 after the impeccable critique (eight fixes applied).
 
 ## 1. Direction
 

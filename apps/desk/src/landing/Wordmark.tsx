@@ -9,7 +9,7 @@ export function Wordmark({ className = "" }: { className?: string }) {
       Ax
       <span className="relative inline-block">
         ı
-        <span className="absolute left-1/2 bottom-[0.81em] h-[0.34em] w-[2px] -translate-x-[calc(50%_-_0.04em)] bg-brass-mark" />
+        <span className="absolute left-1/2 bottom-[0.81em] h-[0.34em] w-[2px] -translate-x-[calc(50%_-_0.04em)] bg-geru-mark" />
       </span>
       om
     </span>
