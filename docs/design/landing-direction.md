@@ -1,5 +1,7 @@
 # Landing direction: "Yantra"
 
+**Status: APPROVED by the user on 2026-11-13, with all 6 fixes from `landing-direction-critique.md` applied below. Public CTA: "Ask your broker for Axiom" (no form).**
+
 Direction only, no app code. Method: ui-ux-pro-max (design-system, typography, gsap, ux, threejs, google-fonts domains) checked against PRODUCT.md, references/TASTE.md, the 2026-11-13 build prompt and both CLAUDE.md files. The skill's default for "fintech" was navy + green + IBM Plex on an "Enterprise Gateway" pattern: that is the rut, rejected.
 
 ## 1. Mechanism, scene, rut
@@ -64,9 +66,9 @@ Statement: **"Markets have seasons. Axiom reads the season, reweights the basket
 
 ### Hero 3D object
 
-- **Geometry.** Graduated ring, outer radius 1.0, tube 0.085, 96 segments; 360 tick marks as one `InstancedMesh`; inside, a 7-arc annulus (large-cap, mid-cap, gilts, gold, cash, international, options overlay) from `RingGeometry`; one thin needle. Under 25k triangles.
+- **Geometry.** Graduated ring, outer radius 1.0, tube 0.085, 96 segments; 360 tick marks as one `InstancedMesh`; inside, a 6-arc annulus (large-cap, mid/small-cap, gilts, gold, cash, international via LRS) from `RingGeometry`; one thin needle. Under 25k triangles.
 - **Materials.** Ring `MeshStandardMaterial` `#2A221C`, roughness 0.7, metalness 0.15. Ticks and needle brass, roughness 0.35, metalness 0.8, emissive 0.3 so they read on dim LCDs. Arcs unlit ink-dim, active arc brass. One directional plus one hemisphere light. No environment map, bloom or post-processing.
-- **Scroll** (GSAP ScrollTrigger, pinned 300vh, scrub 0.8). 0%: needle at Expansion, caption `EXPANSION · CONF 0.74`. 40%: needle sweeps 38°, ring tilts 12°, ticks near the needle turn geru, caption `EARLY DETERIORATION · CONF 0.68 · N 212`. 70%: arcs reweight in place, caption `EQUITY 61 → 42 · GILTS 18 → 29 · GOLD 9 → 17`. 100%: ring settles flat; a DOM hedge card slides from its edge: `HEDGE DRAFT · NIFTY PUT SPREAD · a human confirms every order`. `ILLUSTRATIVE` stays in the rail at every frame.
+- **Scroll** (GSAP ScrollTrigger, pinned 300vh, scrub 0.8). 0%: needle at Expansion, caption `EXPANSION · CONF 0.74`. 40%: needle sweeps 38°, ring tilts 12°, ticks near the needle turn geru, caption `EARLY DETERIORATION · CONF 0.68 · N 212`. 70%: arcs reweight in place, caption `EQUITY 61 → 42 · GILTS 18 → 29 · GOLD 9 → 17`. 100%: ring settles flat; a DOM hedge card slides from its edge: `HEDGE DRAFT · INDEX PROTECTION · ILLUSTRATIVE · a human confirms every order` (no named instrument in the hero; the structure appears only on the 05 evidence card). On screens under 768px the pin is capped at 200vh and the section index stays visible so the visitor can skip it. `ILLUSTRATIVE` stays in the rail at every frame.
 - **Pointer.** Ring tilts up to 6° toward the pointer, lerp 0.12 s; ticks within 20° brighten. Touch ignored; scroll owns the object.
 - **Poster.** AVIF with WebP fallback per theme, 1200 × 1200, the 0% state, the LCP element with `fetchpriority="high"`. The canvas fades over it and the poster never unmounts, so WebGL failure needs no second path.
 - **Reduced motion.** No pin, no scrub: four static posters (0/40/70/100) as normal sections with the same captions.
@@ -75,11 +77,13 @@ Statement: **"Markets have seasons. Axiom reads the season, reweights the basket
 
 01 **Hero.** Above.
 
-02 **Problem.** "Equity-only tools go quiet when the season turns. By the time the index says bear, the basket is already there." A flat chart greys while the needle keeps reading.
+Two depths in every section: a plain Hind line for the newcomer, then a Martian Mono caption for the desk.
 
-03 **Charts.** "Up to eight synced charts. Patterns carry their base rate and sample size, or say insufficient evidence." HyperFrames clip: a pattern stamping its evidence grade.
+02 **Problem.** "Equity-only tools go quiet when the season turns. The warning arrives after the fall." A flat chart greys while the needle keeps reading.
 
-04 **Options and Vol Lab.** "One arbitrage-free volatility surface. Every options number on every screen derives from it." Clip: the surface turning once, a chain reading from it.
+03 **Charts.** "Every pattern on the chart tells you how often it has worked before, or says it can't tell yet." Caption: `BASE RATE · SAMPLE SIZE · UP TO 8 SYNCED CHARTS`. HyperFrames clip: a pattern stamping its evidence grade.
+
+04 **Options and Vol Lab.** "Every options price comes from one consistent model, so the numbers agree everywhere." Caption: `ONE ARBITRAGE-FREE SURFACE · SSVI`. Clip: the surface turning once, a chain reading from it.
 
 05 **Hedge.** "When regime confidence shifts, Axiom drafts the hedge. It never places it. A human confirms every order." The hero's hedge card, now with its evidence grid.
 
@@ -87,7 +91,7 @@ Statement: **"Markets have seasons. Axiom reads the season, reweights the basket
 
 07 **Evidence standard.** "Base rate. Sample size. Out-of-sample proof. Every claim carries all three, or carries the words: insufficient evidence." A specimen card in hairline cells: `BASE RATE 0.58 · N 212 · OOS 0.54 · AS OF 2026-11-13 · ILLUSTRATIVE`. Grades as stamp outlines: **CNF** out-of-sample confirmed, **RAC** in-sample only, **WL** insufficient evidence.
 
-08 **Brokers.** "White-label Axiom for your clients. Your SEBI-registered analysts author every basket and call. Talk to the desk." Brass button "Talk to the desk". No trading sign-up, no pricing.
+08 **Brokers.** "White-label Axiom for your clients. Your SEBI-registered analysts author every basket and call. Talk to the desk." Brass button "Talk to the desk". For the public, a plain line under it: "Investing with a broker? Ask them for Axiom." No form, no trading sign-up, no pricing.
 
 09 **Footer.** Wordmark, "Research tool. Not investment advice. No performance is promised.", section index, theme toggle.
 
@@ -121,6 +125,10 @@ Ratios above; ink-faint and brass marks never carry text. Ring is `aria-hidden`;
 - Bloomberg: under 20 numbers on the page, each ILLUSTRATIVE; warm basalt, no ticker, no orange, no quote grid; the newcomer path is one sentence about seasons.
 - Crypto: no coin, no glow beyond 0.3 emissive on brass, no countdown, no rocket; "before" is the only urgency word.
 - The likes: no violet, particles, cream-with-vermilion or agent cursors; only the pointer-aware object, telemetry grid and numbered sections are borrowed.
+
+### Calibration guard
+
+The second voice is what keeps basalt plus brass out of the "near-black with one glow" cluster: geru and monsoon as real state colours, railway stamp outlines, and pink paper in light mode. None of them may be dropped in the build.
 
 ### Risk
 
