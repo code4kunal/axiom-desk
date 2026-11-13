@@ -89,7 +89,13 @@ class OidcClient:
         if self._discovery is None or self._jwks is None:
             url = self._settings.issuer.rstrip("/") + "/.well-known/openid-configuration"
             doc = await _fetch(lambda: httpx2.get(url, timeout=TIMEOUT_SECONDS))
-            self._jwks = jwt.PyJWKClient(str(doc.get("jwks_uri")), timeout=TIMEOUT_SECONDS)
+            # Checked before caching: a bad document must not stick until restart (Discovery §4.3).
+            endpoints = ("authorization_endpoint", "token_endpoint", "jwks_uri")
+            if doc.get("issuer") != self._settings.issuer or not all(
+                isinstance(doc.get(k), str) for k in endpoints
+            ):
+                raise SignInFailed("failed")
+            self._jwks = jwt.PyJWKClient(doc["jwks_uri"], timeout=TIMEOUT_SECONDS)
             self._discovery = doc
         return self._discovery, self._jwks
 

@@ -287,6 +287,45 @@ def test_login_with_a_discovery_document_missing_its_endpoints_gives_failed(
     assert r.headers["location"] == "/sign-in?error=failed"
 
 
+def test_a_bad_discovery_document_is_not_cached_and_a_wrong_issuer_is_refused(
+    services: Services,
+) -> None:
+    served: list[dict[str, str]] = []
+
+    class Changing(BaseHTTPRequestHandler):
+        def do_GET(self) -> None:
+            body = json.dumps(served[0]).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, format: str, *args: Any) -> None:
+            return
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Changing)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    issuer = f"http://127.0.0.1:{server.server_port}"
+    good = {
+        "issuer": issuer,
+        "authorization_endpoint": f"{issuer}/authorize",
+        "token_endpoint": f"{issuer}/token",
+        "jwks_uri": f"{issuer}/jwks",
+    }
+    desk = browser(services, issuer)
+    try:
+        served[:] = [{**good, "issuer": "https://elsewhere.example"}]
+        assert desk.get("/auth/login").headers["location"] == "/sign-in?error=failed"
+        served[:] = [good]  # the provider recovers: the next sign-in must not need a restart
+        r = desk.get("/auth/login")
+    finally:
+        server.shutdown()
+        server.server_close()
+
+    assert r.headers["location"].startswith(f"{issuer}/authorize?")
+
+
 def test_login_with_sign_in_not_configured_gives_failed(services: Services) -> None:
     desk = TestClient(create_app(services), base_url=ORIGIN, follow_redirects=False)
     r = desk.get("/auth/login")
@@ -353,6 +392,21 @@ def test_logout_ends_the_session_on_the_server_and_clears_the_cookie(
     assert flags(cookie(r, SESSION)) >= {"max-age=0", "secure", "httponly", "path=/"}
     stale = browser(services, provider.url)
     stale.cookies.set(SESSION, token)
+    assert stale.get("/auth/me").status_code == 401
+
+
+def test_a_new_sign_in_in_the_same_browser_ends_the_session_it_replaces(
+    desk: TestClient, services: Services, provider: Any
+) -> None:
+    sign_in(desk)
+    first = desk.cookies[SESSION]
+
+    sign_in(desk)
+
+    assert desk.cookies[SESSION] != first
+    assert desk.get("/auth/me").status_code == 200
+    stale = browser(services, provider.url)
+    stale.cookies.set(SESSION, first)
     assert stale.get("/auth/me").status_code == 401
 
 

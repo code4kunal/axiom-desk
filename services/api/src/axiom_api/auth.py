@@ -8,7 +8,6 @@ ID token verifies are logged here; refusals after it are audited by SessionStore
 import logging
 import secrets
 
-import jwt
 from axiom_core.session import PendingLogins, SessionStore, Unauthenticated
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, RedirectResponse, Response
@@ -69,8 +68,6 @@ def register_auth(
             url = await oidc.authorize_url(state=state, nonce=nonce, verifier=verifier)
         except SignInFailed as e:
             return _refused(e.reason)
-        except (KeyError, jwt.PyJWKClientError):  # discovery without its endpoints or jwks_uri
-            return _refused("failed")
         handle = pending.create(state=state, nonce=nonce, verifier=verifier)
         response = _see_other(url)
         _set(response, LOGIN_COOKIE, handle, int(PendingLogins.TTL_SECONDS))
@@ -95,6 +92,8 @@ def register_auth(
             token = sessions.sign_in(claims)
         except Unauthenticated as e:
             return _refused(e.reason)
+        if old := request.cookies.get(SESSION_COOKIE):
+            sessions.sign_out(old)  # a new sign-in in this browser ends the one it replaces
         response = _see_other("/desk")
         _set(response, SESSION_COOKIE, token, int(SessionStore.TTL_SECONDS))
         _set(response, LOGIN_COOKIE, "", 0)

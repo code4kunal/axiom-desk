@@ -10,7 +10,11 @@ export const me = cache(async (): Promise<Me> => {
   // Outside the try: during prerender cookies() throws Next's own bail-out, which must not be swallowed.
   const cookie = (await cookies()).toString();
   try {
-    const res = await fetch(`${process.env.AXIOM_API_ORIGIN}/auth/me`, { headers: { cookie }, cache: "no-store" });
+    const res = await fetch(`${process.env.AXIOM_API_ORIGIN}/auth/me`, {
+      headers: { cookie },
+      cache: "no-store",
+      signal: AbortSignal.timeout(5000), // a hung API shows "unreachable", not a 300 s spinner
+    });
     if (res.status === 401) return "signed-out";
     if (!res.ok) return "unreachable";
     return (await res.json()) as { name: string; tenant: string };
