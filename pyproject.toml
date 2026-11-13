@@ -9,11 +9,12 @@ dev = [
   "pytest>=8",
   "ruff>=0.6",
   "pyright>=1.1.380",
-  "httpx2>=2.16",
 ]
 
 [tool.uv]
 package = false
+# click 8.5.1 (2026-11-06) is under the two-week dependency age rule; drop once it ages in.
+exclude-newer-package = { click = "2026-10-30T00:00:00Z" }
 
 [tool.uv.sources]
 axiom-core = { workspace = true }
