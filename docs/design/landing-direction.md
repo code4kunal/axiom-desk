@@ -58,9 +58,9 @@ Wordmark: "Axiom" in Martel 800, tracking -0.03em, the dot of the i replaced by 
 
 ### First viewport
 
-**1440.** Left 55%: wordmark 24px; statement in Martel 800 at 88px, line-height 0.98, two lines; one Hind line at 20px; primary button "See how it reads a market" (ink on brass) with a ghost link "For brokers". Right 45%: the ring at 620px resting at Expansion, Martian Mono caption rail beneath: `REGIME EXPANSION · CONF 0.74 · N 212 · ILLUSTRATIVE`. Bottom: hairline with section index `01 Season 02 Basket 03 Hedge 04 Evidence`.
+**1440.** Left 55%: wordmark 24px; statement in Martel 800 at 88px, line-height 0.98, two lines (amended 2026-11-13: the approved statement runs about six lines at this size; the user kept the copy and the layout is sized for it); one Hind line at 20px; primary button "See how it reads a market" (ink on brass) with a ghost link "For brokers". Right 45%: the ring at 620px resting at Expansion, Martian Mono caption rail beneath: `REGIME EXPANSION · CONF 0.74 · N 212 · ILLUSTRATIVE`. Bottom: hairline with section index `01 Season 02 Basket 03 Hedge 04 Evidence`.
 
-**390.** Wordmark 20px. Ring first, 300px, poster-first so it paints at once. Statement at 40px, three lines max. Hind line 17px. Primary button full-width, 52px, inside the first 844px. Caption rail in two 12px lines.
+**390.** Wordmark 20px. Ring first, 300px, poster-first so it paints at once. Statement at 40px (amended 2026-11-13: runs about seven lines; copy kept, primary button still inside the first 844px). Hind line 17px. Primary button full-width, 52px, inside the first 844px. Caption rail in two 12px lines.
 
 Statement: **"Markets have seasons. Axiom reads the season, reweights the basket, and shows its evidence."** Subline: **"A research instrument for Indian investors. It drafts; a human confirms every order."**
 

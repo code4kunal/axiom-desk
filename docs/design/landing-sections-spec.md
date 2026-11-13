@@ -102,6 +102,6 @@ U3 placeholder: `--raised`, `1px solid var(--hairline)`, radius 4px, a second ha
 
 ## 12. Risks
 
-- The direction's "two lines at 88px" (1440) and "three lines max at 40px" (390) cannot hold the 91-character statement; it runs 5–6 lines at both ends. Composition above is sized for that. Either accept or shorten the statement (user decision; copy is approved).
+- The direction's "two lines at 88px" (1440) and "three lines max at 40px" (390) cannot hold the 91-character statement; it runs 5–6 lines at both ends. Composition above is sized for that. Decided 2026-11-13: the user kept the statement as written.
 - At 375 the primary button lands near 830px of the first 844px with the poster-first order; measure in U3, and if it overflows drop caption 0 below the buttons rather than shrinking the poster.
 - Banned-phrase check: every string above read against returns, guaranteed, guarantee, profit, profits, buy, buying, sell, selling, tips, beat the market (whole words); none appear. Screenshots at 375/768/1280 light and dark are the U3 exit: `NOT RUN` here.
