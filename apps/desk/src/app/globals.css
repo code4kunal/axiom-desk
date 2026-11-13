@@ -1,0 +1,483 @@
+@import "tailwindcss";
+
+/* Only DESIGN.md tokens exist: Tailwind's default palette, radii and shadows are removed.
+   static: emit every token, including those read only through var() in inline styles and the ring. */
+@theme static {
+  --color-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+  --blur-*: initial;
+
+  /* Light (white) is primary; dark overrides below. Palette v2 (docs/design/landing-palette-v2.md).
+     Base tokens are for text (4.5:1+); -mark tokens are for graphics only (3:1+). */
+  --color-ground: #ffffff;
+  --color-raised: #f2f4f7;
+  --color-hairline: #d7dce2;
+  --color-ink: #0e1319;
+  --color-ink-dim: #4e5966;
+  --color-ink-faint: #7b8692;
+  --color-brass: #0e1319;
+  --color-brass-mark: #0e1319;
+  --color-brass-line: #0e1319;
+  --color-on-brass: #ffffff;
+  --color-monsoon: #107a3a;
+  --color-monsoon-mark: #1e9a4a;
+  --color-geru: #bf3d12;
+  --color-geru-mark: #e0501c;
+  --color-equity: #0e1319;
+  --color-equity-mark: #0e1319;
+  --color-gilts: #0f7b7a;
+  --color-gilts-mark: #149892;
+  --color-gold: #956208;
+  --color-gold-mark: #b97d0c;
+  --color-cash: #636e7a;
+  --color-cash-mark: #808d9b;
+  --color-intl: #b8206f;
+  --color-intl-mark: #d42e7e;
+  --color-stamp-cnf: var(--color-monsoon);
+  --color-stamp-rac: var(--color-gold);
+  --color-stamp-wl: var(--color-cash);
+
+  --font-display: var(--ff-display), serif;
+  --font-body: var(--ff-body), sans-serif;
+  --font-mono: var(--ff-mono), monospace;
+
+  --radius-1: 2px;
+  --radius-2: 4px;
+
+  /* Fluid between 375 and 1280 wide (palette v2 §3). */
+  --text-statement: clamp(38px, 25.57px + 3.315vw, 68px);
+  --text-statement--line-height: 1;
+  --text-statement--letter-spacing: -0.02em;
+  --text-regime: clamp(22px, 3vw, 34px);
+  --text-regime--line-height: 1;
+  --text-regime--letter-spacing: -0.01em;
+  --text-section-head: clamp(32px, 23.71px + 2.21vw, 52px);
+  --text-section-head--line-height: 1.03;
+  --text-section-head--letter-spacing: -0.02em;
+  --text-legal-h1: clamp(30px, 26.29px + 0.952vw, 40px);
+  --text-legal-h1--line-height: 1.1;
+  --text-legal-h1--letter-spacing: -0.015em;
+  --text-subline: clamp(18px, 16.76px + 0.331vw, 21px);
+  --text-subline--line-height: 1.45;
+  --text-body: clamp(18px, 17.17px + 0.221vw, 20px);
+  --text-body--line-height: 1.55;
+  --text-legal-body: clamp(16px, 15.63px + 0.095vw, 17px);
+  --text-legal-body--line-height: 1.65;
+  --text-ui: 17px;
+  --text-ui--line-height: 1.2;
+  --text-small: 15px;
+  --text-small--line-height: 1.5;
+  --text-caption: 13px;
+  --text-caption--line-height: 1.4;
+  --text-caption--letter-spacing: 0.06em;
+  --text-label: 12px;
+  --text-label--line-height: 1;
+  --text-label--letter-spacing: 0.1em;
+
+  --ease-reveal: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+:root {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-ground: #0e1114;
+  --color-raised: #171b20;
+  --color-hairline: #2b313a;
+  --color-ink: #f1f3f5;
+  --color-ink-dim: #a7afb9;
+  --color-ink-faint: #6e7884;
+  --color-brass: #f1f3f5;
+  --color-brass-mark: #f1f3f5;
+  --color-brass-line: #f1f3f5;
+  --color-on-brass: #0e1114;
+  --color-monsoon: #49c27a;
+  --color-monsoon-mark: #49c27a;
+  --color-geru: #f5805a;
+  --color-geru-mark: #f5805a;
+  --color-equity: #f1f3f5;
+  --color-equity-mark: #f1f3f5;
+  --color-gilts: #3dbdb9;
+  --color-gilts-mark: #3dbdb9;
+  --color-gold: #e3ac3c;
+  --color-gold-mark: #e3ac3c;
+  --color-cash: #98a2ae;
+  --color-cash-mark: #98a2ae;
+  --color-intl: #ee6cab;
+  --color-intl-mark: #ee6cab;
+}
+
+/* JavaScript off: no data-theme, so follow the system. Same values as the block above. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --color-ground: #0e1114;
+    --color-raised: #171b20;
+    --color-hairline: #2b313a;
+    --color-ink: #f1f3f5;
+    --color-ink-dim: #a7afb9;
+    --color-ink-faint: #6e7884;
+    --color-brass: #f1f3f5;
+    --color-brass-mark: #f1f3f5;
+    --color-brass-line: #f1f3f5;
+    --color-on-brass: #0e1114;
+    --color-monsoon: #49c27a;
+    --color-monsoon-mark: #49c27a;
+    --color-geru: #f5805a;
+    --color-geru-mark: #f5805a;
+    --color-equity: #f1f3f5;
+    --color-equity-mark: #f1f3f5;
+    --color-gilts: #3dbdb9;
+    --color-gilts-mark: #3dbdb9;
+    --color-gold: #e3ac3c;
+    --color-gold-mark: #e3ac3c;
+    --color-cash: #98a2ae;
+    --color-cash-mark: #98a2ae;
+    --color-intl: #ee6cab;
+    --color-intl-mark: #ee6cab;
+  }
+}
+
+@layer base {
+  html {
+    scroll-padding-top: 48px;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--color-ground);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+  }
+  html {
+    caret-color: var(--color-brass);
+    accent-color: var(--color-brass-mark);
+    scrollbar-color: var(--color-ink-faint) var(--color-ground);
+    font-variant-numeric: tabular-nums;
+  }
+  ::selection {
+    background: var(--color-brass-mark);
+    color: var(--color-on-brass);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-brass-line);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    /* Theme switch: colour only. */
+    *,
+    *::before {
+      transition-property: color, background-color, border-color;
+      transition-duration: 160ms;
+      transition-timing-function: linear;
+    }
+  }
+}
+
+/* Section reveals: hidden only when JS is on (html[data-js]), shown once by the observer. Screen only,
+   so print is never blank. Until the observer starts (html[data-observing]) a 3s failsafe shows
+   everything, so a chunk that never loads cannot leave the page empty. */
+@keyframes reveal-failsafe {
+  to {
+    opacity: 1;
+    translate: none;
+  }
+}
+@media screen {
+  html[data-js] [data-reveal]:not([data-shown]) {
+    opacity: 0;
+  }
+  html[data-js]:not([data-observing]) [data-reveal]:not([data-shown]) {
+    animation: reveal-failsafe 0s 3s forwards;
+  }
+}
+@media screen and (prefers-reduced-motion: no-preference) {
+  html[data-js] [data-reveal]:not([data-shown]) {
+    translate: 0 16px;
+  }
+  html[data-js] [data-reveal] {
+    transition:
+      opacity 480ms var(--ease-reveal) calc(var(--i, 0) * 60ms),
+      translate 480ms var(--ease-reveal) calc(var(--i, 0) * 60ms);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-js] [data-reveal] {
+    transition: opacity 480ms var(--ease-reveal);
+  }
+}
+
+/* Overlays (U5): open = fade + short rise, close = fade. Radix keeps the node until the exit animation
+   ends. Menus are quicker than the dialog and sheet; reduced motion drops the rise. */
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+    translate: 0 var(--rise);
+  }
+}
+@keyframes overlay-out {
+  to {
+    opacity: 0;
+  }
+}
+.overlay {
+  --rise: 12px;
+  --in: 240ms;
+  &[data-state="open"] {
+    animation: overlay-in var(--in) var(--ease-reveal);
+  }
+  &[data-state="closed"] {
+    animation: overlay-out 200ms ease-in;
+  }
+}
+.overlay-menu {
+  --rise: 4px;
+  --in: 160ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .overlay {
+    --rise: 0px;
+  }
+}
+
+@utility frame {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 1280px;
+  padding-inline: 16px;
+  @media (width >= 48rem) {
+    padding-inline: 32px;
+  }
+  @media (width >= 64rem) {
+    padding-inline: 48px;
+  }
+}
+
+@utility stamp {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 3px 6px 2px;
+  border: 1.5px solid currentColor;
+  border-radius: var(--radius-1);
+}
+
+@utility link {
+  color: var(--color-brass);
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  &:hover {
+    text-decoration-color: var(--color-ink);
+  }
+}
+
+/* Posters: the theme's picture shows; the other is display:none and lazy, so it is never fetched. */
+:root[data-theme="light"] [data-poster="dark"],
+:root[data-theme="dark"] [data-poster="light"] {
+  display: none;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) [data-poster="dark"] {
+    display: none;
+  }
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) [data-poster="light"] {
+    display: none;
+  }
+}
+
+/* Pinned hero (docs/design/landing-hero-pin-spec.md). html[data-hero=pin] is set before paint by the
+   head script; CSS sticky does all pinning, GSAP only paints the ring. Unlayered, so it beats utilities. */
+html[data-hero="pin"] #season {
+  --d: calc(var(--box) - 100svh);
+  --pt: 16px;
+  --plate: min(300px, 30svh);
+  --legend-h: 0px;
+  /* From 768 the plate is also capped by height so the caption rail (~62px) stays above the fold on
+     short desktops (1366×768 minus browser chrome, 1024×600). */
+  --rail-room: 80px;
+  --plate-max: calc(100svh - 48px - var(--pt) - 12px - var(--legend-h) - var(--rail-room));
+  --rail-top: calc(48px + var(--pt) + var(--plate) + 12px + var(--legend-h));
+  --ring-col: 1 / -1;
+  /* <768 the box is its content: each caption track is one step (bottom of the view to the rail), so a
+     caption enters only once the one before has docked. */
+  --step: calc(100svh - var(--rail-top));
+  height: auto;
+  padding-block: 0;
+
+  & > .grid {
+    row-gap: 0;
+    /* poster · rail · statement · subline+buttons · legend · track 40 · track 70 · hedge track */
+    grid-template-rows: auto auto auto auto auto var(--step) var(--step) var(--step);
+  }
+  .hero-fig0,
+  .hero-plates {
+    display: contents;
+  }
+  .hero-text > h1 {
+    grid-row: 3;
+    padding-top: 16px;
+  }
+  /* <768: 24px between subline and buttons (mt-8 stacked) keeps the primary inside the first 844px. */
+  .hero-text > div > div {
+    margin-top: 24px;
+  }
+  .hero-text > div {
+    grid-row: 4;
+    padding-block: 24px;
+  }
+  /* <768 the legend follows the buttons in flow; from 768 it docks under the ring. */
+  .hero-legend {
+    grid-row: 5;
+    grid-column: 1 / -1;
+    align-self: start;
+    margin: 0 0 40px;
+  }
+  .hero-poster {
+    grid-row: 1;
+    grid-column: var(--ring-col);
+    position: sticky;
+    top: 48px;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    max-width: none;
+    margin: 0;
+    padding: var(--pt) 0 12px;
+    background: var(--color-ground);
+  }
+  .hero-poster .hero-plate {
+    width: var(--plate);
+    max-width: 100%;
+    height: var(--plate);
+  }
+  .hero-rail,
+  .hero-track {
+    grid-column: var(--ring-col);
+    align-self: start;
+    position: sticky;
+    top: var(--rail-top);
+    min-height: 72px;
+    margin: 0;
+    background: var(--color-ground);
+  }
+  .hero-rail {
+    grid-row: 2;
+    z-index: 2;
+    min-height: 0; /* tracks keep 72px, so they still cover it */
+    border-top: 1px solid var(--color-hairline);
+    padding: 12px 0;
+  }
+  .hero-track {
+    z-index: 3;
+    scroll-margin-top: calc(var(--rail-top) - 48px);
+    & > .hero-plate {
+      display: none;
+    }
+    & > figcaption {
+      margin: 0;
+      padding: 12px 0;
+    }
+    &:not(:last-child) > figcaption {
+      border-top: 1px solid var(--color-hairline);
+    }
+    /* The card's own top border lands on the rail line. */
+    &:last-child > figcaption {
+      padding-top: 0;
+    }
+  }
+  .hero-rail,
+  .hero-track > figcaption {
+    text-wrap: balance;
+  }
+  .hero-track:nth-child(1) { grid-row: 6; }
+  .hero-track:nth-child(2) { grid-row: 7; }
+  .hero-track:nth-child(3) { grid-row: 8; }
+
+  @media (width >= 48rem) {
+    --box: 300lvh;
+    --legend-h: 76px;
+    --pt: 40px;
+    --plate: min(calc((100vw - 232px) / 2 + 72px), var(--plate-max));
+    --ring-col: 5 / 9;
+
+    height: var(--box);
+
+    & > .grid {
+      height: calc(var(--box) - 48px);
+      /* ring column: poster · legend · rail (docks 0) · 40 at .4d · 70 at .7d · hedge at d */
+      grid-template-rows: auto var(--legend-h) calc(0.4 * var(--d)) calc(0.3 * var(--d)) calc(0.3 * var(--d)) calc(100svh - var(--rail-top));
+    }
+    .hero-legend {
+      grid-row: 2;
+      grid-column: var(--ring-col);
+      position: sticky;
+      top: calc(var(--rail-top) - var(--legend-h));
+      z-index: 2;
+      height: var(--legend-h);
+      margin: 0;
+      border-bottom: 0; /* the rail's top rule closes it */
+      background: var(--color-ground);
+    }
+    .hero-rail {
+      grid-row: 3;
+    }
+    .hero-text {
+      display: block;
+      grid-column: 1 / 5;
+      grid-row: 1 / -1;
+      align-self: start;
+      position: sticky;
+      top: 48px;
+      padding-top: var(--pt);
+      & > h1 {
+        padding-top: 0;
+        font-size: var(--text-section-head);
+        line-height: var(--text-section-head--line-height);
+      }
+      & > div {
+        margin-top: 24px;
+        padding-bottom: 0;
+      }
+      & > div > div {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0;
+      }
+    }
+    .hero-track:nth-child(1) { grid-row: 4; }
+    .hero-track:nth-child(2) { grid-row: 5; }
+    .hero-track:nth-child(3) { grid-row: 6; }
+  }
+
+  @media (width >= 64rem) {
+    --pt: 64px;
+    --plate: min(calc((min(100vw, 1280px) - 360px) * 5 / 12 + 96px), var(--plate-max));
+    --ring-col: 8 / 13;
+
+    .hero-text {
+      grid-column: 1 / 8;
+      & > h1 {
+        font-size: min(var(--text-statement), 9svh);
+        line-height: var(--text-statement--line-height);
+      }
+      & > div > div {
+        flex-direction: row;
+        align-items: center;
+        gap: 24px;
+      }
+    }
+  }
+}

@@ -3,7 +3,8 @@
 Usage: check_secrets.py            (scans `git diff --cached`)
        check_secrets.py --stdin    (scans a unified diff on stdin)
        check_secrets.py --range A..B   (scans each commit in the range)
-Prints only the file and line number of each hit, never the matched value.
+Prints only the file and line number of each hit, never the matched value. An added key file
+(.p12, .pfx, .jks, .keystore) is refused by its path alone.
 """
 
 import re
@@ -11,29 +12,43 @@ import subprocess
 import sys
 
 PATTERNS: dict[str, re.Pattern[str]] = {
-    "aws access key": re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
+    "aws access key": re.compile(r"\b(?:AKIA|ASIA)[0-9A-Z]{16}\b"),
     "private key block": re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----"),
-    "github token": re.compile(r"\bgh[pousr]_[A-Za-z0-9]{36,}\b"),
+    "github token": re.compile(r"\b(?:gh[pousr]_[A-Za-z0-9]{36,}|github_pat_[A-Za-z0-9_]{50,})"),
     "anthropic key": re.compile(r"\bsk-ant-[A-Za-z0-9_-]{20,}"),
-    # The name may carry a prefix or suffix (OPENAI_API_KEY, client_secret, "api_key": in JSON),
-    # but not one that makes it a reference (SECRET_NAME, token_url). An unquoted value must
-    # contain a digit, so `token = request_headers_get` is not a hit.
+    # The name may carry a prefix or suffix (OPENAI_API_KEY, client_secret, "api_key": in JSON,
+    # camelCase accessToken), but not one that makes it a reference (SECRET_NAME, token_url,
+    # accessTokenUrl). An unquoted value must contain a digit, so `token = request_headers_get`
+    # is not a hit.
     "assigned key or secret": re.compile(
-        r"(?i)(?<![a-z])(api[_-]?key|secret|token|passw(?:or)?d)"
-        r"(?:[_-](?!(?:name|id|arn|path|file|ref|env|url)\b)[a-z0-9_-]*)?['\"]?"
+        r"(?:(?<![A-Za-z])(?i:api[_-]?key|secret|token|passw(?:or)?d)"
+        r"|(?<=[a-z0-9])(?:Api[_-]?Key|Secret|Token|Passw(?:or)?d))"
+        r"(?i:[_-](?!(?:name|id|arn|path|file|ref|env|url)\b)[a-z0-9_-]*)?['\"]?"
         r"\s*[:=]\s*(?:['\"][^'\"\s]{16,}['\"]|(?=[^\s'\"]*\d)[A-Za-z0-9+/=_-]{16,}(?![^\s,;]))"
     ),
+    # Env-style OPENAI_KEY / *_LICENSE_KEY. The value must hold a digit, quoted or not, so
+    # storage-key names (RAIL_COLLAPSED_KEY = "app-rail-collapsed") and cache_key stay out.
+    "env-style key": re.compile(
+        r"(?<=_)KEY['\"]?\s*[:=]\s*['\"]?(?=[^\s'\"]*\d)[A-Za-z0-9+/=_.-]{16,}"
+    ),
+    "bearer token": re.compile(r"\bBearer\s+[A-Za-z0-9._~+/-]{20,}"),
     "password in a connection url": re.compile(r"[a-z][a-z0-9+.-]*://[^:/\s@]+:[^@\s/${<]{3,}@"),
 }
+
+KEY_FILE = re.compile(r"\.(?:p12|pfx|jks|keystore)$", re.IGNORECASE)
 
 
 def scan(diff: str) -> list[str]:
     hits: list[str] = []
     path = "?"
     line_no = 0
+    prev = ""
     for raw in diff.splitlines():
+        prev, was = raw, prev
         if raw.startswith("+++ "):
             path = raw[6:] if raw.startswith("+++ b/") else raw[4:]
+            if was == "--- /dev/null" and KEY_FILE.search(path):
+                hits.append(f"{path}: possible key file")
             continue
         if raw.startswith("@@"):
             match = re.search(r"\+(\d+)", raw)
@@ -49,16 +64,24 @@ def scan(diff: str) -> list[str]:
     return hits
 
 
+# Plain, full-text diffs whatever the user's git config says: forced colour prefixes ANSI codes,
+# and binary or `-diff` files would otherwise print no content at all.
+PLAIN = ("--unified=0", "--no-color", "--no-ext-diff", "--no-textconv", "--text")
+
+
 def main(argv: list[str]) -> int:
     if "--stdin" in argv:
         diff = sys.stdin.read()
     else:
         # A range is scanned commit by commit, so a secret added and later removed still shows.
         if "--range" in argv:
-            cmd = ["git", "log", "-p", "--unified=0", "--format=", argv[argv.index("--range") + 1]]
+            cmd = ["git", "log", "-p", *PLAIN, "--format=", argv[argv.index("--range") + 1]]
         else:
-            cmd = ["git", "diff", "--unified=0", "--cached"]
-        diff = subprocess.run(cmd, capture_output=True, text=True, check=True).stdout
+            cmd = ["git", "diff", *PLAIN, "--cached"]
+        # Binary content is decoded with replacement so a key inside it is still readable text.
+        diff = subprocess.run(
+            cmd, capture_output=True, text=True, errors="replace", check=True
+        ).stdout
     hits = scan(diff)
     for hit in hits:
         print(hit, file=sys.stderr)

@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Axiom landing page: planned component architecture (apps/desk)",
+    "output": "docs/diagrams/landing-components.html",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "legend": {
+      "entries": {
+        "external": { "label": "Visitor" },
+        "backend": { "label": "Server component (static)" },
+        "frontend": { "label": "Client island / lazy chunk" },
+        "database": { "label": "Copy module" },
+        "cloud": { "label": "Static asset (public/)" },
+        "security": { "label": "Copy check (test)" }
+      }
+    }
+  },
+  "components": [
+    { "id": "visitor", "type": "external", "label": "Visitor browser", "sublabel": "GET /", "pos": [40, 300], "size": [150, 60] },
+    { "id": "og", "type": "cloud", "label": "OG image", "sublabel": "1200×630", "pos": [40, 150], "size": [150, 60] },
+    { "id": "routes", "type": "backend", "label": "Static routes", "sublabel": "/privacy · /terms · 404", "pos": [40, 450], "size": [150, 60] },
+    { "id": "layout", "type": "backend", "label": "layout.tsx", "sublabel": "next/font · head script", "tag": "theme · preload · data-hero", "pos": [260, 300], "size": [160, 60] },
+    { "id": "clips", "type": "backend", "label": "Clip stills ×3", "sublabel": "server · 03 / 04 / 06", "tag": "CLIP PLACEHOLDER", "pos": [490, 150], "size": [150, 60] },
+    { "id": "page", "type": "backend", "label": "page.tsx", "sublabel": "server · sections 01–09", "pos": [490, 285], "size": [150, 90] },
+    { "id": "content", "type": "database", "label": "content.ts", "sublabel": "single copy source", "pos": [490, 450], "size": [150, 60] },
+    { "id": "banned", "type": "security", "label": "Banned-phrase test", "sublabel": "test/copy.test.ts", "pos": [380, 600], "size": [150, 60] },
+    { "id": "launch", "type": "security", "label": "Launch check", "sublabel": "test/launch/", "pos": [600, 600], "size": [150, 60] },
+    { "id": "posters", "type": "cloud", "label": "Hero posters", "sublabel": "per theme · AVIF/WebP", "pos": [740, 30], "size": [170, 60] },
+    { "id": "hero", "type": "frontend", "label": "Hero", "sublabel": "client · gate KTD4", "pos": [740, 170], "size": [170, 70] },
+    { "id": "theme", "type": "frontend", "label": "Theme menu", "sublabel": "System / Dark / Light", "pos": [740, 290], "size": [170, 60] },
+    { "id": "broker", "type": "frontend", "label": "Broker dialog", "sublabel": "address · Copy · mailto", "tag": "no form", "pos": [740, 400], "size": [170, 60] },
+    { "id": "nav", "type": "frontend", "label": "Nav sheet", "sublabel": "nine anchors", "pos": [740, 510], "size": [170, 60] },
+    { "id": "ring", "type": "frontend", "label": "Ring chunk", "sublabel": "three.js", "pos": [1050, 110], "size": [150, 60] },
+    { "id": "scroll", "type": "frontend", "label": "Scroll chunk", "sublabel": "GSAP ScrollTrigger", "pos": [1050, 240], "size": [150, 60] },
+    { "id": "ui", "type": "frontend", "label": "src/components/ui", "sublabel": "restyled 21st.dev", "pos": [1040, 380], "size": [170, 100] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "Server-rendered (static)", "wraps": ["layout", "page", "clips", "content"] },
+    { "kind": "region", "label": "Client islands", "wraps": ["hero", "theme", "broker", "nav"] },
+    { "kind": "region", "label": "Lazy chunks", "wraps": ["ring", "scroll"] }
+  ],
+  "connections": [
+    { "id": "visit", "from": "visitor", "to": "layout", "label": "GET /", "variant": "emphasis" },
+    { "id": "legal", "from": "visitor", "to": "routes", "label": "GET" },
+    { "id": "share-meta", "from": "layout", "to": "og", "label": "og:image", "fromSide": "top", "toSide": "right" },
+    { "id": "preload", "from": "layout", "to": "posters", "label": "preload", "fromSide": "top", "toSide": "left" },
+    { "id": "wraps", "from": "layout", "to": "page", "label": "wraps", "variant": "emphasis" },
+    { "id": "render-clips", "from": "page", "to": "clips", "label": "renders" },
+    { "id": "read-copy", "from": "page", "to": "content", "label": "reads copy" },
+    { "id": "test-copy", "from": "banned", "to": "content", "label": "reads" },
+    { "id": "check-copy", "from": "launch", "to": "content", "label": "reads" },
+    { "id": "isl-hero", "from": "page", "to": "hero", "variant": "emphasis" },
+    { "id": "isl-theme", "from": "page", "to": "theme" },
+    { "id": "isl-broker", "from": "page", "to": "broker" },
+    { "id": "isl-nav", "from": "page", "to": "nav" },
+    { "id": "hero-poster", "from": "hero", "to": "posters", "label": "poster img" },
+    { "id": "lazy-ring", "from": "hero", "to": "ring", "label": "lazy · gate pass", "variant": "dashed" },
+    { "id": "lazy-scroll", "from": "hero", "to": "scroll", "label": "lazy · gate pass", "variant": "dashed" },
+    { "id": "ui-theme", "from": "theme", "to": "ui", "label": "uses" },
+    { "id": "ui-broker", "from": "broker", "to": "ui", "label": "uses" },
+    { "id": "ui-nav", "from": "nav", "to": "ui", "label": "uses" }
+  ],
+  "cards": [
+    { "dot": "slate", "title": "Status", "items": ["Planned: apps/desk does not exist yet", "Source: landing page plan, KTD1–KTD11, U1–U5"] },
+    { "dot": "emerald", "title": "Server (static)", "items": ["page.tsx is a statically rendered server component", "content.ts holds every string, caption and metadata field", "Clip slots render a still only, no video"] },
+    { "dot": "cyan", "title": "Head script (before paint)", "items": ["Sets data-theme from stored choice", "Preloads the resolved theme's poster", "Sets data-hero=\"pin\" when non-WebGL gate inputs pass"] },
+    { "dot": "amber", "title": "Lazy chunks", "items": ["Loaded after window load + idle", "Only when the KTD4 gate passes, incl. WebGL2", "Never imported under reduced motion"] }
+  ]
+}

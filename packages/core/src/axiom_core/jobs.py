@@ -90,20 +90,18 @@ class JobService:
         job_id = "job_" + digest(principal.tenant_id, principal.user_id, request_id)[:24]
         if self._find(principal, job_id) is not None:
             return job_id
-        (active,) = self._conn.execute(
-            f"SELECT COUNT(*) FROM jobs WHERE tenant_id = ? AND user_id = ? "
-            f"AND state IN ({','.join('?' * len(ACTIVE))})",
-            (principal.tenant_id, principal.user_id, *ACTIVE),
-        ).fetchone()
-        if active >= self._quota:
-            raise QuotaExceeded(f"job quota reached: {self._quota} active jobs")
         needs_approval = (
             principal.kind is PrincipalKind.AGENT and job_kind.cost(params) > self._approval_cost
         )
+        # The quota check and the duplicate check live in the insert itself, so a concurrent
+        # submit cannot slip between check and write.
         with self._conn:
-            self._conn.execute(
+            inserted = self._conn.execute(
                 "INSERT INTO jobs (id, tenant_id, user_id, submitted_by, kind, params, state, "
-                "total, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "total, created_at) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ? "
+                "WHERE (SELECT COUNT(*) FROM jobs WHERE tenant_id = ? AND user_id = ? "
+                f"AND state IN ({','.join('?' * len(ACTIVE))})) < ? "
+                "ON CONFLICT(id) DO NOTHING",
                 (
                     job_id,
                     principal.tenant_id,
@@ -114,9 +112,15 @@ class JobService:
                     JobState.AWAITING_APPROVAL if needs_approval else JobState.QUEUED,
                     job_kind.steps(params),
                     self.clock(),
+                    principal.tenant_id,
+                    principal.user_id,
+                    *ACTIVE,
+                    self._quota,
                 ),
-            )
-        return job_id
+            ).rowcount
+        if inserted or self._find(principal, job_id) is not None:
+            return job_id
+        raise QuotaExceeded(f"job quota reached: {self._quota} active jobs")
 
     def approve(self, principal: Principal, job_id: str) -> None:
         """Only the human the job runs for can release an agent job held for cost."""
@@ -185,6 +189,8 @@ class JobService:
                 self._conn.execute(
                     "INSERT INTO job_steps VALUES (?, ?, ?)", (job_id, step, canonical(value))
                 )
+                # attempts counts runs in a row without progress, not lifetime resumes
+                self._conn.execute("UPDATE jobs SET attempts = 0 WHERE id = ?", (job_id,))
         end = JobState.CANCELLED if self._cancel_requested(job_id) else JobState.DONE
         with self._conn:
             self._conn.execute("UPDATE jobs SET state = ? WHERE id = ?", (end, job_id))

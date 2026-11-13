@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "5987bdae-6291-4c9c-8ca9-098eea6f4665",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/u14-renderer-spike-dabe9f/docs/diagrams/src/landing-first-paint.sequence.json",
+  "output": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/u14-renderer-spike-dabe9f/docs/diagrams/landing-first-paint.html",
+  "specification": {
+    "sha256": "4cc3080298a3b7b9787e32860daa6e6f774a53f5f53c989b8529a3eb71331859",
+    "bytes": 6509
+  },
+  "artifact": {
+    "sha256": "83fb9a20773985739c3489a2a12574b69b148f907dc83d224d3d380ce5c7d6e3",
+    "bytes": 847764
+  }
+}

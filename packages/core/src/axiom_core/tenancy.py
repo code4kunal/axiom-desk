@@ -3,11 +3,14 @@
 from collections.abc import Mapping
 
 from axiom_core.audit import AuditLog
-from axiom_core.authz import Action, Authorizer, Resource
+from axiom_core.authz import ALLOWED_ROLES, BOOK_SCOPED, Action, Authorizer, Resource
 from axiom_core.db import Connection
 from axiom_core.principals import Principal, PrincipalKind, Role
 
 __all__ = ["Directory", "Principal", "PrincipalKind", "Role"]
+
+# A book on any other role's grant would be ignored by every check, so it would act tenant-wide.
+BOOK_ROLES = frozenset(r for a in BOOK_SCOPED for r in ALLOWED_ROLES[a])
 
 
 class Directory:
@@ -53,6 +56,8 @@ class Directory:
     def grant(
         self, by: Principal, tenant_id: str, user_id: str, role: Role, *, book_id: str | None = None
     ) -> None:
+        if book_id and role not in BOOK_ROLES:
+            raise ValueError(f"{role.value} has no book-scoped actions, so it cannot be book-only")
         self._check_role_change(by, tenant_id, user_id, role, book_id, "grant_role")
         self._write_role(tenant_id, user_id, role, book_id, insert=True)
 

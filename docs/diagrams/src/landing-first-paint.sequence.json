@@ -1,0 +1,287 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Axiom landing page: first paint to interactive hero (planned)",
+    "subtitle": "Planned behaviour from the landing plan (KTD4, KTD5, KTD6, KTD8). Not yet implemented.",
+    "locale": "en",
+    "output": "docs/diagrams/landing-first-paint.html",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    {
+      "id": "browser",
+      "type": "external",
+      "label": "Browser",
+      "sublabel": "visitor"
+    },
+    {
+      "id": "head",
+      "type": "frontend",
+      "label": "Head script",
+      "sublabel": "inline, blocking"
+    },
+    {
+      "id": "server",
+      "type": "backend",
+      "label": "Next.js page",
+      "sublabel": "static HTML"
+    },
+    {
+      "id": "hero",
+      "type": "frontend",
+      "label": "Hero island",
+      "sublabel": "client"
+    },
+    {
+      "id": "ring",
+      "type": "frontend",
+      "label": "Ring chunk",
+      "sublabel": "three.js, lazy"
+    },
+    {
+      "id": "scroll",
+      "type": "frontend",
+      "label": "Scroll chunk",
+      "sublabel": "GSAP ScrollTrigger, lazy"
+    }
+  ],
+  "segments": [
+    {
+      "from": 150,
+      "to": 272,
+      "label": "Request"
+    },
+    {
+      "from": 298,
+      "to": 644,
+      "label": "Before first paint"
+    },
+    {
+      "from": 670,
+      "to": 762,
+      "label": "First paint, then load"
+    },
+    {
+      "from": 788,
+      "to": 922,
+      "label": "WebGL2 gate"
+    },
+    {
+      "from": 966,
+      "to": 1236,
+      "label": "Pass: 3D hero"
+    },
+    {
+      "from": 1280,
+      "to": 1372,
+      "label": "Context lost"
+    }
+  ],
+  "messages": [
+    {
+      "id": "get-root",
+      "from": "browser",
+      "to": "server",
+      "y": 160,
+      "label": "GET /",
+      "variant": "emphasis"
+    },
+    {
+      "id": "static-html",
+      "from": "server",
+      "to": "browser",
+      "y": 190,
+      "label": "static HTML, stacked hero",
+      "variant": "return",
+      "note": "Poster slots, four captions, hedge card. With JS off this is final."
+    },
+    {
+      "id": "run-head",
+      "from": "browser",
+      "to": "head",
+      "y": 308,
+      "label": "run before paint",
+      "variant": "default"
+    },
+    {
+      "id": "set-theme",
+      "from": "head",
+      "to": "browser",
+      "y": 338,
+      "label": "set data-theme",
+      "variant": "default",
+      "note": "Stored theme read in try/catch."
+    },
+    {
+      "id": "preload-poster",
+      "from": "head",
+      "to": "browser",
+      "y": 396,
+      "label": "preload theme poster",
+      "variant": "emphasis",
+      "note": "fetchpriority high; the inactive poster is lazy and not fetched."
+    },
+    {
+      "id": "set-pin",
+      "from": "head",
+      "to": "browser",
+      "y": 478,
+      "label": "data-hero=pin (if inputs pass)",
+      "variant": "default",
+      "note": "WebGL-free inputs: reduced motion off, deviceMemory 4+ or unknown, no saveData, effectiveType not slow-2g/2g/3g, height 600px+. CSS reserves 300vh (200vh under 768px); else stacked layout stays."
+    },
+    {
+      "id": "load-idle",
+      "from": "browser",
+      "to": "hero",
+      "y": 680,
+      "label": "window load, then idle",
+      "variant": "default",
+      "note": "First paint already happened: poster is the LCP, never unmounted."
+    },
+    {
+      "id": "check-webgl",
+      "from": "hero",
+      "to": "browser",
+      "y": 798,
+      "label": "check WebGL2",
+      "variant": "default"
+    },
+    {
+      "id": "gate-fail",
+      "from": "browser",
+      "to": "hero",
+      "y": 828,
+      "label": "fail: stop, poster final",
+      "variant": "return",
+      "note": "Alt path. Box stays; poster sticky, captions scroll past (CSS only)."
+    },
+    {
+      "id": "gate-pass",
+      "from": "browser",
+      "to": "hero",
+      "y": 910,
+      "label": "pass: continue",
+      "variant": "return"
+    },
+    {
+      "id": "import-ring",
+      "from": "hero",
+      "to": "ring",
+      "y": 976,
+      "label": "import()",
+      "variant": "dashed"
+    },
+    {
+      "id": "import-scroll",
+      "from": "hero",
+      "to": "scroll",
+      "y": 1006,
+      "label": "import()",
+      "variant": "dashed"
+    },
+    {
+      "id": "fade-canvas",
+      "from": "ring",
+      "to": "browser",
+      "y": 1036,
+      "label": "canvas fades over poster",
+      "variant": "emphasis"
+    },
+    {
+      "id": "fill-box",
+      "from": "scroll",
+      "to": "browser",
+      "y": 1066,
+      "label": "pin fills reserved box",
+      "variant": "default",
+      "note": "No spacer inserted; heights in svh/lvh."
+    },
+    {
+      "id": "rescroll-hash",
+      "from": "scroll",
+      "to": "browser",
+      "y": 1136,
+      "label": "refresh, re-scroll to hash",
+      "variant": "default",
+      "note": "Only when the URL has a hash."
+    },
+    {
+      "id": "user-scroll",
+      "from": "browser",
+      "to": "scroll",
+      "y": 1194,
+      "label": "scroll",
+      "variant": "default"
+    },
+    {
+      "id": "drive-states",
+      "from": "scroll",
+      "to": "ring",
+      "y": 1224,
+      "label": "drive 0 / 40 / 70 / 100",
+      "variant": "emphasis"
+    },
+    {
+      "id": "context-lost",
+      "from": "browser",
+      "to": "hero",
+      "y": 1290,
+      "label": "webglcontextlost",
+      "variant": "return",
+      "note": "Stop loop, fade canvas: poster and final captions; box stays."
+    }
+  ],
+  "activations": [
+    {
+      "participant": "server",
+      "from": 155,
+      "to": 196,
+      "type": "backend"
+    },
+    {
+      "participant": "head",
+      "from": 303,
+      "to": 484,
+      "type": "frontend"
+    },
+    {
+      "participant": "hero",
+      "from": 675,
+      "to": 1296,
+      "type": "frontend"
+    },
+    {
+      "participant": "ring",
+      "from": 971,
+      "to": 1230,
+      "type": "frontend"
+    },
+    {
+      "participant": "scroll",
+      "from": 1001,
+      "to": 1230,
+      "type": "frontend"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Never collapses",
+      "items": [
+        "Pin height is decided by the head script before first paint",
+        "Only the WebGL2 check runs after load; failure keeps the box",
+        "GSAP fills the reserved box instead of adding a spacer"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Off first paint",
+      "items": [
+        "three.js and GSAP load only after load + idle and a passing gate",
+        "Theme is set before paint, so only the active poster is fetched"
+      ]
+    }
+  ]
+}

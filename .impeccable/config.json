@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "tight-leading",
+        "value": "*",
+        "files": [
+          "docs/design/mocks/landing-v2-hero.html"
+        ],
+        "createdAt": "2026-11-13T08:15:18.531Z",
+        "reason": "Claude triage: hit is the display statement (.statement line-height 1 at 42-68px, display leading per DESIGN.md statement step 0.98) and single-line legend numerals; body copy is 1.5"
+      }
+    ]
+  }
+}

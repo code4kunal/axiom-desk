@@ -161,3 +161,29 @@ def test_every_role_and_principal_pair_matches_the_role_table(
         except Forbidden:
             allowed = False
         assert allowed == expected, (role, kind, action)
+
+
+# Actions that check the resource's book, written out independently of the code under test.
+BOOK_SCOPED = {
+    Action.WRITE_DRAFT,
+    Action.CONFIRM_TICKET,
+    Action.CHANGE_BUDGET,
+    Action.CHANGE_INTENT,
+}
+
+
+def test_only_roles_whose_actions_check_the_book_can_be_granted_for_one_book(
+    directory: Directory,
+) -> None:
+    admin = directory.principal("desk", "ada")
+    book_roles = {r for a in BOOK_SCOPED for r in ALLOWED_ROLES[a]}
+    for role in Role:
+        name = f"booked-{role}"
+        if role in book_roles:
+            directory.grant(admin, "desk", name, role, book_id="alpha")
+            assert directory.roles_of("desk", name) == {role: frozenset({"alpha"})}
+        else:
+            # the book would not limit this role's actions, so it would act tenant-wide
+            with pytest.raises(ValueError, match=role.value):
+                directory.grant(admin, "desk", name, role, book_id="alpha")
+            assert not directory.has_user("desk", name)

@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "sequence",
+  "quality": "showcase",
+  "specification": {
+    "path": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/u14-renderer-spike-dabe9f/docs/diagrams/src/landing-first-paint.sequence.json",
+    "sha256": "4cc3080298a3b7b9787e32860daa6e6f774a53f5f53c989b8529a3eb71331859",
+    "bytes": 6509
+  },
+  "artifact": {
+    "path": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/u14-renderer-spike-dabe9f/docs/diagrams/landing-first-paint.html",
+    "sha256": "83fb9a20773985739c3489a2a12574b69b148f907dc83d224d3d380ce5c7d6e3",
+    "bytes": 847764
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/u14-renderer-spike-dabe9f/docs/diagrams/landing-first-paint.finalize.json",
+    "summaryReceipt": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/u14-renderer-spike-dabe9f/docs/diagrams/landing-first-paint.finalize-summary.json",
+    "browserCheckReceipt": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/u14-renderer-spike-dabe9f/docs/diagrams/landing-first-paint.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-11-13T05:57:44.956Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 5665,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}

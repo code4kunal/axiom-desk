@@ -862,6 +862,7 @@ Deferred to implementation: table schemas and partitioning after the U7 benchmar
 | U25 | Agent runtime and output policy layer | `packages/agent/src/axiom_agent/`, `packages/core/src/axiom_core/sebi_gate.py`, `apps/desk/src/agent-panel/` | U3, U4, U21 |
 | U26 | Command Center, pre-open console, ideas and journal | `apps/desk/src/command-center/`, `packages/core/src/axiom_core/ideas.py` | U17, U18, U22, U25 |
 | U27 | Edge Ledger, V1 gate telemetry, SEBI gate in logging mode | `packages/evidence/src/axiom_evidence/ledger.py`, `packages/core/src/axiom_core/usage.py` | U12, U21, U26 |
+| U28 | Public landing page and `apps/desk` scaffold | `apps/desk/` | G5 |
 
 ### PR1: Foundations
 
@@ -1338,6 +1339,20 @@ Waits on: PR7 (merge order only).
   - Usage telemetry records which module served each daily workflow.
 - **Verification:** ledger tests pass; the first review report runs on recorded history.
 
+### PR9: Public landing page
+
+Waits on: nothing. Separate PR because it has its own plan and gate set, and U14 and later desk units build on the scaffold it creates; it can merge ahead of PR2–PR8.
+
+### U28. Public landing page and `apps/desk` scaffold
+
+- **Goal:** the public landing page at `/` and the `apps/desk` Next.js scaffold that U14, U16 and later desk units build on.
+- **Requirements:** G5 (TASTE and the approved direction exist; `DESIGN.md` is written from this build).
+- **Dependencies:** none in this plan.
+- **Files:** `apps/desk/`.
+- **Approach:** planned in full in `docs/plans/2026-11-13-1108-feat-landing-page-plan.md` (its U1 to U7); this unit only places it in the plan of record. U28 is the single creator of the `apps/desk` scaffold.
+- **Test scenarios:** owned by the landing plan.
+- **Verification:** the landing plan's Definition of Done.
+
 ---
 
 ## Verification Contract
@@ -1364,7 +1379,7 @@ Fixes for real failures follow the user's standing rules: a bug fix shows its te
   - Its registry entries have all bindings and parity fixtures.
   - Its merge gate is closed.
   - Abandoned experiment code is removed from the diff.
-- **V1 build complete:** all 27 units merged, all merge gates closed, and the F1 to F10 flows that apply to V1 run end to end on recorded sessions.
+- **V1 build complete:** all 28 units merged, all merge gates closed, and the F1 to F10 flows that apply to V1 run end to end on recorded sessions.
 
 ## Deferred / Open Questions
 

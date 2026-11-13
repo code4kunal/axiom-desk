@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "lifecycle",
+  "quality": "showcase",
+  "specification": {
+    "path": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/u14-renderer-spike-dabe9f/docs/diagrams/src/landing-overlays.lifecycle.json",
+    "sha256": "cc20600bbc9662cfd20f43864e8889be173992aaa4ddd018f4a6bcda6c1ba1fd",
+    "bytes": 4152
+  },
+  "artifact": {
+    "path": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/u14-renderer-spike-dabe9f/docs/diagrams/landing-overlays.html",
+    "sha256": "e3c5634a19b84a576b591886a8244b691d64b8b943ccaca2f53d29f30ebcc9ff",
+    "bytes": 844311
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/u14-renderer-spike-dabe9f/docs/diagrams/landing-overlays.finalize.json",
+    "summaryReceipt": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/u14-renderer-spike-dabe9f/docs/diagrams/landing-overlays.finalize-summary.json",
+    "browserCheckReceipt": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/u14-renderer-spike-dabe9f/docs/diagrams/landing-overlays.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-11-13T05:57:44.956Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 3124,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}

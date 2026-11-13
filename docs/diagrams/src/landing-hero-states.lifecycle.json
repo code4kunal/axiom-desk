@@ -1,0 +1,218 @@
+{
+  "schema_version": 3,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "Axiom landing hero: render states",
+    "subtitle": "Planned behaviour, not yet built. Source: landing plan R6–R9, KTD4, KTD5, AE1, AE5",
+    "locale": "en",
+    "output": "docs/diagrams/landing-hero-states.html",
+    "quality_profile": "showcase"
+  },
+  "mainPath": [
+    "ssr",
+    "pin",
+    "loading",
+    "s0"
+  ],
+  "states": [
+    {
+      "id": "ssr",
+      "type": "start",
+      "label": "Server HTML",
+      "sublabel": "poster + captions",
+      "tag": "first paint",
+      "step": "01"
+    },
+    {
+      "id": "pin",
+      "type": "waiting",
+      "label": "Pin reserved",
+      "sublabel": "poster showing, box 300vh",
+      "tag": "data-hero=pin",
+      "step": "02"
+    },
+    {
+      "id": "loading",
+      "type": "active",
+      "label": "Loading 3D chunks",
+      "sublabel": "three.js ring + GSAP",
+      "tag": "lazy",
+      "step": "03"
+    },
+    {
+      "id": "s0",
+      "type": "active",
+      "label": "3D ring live: 0%",
+      "sublabel": "Expansion, canvas over poster",
+      "tag": "scroll state",
+      "step": "04"
+    },
+    {
+      "id": "s40",
+      "type": "active",
+      "label": "Ring 40%",
+      "sublabel": "Early deterioration, conf 0.68",
+      "tag": "scroll state",
+      "step": "05"
+    },
+    {
+      "id": "s70",
+      "type": "active",
+      "label": "Ring 70%",
+      "sublabel": "basket reweights",
+      "tag": "scroll state",
+      "step": "06"
+    },
+    {
+      "id": "s100",
+      "type": "success",
+      "label": "Ring 100%: hedge draft",
+      "sublabel": "a human confirms every order",
+      "tag": "scroll end",
+      "step": "07"
+    },
+    {
+      "id": "stacked",
+      "type": "neutral",
+      "label": "Stacked layout",
+      "sublabel": "4 posters + captions, hedge card",
+      "tag": "final"
+    },
+    {
+      "id": "sticky",
+      "type": "neutral",
+      "label": "Poster sticky",
+      "sublabel": "captions scroll past; nothing shifts",
+      "tag": "final"
+    }
+  ],
+  "transitions": [
+    {
+      "id": "ssr-pin",
+      "from": "ssr",
+      "to": "pin",
+      "label": "head gate pass"
+    },
+    {
+      "id": "ssr-stacked",
+      "from": "ssr",
+      "to": "stacked",
+      "label": "JS off / gate fail",
+      "note": "JS off, reduced motion, or a WebGL-free gate input fails (AE1, AE5)",
+      "variant": "dashed"
+    },
+    {
+      "id": "pin-loading",
+      "from": "pin",
+      "to": "loading",
+      "label": "load+idle, WebGL2 pass"
+    },
+    {
+      "id": "pin-sticky",
+      "from": "pin",
+      "to": "sticky",
+      "label": "WebGL2 fail",
+      "variant": "dashed"
+    },
+    {
+      "id": "loading-s0",
+      "from": "loading",
+      "to": "s0",
+      "label": "chunks loaded",
+      "variant": "emphasis"
+    },
+    {
+      "id": "s0-s40",
+      "from": "s0",
+      "to": "s40",
+      "label": "scroll 40%"
+    },
+    {
+      "id": "s40-s70",
+      "from": "s40",
+      "to": "s70",
+      "label": "scroll 70%"
+    },
+    {
+      "id": "s70-s100",
+      "from": "s70",
+      "to": "s100",
+      "label": "scroll 100%"
+    },
+    {
+      "id": "s40-s0",
+      "from": "s40",
+      "to": "s0",
+      "label": "scroll back"
+    },
+    {
+      "id": "s70-s40",
+      "from": "s70",
+      "to": "s40",
+      "label": "scroll back"
+    },
+    {
+      "id": "s100-s70",
+      "from": "s100",
+      "to": "s70",
+      "label": "scroll back"
+    },
+    {
+      "id": "s0-sticky",
+      "from": "s0",
+      "to": "sticky",
+      "label": "webglcontextlost",
+      "variant": "security"
+    },
+    {
+      "id": "s40-sticky",
+      "from": "s40",
+      "to": "sticky",
+      "label": "webglcontextlost",
+      "variant": "security"
+    },
+    {
+      "id": "s70-sticky",
+      "from": "s70",
+      "to": "sticky",
+      "label": "webglcontextlost",
+      "variant": "security"
+    },
+    {
+      "id": "s100-sticky",
+      "from": "s100",
+      "to": "sticky",
+      "label": "webglcontextlost",
+      "variant": "security"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Pin decided before paint (KTD5)",
+      "items": [
+        "Stacked: four static posters (0/40/70/100) with captions, then the hedge card, as normal sections; no reserved box; final with JS off",
+        "Blocking head script sets data-hero=pin when WebGL-free gate inputs pass",
+        "CSS reserves 300vh, or 200vh below 768px; the box never collapses"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "3D gate (KTD4)",
+      "items": [
+        "three.js loads after load, when idle, only if WebGL2 is available",
+        "Gate also needs reduced motion off, deviceMemory ≥4 or unknown, saveData false, no slow-2g/2g/3g, viewport ≥600px tall",
+        "saveData: no three.js or GSAP chunk is requested (AE1)"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Fallbacks never blank (R7, R9)",
+      "items": [
+        "Poster is the LCP element and is never unmounted",
+        "Context loss stops the loop and fades the canvas; no restore path",
+        "Hedge card text is in the DOM from first paint"
+      ]
+    }
+  ]
+}

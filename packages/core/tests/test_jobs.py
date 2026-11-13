@@ -376,3 +376,68 @@ def test_killed_worker_resumes_from_the_last_checkpoint(tmp_path: Path) -> None:
     assert jobs.status(ada, job_id).state == "done"
     assert jobs.result(ada, job_id) == [{"fold": 0}, {"fold": 1}, {"fold": 2}]
     conn.close()
+
+
+def racing_kind(rival: Callable[[], object]) -> JobKind:
+    """steps() runs after submit's existence and quota checks and before its insert, so the
+    rival submit lands in exactly the window a concurrent request would."""
+    racing = [True]
+
+    def steps(params: Mapping[str, JsonValue]) -> int:
+        if params.get("race") and racing:
+            racing.pop()
+            rival()
+        return 1
+
+    return JobKind(name="folds", steps=steps, run_step=fold_score, cost=lambda p: 1.0)
+
+
+def test_racing_duplicate_submit_returns_the_same_job(
+    conn: sqlite3.Connection, clock: Callable[[], float], directory: Directory
+) -> None:
+    ana = user(directory)
+    params: dict[str, JsonValue] = {"race": True}
+    jobs = make_service(
+        conn, clock, racing_kind(lambda: jobs.submit(ana, "folds", params, request_id="r1"))
+    )
+    first = jobs.submit(ana, "folds", params, request_id="r1")
+    assert first == jobs.submit(ana, "folds", params, request_id="r1")
+    assert conn.execute("SELECT COUNT(*) FROM jobs").fetchone() == (1,)
+
+
+def test_racing_submits_cannot_exceed_the_quota(
+    conn: sqlite3.Connection, clock: Callable[[], float], directory: Directory
+) -> None:
+    ana = user(directory)
+    jobs = make_service(
+        conn, clock, racing_kind(lambda: jobs.submit(ana, "folds", {}, request_id="rival"))
+    )
+    jobs.submit(ana, "folds", {}, request_id="first")
+    with pytest.raises(QuotaExceeded):
+        jobs.submit(ana, "folds", {"race": True}, request_id="racer")
+    (active,) = conn.execute("SELECT COUNT(*) FROM jobs WHERE state = 'queued'").fetchone()
+    assert active == 2
+
+
+class WorkerKilled(BaseException):
+    pass
+
+
+def test_attempts_reset_when_a_resumed_job_makes_progress(
+    conn: sqlite3.Connection, clock: Callable[[], float], directory: Directory
+) -> None:
+    calls = itertools.count(1)
+
+    def killed_on_even_calls(i: int) -> None:
+        if next(calls) in (2, 4, 6):
+            raise WorkerKilled
+
+    jobs = make_service(conn, clock, folds_kind(killed_on_even_calls))
+    ana = user(directory)
+    job_id = jobs.submit(ana, "folds", {"folds": 10}, request_id="r1")
+    for _ in range(3):
+        with pytest.raises(WorkerKilled):
+            jobs.run_next()
+    assert jobs.run_next() == job_id
+    status = jobs.status(ana, job_id)
+    assert (status.state, status.done, status.total) == ("done", 10, 10)
