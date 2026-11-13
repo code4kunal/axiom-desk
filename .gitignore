@@ -10,3 +10,6 @@ dist/
 .archify/
 .env
 .env.*
+*.tsbuildinfo
+playwright-report/
+test-results/
