@@ -115,6 +115,14 @@ class SessionStore:
             raise Unauthenticated(reason)
         return Principal(PrincipalKind.USER, tenant_id, user_id, authenticated_at)
 
+    def describe(self, token: str) -> tuple[Principal, str]:
+        """The session's principal and display name, refused exactly as resolve refuses."""
+        principal = self.resolve(token)
+        (name,) = self._conn.execute(
+            "SELECT display_name FROM sessions WHERE token_hash = ?", (_digest(token),)
+        ).fetchone()
+        return principal, name
+
     def resolve_request(self, token: str, params: Mapping[str, str]) -> Principal:
         principal = self.resolve(token)
         for key, own in (("tenant_id", principal.tenant_id), ("user_id", principal.user_id)):
