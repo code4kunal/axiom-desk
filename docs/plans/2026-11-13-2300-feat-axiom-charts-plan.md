@@ -14,11 +14,11 @@ execution: code
 
 - **Objective:** A desk trader opens one chart and gets everything needed to decide on an Indian F&O or equity instrument: price, strikes, positioning, volatility, and what the evidence says, each with its base rate. The desk stops opening TradingView for charts and Sensibull, Opstra or Tradl for position building.
 - **Means:** An options-native chart with strikes on the price axis and the strategy builder on the chart. An insight rail driven by a quant-specified detector catalogue. Cross-stock pattern twins. An AI screener builder that backtests itself. Point-in-time replay across all of it.
-- **Product authority:** Extends `docs/plans/2026-11-12-1110-feat-axiom-desk-platform-plan.md` (the platform plan), units U14–U17, and proposes amendments to R12, R20, R110, R116, R126, KTD6 and units U7, U12, U18 and U19, listed under Platform Plan Amendments. Platform R-IDs are not edited here. New IDs continue the platform plan's sequences: R155+, F11+, AE21+. Where this contract and the platform plan disagree, the platform plan stands until an amendment is accepted into it.
+- **Product authority:** Extends `docs/plans/2026-11-12-1110-feat-axiom-desk-platform-plan.md` (the platform plan), units U14–U17, and proposes amendments to R12, R20, R110, R116, R126, KTD6, units U7, U12, U14–U19 and U25, gate G5 and PR5 sequencing, listed under Platform Plan Amendments. Platform R-IDs are not edited here. New IDs continue the platform plan's sequences: R155+, F11+, AE21+. Where this contract and the platform plan disagree, the platform plan stands until an amendment is accepted into it.
 - **Open blockers:**
   - The U14 renderer decision is open. SciChart was not run (no licence key), the R126 timed tasks were not run (no named desk testers), and 16 charts with the rail open has never been measured.
   - `DESIGN.md` has no chart-pane tokens. G5 blocks chart screen work until it does.
-  - Desk quants have not specified the V1 detector catalogue (R169).
+  - Desk quants have not specified the V1 detector catalogues (R169, R200). Intraday detectors launch uncalibrated until Axiom's own archive is deep enough.
 
 ---
 
@@ -55,6 +55,7 @@ Equity charts have the same gap. Patterns are shown without the story of what fo
 - **A quant-specified detector catalogue powers the rail, led by question cards.** The agent only explains. Governs R166–R170, R194. (session-settled: user-approved — chosen over a stream with no question cards and over an agent-written narrative: the engine computes every number, per KTD5, and TradingView Copilot already does narrative.)
 - **When no screen tweak survives testing, the builder says so.** Governs R180, R181. (session-settled: user-approved — chosen over showing the best in-sample tweak with a warning: in-sample winners invite overfitting.)
 - **Everything ships in sequence, with no MVP cut.** (session-settled: user-directed — chosen over a one-month index-only slice: the user wants every piece built one by one.)
+- **Replay shows detectors as they were live, and includes paper trading.** Governs R184, R187, R196. (session-settled: user-approved — chosen over replaying with today's detector versions by default, and over leaving paper trading in V1.5 per platform R47: keeps "as known then" true while serving practice.)
 - **"Easy" is measured, and the look is designed elsewhere.** Ease is judged by timed tasks against TradingView. Finish and motion come from the repo's design pipeline (DESIGN.md, ui-ux-pro-max, impeccable) under G5. Governs R192, R195.
 - **No 3D on chart panes.** The volatility surface in 3D lives in the Volatility Lab. Chart panes keep the renderer's frame budget, per the repo's UI constraints.
 
@@ -67,13 +68,13 @@ Uses the platform plan's actors: A1 desk user (traders, PMs, analysts, quants) a
 **Options-native chart**
 
 - R155. On any F&O underlying or contract chart, the price axis carries a strike ladder showing per-strike OI, OI change and surface IV (R68) at each strike's price level, for a selected expiry.
-- R156. Clicking a strike on the ladder adds a leg to an on-chart strategy, and a leg moves by dragging it along the strike axis or across expiries.
+- R156. The ladder shows call and put columns for each strike. A click adds a bought one-lot leg of that type, and a shift-click adds a sold one. Each leg is a chip on the chart that edits side, lots and expiry, and dragging the chip moves it along the strike axis.
 - R157. The on-chart strategy draws its payoff at expiry and at a chosen date, breakevens, max profit and loss, and a probability cone from the surface directly on the price chart, with the R38 outputs in the builder below.
 - R158. Dragging spot, IV or time reprices the on-chart strategy live, extending R121 to strategies not yet traded.
-- R159. For an objective the user states, the chart ranks strikes and expiries. Example objectives: cheapest vega per rupee, highest theta per unit of risk, best liquidity at a target delta, cheapest protection to a level. Each ranked strike shows the metric, bid-ask cost, liquidity and evidence, and is never labelled favourable, buy or sell.
+- R159. For an objective picked from a closed, quant-signed list, the chart ranks strikes and expiries. Examples: cheapest vega per rupee, highest theta per unit of risk, best liquidity at a target delta, cheapest protection to a level. Each ranked strike shows the metric, bid-ask cost, liquidity and evidence, and is never labelled favourable, buy or sell. The agent maps a free-text objective onto the list, or says none fits.
 - R160. Each expiry shows one F&O-implied range combining implied-move bands (R115), OI walls, pin probability (R78) and positioning, with the base rate of the underlying settling inside such ranges.
 - R161. OI walls and positioning-derived support and resistance levels are drawn on price with their strength, today's shift, and their historical hold rate per R86–R93.
-- R162. The positioning pane (R114) adds rollover percentage and cost against their own history, participant-wise OI changes (FII, DII, Pro, Client) and futures build-up class over time.
+- R162. The positioning pane (R114) adds rollover percentage and cost against their own history and futures build-up class over time. Participant-wise OI changes (FII, DII, Pro, Client) appear as market-level context, labelled as such and never attributed to the charted instrument.
 - R163. Every options-native element reads one chain and surface snapshot and shows its as-of time and freshness per KTD9. An element whose input is unavailable is hidden with the reason shown.
 - R164. An on-chart strategy can be sent to a multi-leg ticket draft per R55. The chart never places an order.
 
@@ -87,12 +88,15 @@ Uses the platform plan's actors: A1 desk user (traders, PMs, analysts, quants) a
   - long build-up, short build-up, short covering and long unwinding, at contract and strike level
   - rollover against its base
   - OI walls and their shifts
-  - participant-wise OI shifts
+  - participant-wise OI shifts, as market-level context only
   - PCR and max-pain changes
   - basis anomalies
   - IV against RV and VRP bucket state (R146)
   - skew and term-structure shifts
   - pin candidates and unusual activity
+
+  Each detector is tagged as either calibrated at launch from purchased end-of-day history, or uncalibrated until the R110 archive is deep enough. Question cards use calibrated detectors first.
+- R200. The V1 equity detector catalogue covers the three equity questions in R166: R16 chart patterns with their forward outcomes, accumulation from delivery percentage and institutional-flow changes (R133, never naming entities per R77), and sector-relative rank (R135). It carries the same calibration tags as R169.
 - R170. Every insight opens an evidence card per R86–R93: base rate, sample, confidence interval, out-of-sample status, and what followed past occurrences, failures included. Otherwise it shows insufficient evidence per R95.
 - R171. Each insight tells its story in plain language: what changed, against what normal, what historically followed, and what would invalidate it. The text never uses buy, sell, favourable or assured wording (R17, R77).
 - R172. Selecting an insight highlights its strike, level or time on the chart, and selecting a chart object shows the insights attached to it.
@@ -102,21 +106,24 @@ Uses the platform plan's actors: A1 desk user (traders, PMs, analysts, quants) a
 - R173. From a detected pattern or a user-selected chart region, "find twins" returns instruments across the R7 universe whose current price action matches, ranked by similarity, each with its evidence card.
 - R174. The same request returns past analogs from any instrument, drawn from a point-in-time universe that includes delisted names (R153). Their forward paths are drawn as the R116 fan, with winners, losers and the split shown.
 - R175. A pattern's story names the conditions that separated analogs that worked from those that failed, such as regime, volume, sector strength or F&O positioning, only where the difference passes R90. Otherwise it says no distinguishing condition was found.
-- R176. Every twin search, analog split and story condition counts as a tested variant under R90.
+- R176. Every twin search, analog split and story condition counts as a tested variant under R90, in one family per request and pattern definition, not desk-wide.
+- R198. Twins and analogs appear in a results tray under the rail, which is exempt from R165's one-instrument rule. Selecting a twin previews it without moving focus, and "open in layout" places it in a chosen chart slot.
 
 **AI screener builder**
 
 - R177. A user builds a screen by typing or saying it in plain language or by editing criteria, and confirms the structured criteria before the screen runs.
 - R178. Every saved screen is backtested automatically and point-in-time. The universe is taken as of each date with delisted names (R153), fundamentals as reported, prices corporate-action adjusted (R3), and history split at SEBI rule-change dates (R110).
 - R179. Screen efficacy shows the forward returns of matches against the universe base rate at stated horizons, with hit rate, sample size, confidence interval, turnover, after-cost expectancy, decay over time and regime-conditioned results, per R86–R93.
-- R180. The builder suggests criteria to add or remove, and presents a suggestion as an improvement only when it passes R88–R90 out of sample with every tried variant counted.
+- R180. The builder suggests criteria to add or remove, and presents a suggestion as an improvement only when it passes R88–R90 out of sample. Every backtested revision of a screen, whether the user or the builder made it, counts as a tested variant in one family for that screen's lineage. The efficacy card shows the lineage's cumulative variant count.
 - R181. When no suggestion passes, the builder says no improvement was found and lists what was tried, how many variants, and why each failed.
 - R182. A saved screen tracks its live matches forward, and its live efficacy is shown separately from its backtest.
+- R199. Editing a saved screen forks a new version in the same lineage, and the new version's live tracking starts fresh.
 - R183. Screen criteria can use equity fields, the F&O screens in R80, detected patterns and rail detectors. Every result opens into a chart with the matching criteria highlighted (R27).
 
 **Point-in-time replay**
 
-- R184. Replay restores everything on the chart surface for the replayed timestamp, exactly as known then: chart, chain, surface, OI, positioning, rail, question cards, patterns, evidence cards and screen results. Nothing computed with later data appears.
+- R184. Replay restores everything on the chart surface for the replayed timestamp, exactly as known then: chart, chain, surface, OI, positioning, rail, question cards, patterns, evidence cards and screen results. Nothing computed with later data appears. Detectors show the version live at that timestamp from recorded outputs. Before a detector went live it shows "detector not yet live", unless the user opts into a backfill of the current version, which is labelled as a backfill.
+- R196. Replay is an explicit mode. Every chart, the rail and the builder show a non-dismissible "Replay as of <time>" state. Send-to-ticket (R164) is replaced by paper trade, and paper positions stay in a separate replay book after exit.
 - R185. Evidence statistics shown in replay use only history available before the replayed timestamp.
 - R186. Replay runs synced across every chart in a layout, at selectable speeds, in tick, second or bar steps wherever the data supports that step.
 - R187. During replay a user can build on-chart strategies and paper-trade them, with fills at that moment's bid-ask and costs.
@@ -125,10 +132,11 @@ Uses the platform plan's actors: A1 desk user (traders, PMs, analysts, quants) a
 
 **Layout, speed and ease**
 
-- R190. A layout holds up to 16 charts synced by symbol, interval, crosshair, time and date range. Drawings sync across charts of the same underlying, including its futures and options contracts, and time-only drawings sync across all charts.
-- R191. With 16 charts taking live ticks and the rail open, the chart holds at least 60 fps, with p95 frame time at most 16.7 ms and no frame over 50 ms in a 10-minute session.
+- R190. A layout holds up to 16 charts synced by symbol, interval, crosshair, time and date range. Price-anchored drawings sync across charts that plot the same price series, and time-only drawings sync across all charts.
+- R191. With 16 F&O charts taking live ticks, the R193 defaults on, one on-chart strategy with payoff and cone, and the rail open, the chart holds at least 60 fps. The limits are p95 frame time at most 16.7 ms, p99.9 at most 33 ms, and at most 3 frames over 50 ms in a 10-minute session, over 3 runs on a named desk hardware profile.
 - R192. Every chart tool has a keyboard path and a command-bar entry (R127), and the most-used tools take one keystroke.
-- R193. The strike ladder, rail and positioning pane are on by default for F&O charts and off for others, within the U17 overlay budget.
+- R193. The rail is on by default for every instrument with catalogued detectors. The strike ladder and positioning pane are on by default for F&O charts only, within the U17 overlay budget.
+- R197. Chart focus moves by keyboard, by cycling or by jumping to a slot, with a visible focus ring that matches the rail's instrument. Ladder strikes, rail items and strategy legs are labelled controls reachable by keyboard and screen reader. Gain or loss, call or put, and wall strength are never shown by colour alone.
 - R194. The agent can build an on-chart strategy, rank strikes, find twins, build and explain a screen, and start a replay on request, with the same results as the screen (R4). It explains any rail item by citing its detector and evidence card.
 - R195. The R126 timed-task set adds six tasks:
   - build a short straddle on the chart
@@ -175,7 +183,7 @@ flowchart LR
 
 - F11. Instrument to strategy draft
   - **Trigger:** A trader opens BankNifty from the command bar.
-  - **Steps:** The ladder, positioning pane and rail load for the nearest expiry. The trader reads the "where will it settle" card and the short-covering insight, and opens its evidence card. They rank strikes for "highest theta per unit of risk", click two strikes to build a strangle, drag IV down 2 points to see P&L, and send it to a ticket draft.
+  - **Steps:** The ladder, positioning pane and rail load for the nearest expiry. The trader reads the "where will it settle" card and the short-covering insight, and opens its evidence card. They rank strikes for "highest theta per unit of risk", shift-click two strikes to sell a strangle, drag IV down 2 points to see P&L, and send it to a ticket draft.
   - **Covers:** R155–R160, R164, R166, R170.
 - F12. Pattern to twins to screen
   - **Trigger:** A flag is detected on an equity chart.
@@ -195,17 +203,20 @@ flowchart LR
 - AE21. **Covers R159, R171.** The user ranks puts for "cheapest protection to 22,000 by expiry". The list shows cost, bid-ask and liquidity per strike, and no row or label says favourable, buy or sell.
 - AE22. **Covers R163.** The surface goes stale at 10:42. Ladder IV, the probability cone and the implied range hide with "surface stale since 10:42", while OI stays visible.
 - AE23. **Covers R170.** A short-covering insight on a thinly traded stock option has a sample below the R88 minimum. Its card shows insufficient evidence, not a hit rate.
-- AE24. **Covers R180, R181.** The user asks to improve a screen. 40 variants are tried and none survives correction. The builder shows "No improvement found", the count of 40, and why the best candidate failed.
+- AE24. **Covers R180, R181.** The user asks to improve a screen. 40 variants are tried and none survives correction. The builder shows "No improvement found", the list of 40 variants tried, and why each failed.
 - AE25. **Covers R184, R185.** In replay at 10:30 on a past date, the rail shows a short-covering insight detected at 10:28 and not one detected at 11:00. Its base rate uses data before that date only.
 - AE26. **Covers R188.** A price trigger is crossed during replay. It is logged as a replay event and no email or in-app live alert is sent.
 - AE27. **Covers R174.** The analogs for a cup-and-handle include a since-delisted company whose pattern failed, and it counts in the loser split.
 - AE28. **Covers R165.** With 16 charts open, focus moves from chart 3 to chart 11. The rail switches to chart 11's instrument and shows nothing from chart 3.
 - AE29. **Covers R164.** Sending an on-chart iron condor creates a four-leg ticket draft awaiting confirmation, and no order exists until the user confirms it in the broker flow.
+- AE30. **Covers R196.** During a replay of a past expiry day, the builder offers "Paper trade" and no "Send to ticket". After exit, the paper straddle stays in the replay book, and no live draft exists.
 
 ### Success Criteria
 
 - The desk does daily charting and position building in Axiom without opening TradingView, Sensibull, Opstra or Tradl. This counts toward the platform V1 gate.
 - In the R126 and R195 timed tasks with named desk users, Axiom's median time beats TradingView's on every task TradingView supports. Tasks TradingView cannot do are recorded as unsupported there.
+- On the R195 options tasks (short straddle, implied range, strike ranking), Axiom's median also beats each tester's current options tool: Sensibull, Opstra or Tradl.
+- The desk builds and backtests its screens in Axiom instead of Excel or Python. This counts toward the platform V1 gate.
 - The R191 frame budget holds in the U14 harness with 16 charts and the rail open.
 - Every detector in the catalogue appears in the Edge Ledger (R144) and is demoted when it stops beating its base rate.
 
@@ -236,14 +247,15 @@ Proposed changes to `docs/plans/2026-11-12-1110-feat-axiom-desk-platform-plan.md
 - **R110:** add as-of reads of chain, surface and detector outputs per R189. Today R110 archives daily, and only U7 has an intraday snapshot as-of query.
 - **R116:** extend analogs from the charted instrument to the whole point-in-time universe per R173–R176.
 - **R126:** add the six tasks in R195.
+- **R47:** paper trading moves from V1.5 into V1 for replay only, per R187.
 - **KTD6:** change the spike's load from 8 to 16 synced charts with the rail open, and judge it against R191.
 - **U7:** owns R189.
 - **U12:** registers detectors (R168) and counts twins, story conditions and screen suggestions as tested variants (R176, R180).
-- **U14:** re-runs the spike at 16 charts, with SciChart licensed and two named desk testers, before any chart feature work. It owns R184–R186, R188, R190 and R191.
-- **U15:** owns R173–R176 and the strike-ranking math in R159.
+- **U14:** re-runs the spike at 16 charts, with SciChart licensed and two named desk testers, before any chart feature work. It owns R184–R186, R188, R190, R191, R196 and R197.
+- **U15:** owns R173–R176, R198 and the strike-ranking math in R159.
 - **U16:** owns R192 and R195.
-- **U17:** owns the strike ladder, implied range, OI walls and positioning additions (R155, R160–R163), plus the rail (R165–R172) and R193.
-- **U18:** owns the screener builder (R177–R183). The platform plan has no screen-efficacy or screen-backtest requirement today.
+- **U17:** owns the strike ladder, implied range, OI walls and positioning additions (R155, R160–R163), plus the rail (R165–R172), the equity catalogue (R200) and R193.
+- **U18:** owns the screener builder (R177–R183, R199). The platform plan has no screen-efficacy or screen-backtest requirement today.
 - **U19:** keeps the strategy engine (R38, R81). The on-chart builder surface (R156–R158, R164, R187) moves to U17.
 - **U25:** owns the agent actions in R194.
 - **G5:** `DESIGN.md` adds chart-pane tokens: ladder, rail, payoff, cone and evidence card.
@@ -252,7 +264,7 @@ Proposed changes to `docs/plans/2026-11-12-1110-feat-axiom-desk-platform-plan.md
 ### Dependencies / Assumptions
 
 - The archive (R110) holds intraday chain and surface snapshots dense enough for tick, second or bar replay of options elements. Where it does not, replay offers only the steps the data supports (R186).
-- Participant-wise OI is end-of-day NSE data. Intraday participant shifts are not available, and R162 shows the as-of date.
+- Participant-wise OI is end-of-day NSE data, published by category (index or stock, futures, calls or puts, long or short) across all underlyings, not per instrument. Intraday participant shifts are not available, and R162 shows the as-of date. The per-instrument "who is positioned" card (R166) answers from contract- and strike-level build-up and OI change.
 - Desk quants can specify and sign off the R169 catalogue. Rail breadth grows only as fast as they do.
 - The custom Canvas2D renderer measured 120 fps (p95 9.2 ms) at 8 charts, in single runs. 16 charts are unmeasured.
 
