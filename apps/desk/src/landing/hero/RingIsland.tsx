@@ -158,6 +158,7 @@ export function RingIsland() {
       kick();
 
       cleanup = () => {
+        cleanup = () => {}; // ring.dispose() loses the context, which fires webglcontextlost below
         cancelAnimationFrame(raf);
         stopScroll();
         io.disconnect();

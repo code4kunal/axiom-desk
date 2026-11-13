@@ -64,6 +64,10 @@ class QuotaExceeded(Forbidden):
     pass
 
 
+class RequestConflict(Forbidden):
+    pass
+
+
 class JobService:
     def __init__(
         self,
@@ -89,6 +93,7 @@ class JobService:
             raise NotFound("job kind", kind)
         job_id = "job_" + digest(principal.tenant_id, principal.user_id, request_id)[:24]
         if self._find(principal, job_id) is not None:
+            self._same_request(job_id, kind, params)
             return job_id
         needs_approval = (
             principal.kind is PrincipalKind.AGENT and job_kind.cost(params) > self._approval_cost
@@ -118,9 +123,19 @@ class JobService:
                     self._quota,
                 ),
             ).rowcount
-        if inserted or self._find(principal, job_id) is not None:
+        if inserted:
+            return job_id
+        if self._find(principal, job_id) is not None:
+            self._same_request(job_id, kind, params)  # a racing submit with the same request_id
             return job_id
         raise QuotaExceeded(f"job quota reached: {self._quota} active jobs")
+
+    def _same_request(self, job_id: str, kind: str, params: Params) -> None:
+        stored = self._conn.execute(
+            "SELECT kind, params FROM jobs WHERE id = ?", (job_id,)
+        ).fetchone()
+        if stored != (kind, canonical(dict(params))):
+            raise RequestConflict("request_id already used for a different job")
 
     def approve(self, principal: Principal, job_id: str) -> None:
         """Only the human the job runs for can release an agent job held for cost."""

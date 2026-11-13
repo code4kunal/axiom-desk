@@ -14,7 +14,13 @@ from axiom_core.audit import AuditLog
 from axiom_core.authz import Authorizer, Forbidden, NotFound
 from axiom_core.db import migrate
 from axiom_core.envelope import JsonValue
-from axiom_core.jobs import JobKind, JobService, QuotaExceeded, job_capabilities
+from axiom_core.jobs import (
+    JobKind,
+    JobService,
+    QuotaExceeded,
+    RequestConflict,
+    job_capabilities,
+)
 from axiom_core.principals import Principal, PrincipalKind
 from axiom_core.registry import Binding, Entitlements, Registry
 from axiom_core.tenancy import Directory
@@ -178,6 +184,18 @@ def test_resubmitting_the_same_request_returns_the_same_job(
     first = jobs.submit(ana, "folds", {"folds": 1}, request_id="r1")
     assert jobs.submit(agent_for(), "folds", {"folds": 1}, request_id="r1") == first
     assert jobs.submit(ana, "folds", {"folds": 1}, request_id="r2") != first
+
+
+def test_the_same_request_id_with_other_params_is_refused(
+    conn: sqlite3.Connection, clock: Callable[[], float], directory: Directory
+) -> None:
+    jobs = make_service(conn, clock, folds_kind())
+    ana = user(directory)
+    first = jobs.submit(ana, "folds", {"folds": 2}, request_id="r1")
+
+    with pytest.raises(RequestConflict):
+        jobs.submit(ana, "folds", {"folds": 9}, request_id="r1")
+    assert jobs.status(ana, first).total == 2
 
 
 def test_other_tenant_cannot_see_a_job(
@@ -375,6 +393,55 @@ def test_killed_worker_resumes_from_the_last_checkpoint(tmp_path: Path) -> None:
     assert log.read_text().splitlines() == ["0", "1", "1", "2"]
     assert jobs.status(ada, job_id).state == "done"
     assert jobs.result(ada, job_id) == [{"fold": 0}, {"fold": 1}, {"fold": 2}]
+    conn.close()
+
+
+POISON_MODULE = """
+from axiom_core.jobs import JobKind
+
+
+def boom(params, i):
+    raise ZeroDivisionError("bad fold")
+
+
+KINDS = {
+    "poison": JobKind("poison", lambda p: 1, boom, lambda p: 1.0),
+    "folds": JobKind("folds", lambda p: 1, lambda p, i: {"fold": i}, lambda p: 1.0),
+}
+"""
+
+
+def test_a_step_that_raises_does_not_stop_the_worker(tmp_path: Path) -> None:
+    (tmp_path / "poison_kinds.py").write_text(textwrap.dedent(POISON_MODULE))
+    db = tmp_path / "records.db"
+    conn = sqlite3.connect(db)
+    migrate(conn)
+    directory = Directory(conn, AuditLog(conn, time.time))
+    directory.bootstrap_admin("desk", "ada")
+    ada = directory.principal("desk", "ada")
+    stand_in = JobKind("folds", lambda p: 1, fold_score, lambda p: 1.0)
+    jobs = JobService(conn, time.time, {"poison": stand_in, "folds": stand_in})
+    bad = jobs.submit(ada, "poison", {}, request_id="bad")
+    good = jobs.submit(ada, "folds", {}, request_id="good")
+
+    done = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "services" / "worker" / "main.py"),
+            "--db",
+            str(db),
+            "--kinds",
+            "poison_kinds:KINDS",
+        ],
+        env={**os.environ, "PYTHONPATH": str(tmp_path)},
+        timeout=60,
+        check=False,
+        capture_output=True,
+    )
+
+    assert done.returncode == 0, done.stderr
+    assert jobs.status(ada, bad).state == "failed"
+    assert jobs.status(ada, good).state == "done"
     conn.close()
 
 

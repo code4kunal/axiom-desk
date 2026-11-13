@@ -5,6 +5,7 @@ uv run python services/worker/main.py --db axiom.db --kinds package.module:KINDS
 
 import argparse
 import importlib
+import logging
 import sqlite3
 import sys
 import time
@@ -13,6 +14,8 @@ from typing import cast
 
 from axiom_core.db import migrate
 from axiom_core.jobs import JobKind, JobService
+
+log = logging.getLogger("axiom.worker")
 
 
 def load_kinds(spec: str) -> dict[str, JobKind]:
@@ -36,8 +39,13 @@ def main(argv: list[str]) -> int:
     conn = sqlite3.connect(args.db)
     migrate(conn)
     jobs = JobService(conn, time.time, load_kinds(args.kinds))
-    while jobs.run_next() is not None:
-        pass
+    while True:
+        try:
+            if jobs.run_next() is None:
+                break
+        except Exception:
+            # One bad step must not stop the queue; attempts already caps its retries.
+            log.exception("job step raised; continuing")
     conn.close()
     return 0
 

@@ -66,7 +66,8 @@ def scan(diff: str) -> list[str]:
 
 # Plain, full-text diffs whatever the user's git config says: forced colour prefixes ANSI codes,
 # and binary or `-diff` files would otherwise print no content at all.
-PLAIN = ("--unified=0", "--no-color", "--no-ext-diff", "--no-textconv", "--text")
+# --no-renames: a file renamed to a key-file name must read as added, or the name check misses it.
+PLAIN = ("--unified=0", "--no-color", "--no-ext-diff", "--no-textconv", "--text", "--no-renames")
 
 
 def main(argv: list[str]) -> int:
@@ -75,7 +76,9 @@ def main(argv: list[str]) -> int:
     else:
         # A range is scanned commit by commit, so a secret added and later removed still shows.
         if "--range" in argv:
-            cmd = ["git", "log", "-p", *PLAIN, "--format=", argv[argv.index("--range") + 1]]
+            # first-parent diffs for merges, so lines added while resolving a conflict are scanned
+            rng = argv[argv.index("--range") + 1]
+            cmd = ["git", "log", "-p", "--diff-merges=first-parent", *PLAIN, "--format=", rng]
         else:
             cmd = ["git", "diff", *PLAIN, "--cached"]
         # Binary content is decoded with replacement so a key inside it is still readable text.

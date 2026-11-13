@@ -337,6 +337,7 @@ export function createRing(
       disc.dispose();
       [mat, inkMat, keyMat].forEach((m) => m.dispose());
       renderer.dispose();
+      renderer.forceContextLoss(); // dispose() keeps the GL context; free it before GC does
     },
   };
 }
