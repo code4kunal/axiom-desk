@@ -35,15 +35,15 @@ A 120 Hz display gives an 8.33 ms frame budget, so p50 = 8.3 ms means locked at 
 
 **Corrected 2026-11-13.** The first runs kept a fixed visible range. New bars left the screen within seconds (3 s at 100 ticks/s, 15 s at 20), and the custom renderer skips redraws for off-screen ticks, so most of those runs measured the crosshair alone. They are struck below. The harness now follows the live bar.
 
-| Renderer | Ticks/s per chart (delivered) | Run | fps | p50 ms | p95 ms | p99 ms | max ms | frames > 20 ms | long tasks |
+| Renderer | Ticks/s per chart (delivered) | Run | fps | p50 ms | p95 ms | p99 ms | max ms | frames > 20 ms (count) | long tasks |
 |---|---|---|---|---|---|---|---|---|---|
-| custom | 20 (20.05) | live edge | 119.95 | 8.3 | 9.2 | 9.3 | 33.6 | 0% | 0 |
-| custom | 100, 5× load (100) | live edge | 119.8 | 8.3 | 9.2 | 9.3 | 58.4 | 0% | 2 (450 ms total) |
+| custom | 20 (20.05) | live edge | 119.95 | 8.3 | 9.2 | 9.3 | 33.6 | ≥1, count not recorded | 0 |
+| custom | 100, 5× load (100) | live edge | 119.8 | 8.3 | 9.2 | 9.3 | 58.4 | ≥1, count not recorded | 2 (450 ms total) |
 | ~~custom~~ | ~~20~~ | ~~fixed range, 3 runs~~ | ~~120~~ | ~~8.3~~ | ~~9.2~~ | ~~9.3–10.4~~ | ~~9.4–71.8~~ | | invalid: ticks off screen |
 | ~~custom~~ | ~~100~~ | ~~fixed range~~ | ~~120.2~~ | ~~8.3~~ | ~~9.3~~ | ~~10.2~~ | ~~74.1~~ | | invalid: ticks off screen |
 | scichart | 20 | — | NOT RUN: no licence key | | | | | | |
 
-The "frames > 20 ms" column is a rounded share, so a single slow frame shows as 0%; read max ms. Long tasks are counted from page start, warmup included, so they can sit outside the frame window (the 5× run's 450 ms did not show as a 450 ms frame).
+The harness now reports `framesOver20ms` as a count and counts only long tasks that start after warmup. The two custom rows above were recorded with the old harness, which reported a rounded share (one slow frame showed as 0%) and counted long tasks from page start, warmup included: their exact counts are unknown, and a max above 20 ms only proves at least one slow frame. Their long-task figures may include warmup (the 5× run's 450 ms did not show as a 450 ms frame). Rerun to replace them.
 
 Visual check: a screenshot of `?renderer=custom` shows 8 candle charts drawing, with the synced crosshair at the same time on all of them.
 

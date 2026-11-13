@@ -23,8 +23,8 @@ export interface BenchResult {
   frames: number;
   fps: number;
   frameMs: { p50: number; p95: number; p99: number; max: number };
-  over20ms: number; // share of frames slower than a 50 fps budget
-  longTasks: number;
+  framesOver20ms: number; // count of frames slower than a 50 fps budget
+  longTasks: number; // measured window only, warmup excluded
   longTaskMs: number;
   userAgent: string;
 }
@@ -76,10 +76,13 @@ async function run() {
     }
   }, 1000 / TICKS_PER_SEC);
 
+  // t0 is fixed before the observer so warmup long tasks can be dropped by start time.
+  const t0 = performance.now();
   let longTasks = 0;
   let longTaskMs = 0;
   const po = new PerformanceObserver((l) =>
     l.getEntries().forEach((e) => {
+      if (e.startTime <= t0 + WARMUP * 1000) return;
       longTasks++;
       longTaskMs += e.duration;
     }),
@@ -92,7 +95,6 @@ async function run() {
 
   // A scripted user sweeps the crosshair across chart 0's visible bars every frame, so sync runs at full rate.
   const deltas: number[] = [];
-  const t0 = performance.now();
   let prev = t0;
   await new Promise<void>((done) => {
     const loop = (now: number) => {
@@ -122,7 +124,7 @@ async function run() {
     frames: deltas.length,
     fps: round(deltas.length / SECONDS),
     frameMs: { p50: round(pct(s, 0.5)), p95: round(pct(s, 0.95)), p99: round(pct(s, 0.99)), max: round(s[s.length - 1]!) },
-    over20ms: round(deltas.filter((d) => d > 20).length / deltas.length),
+    framesOver20ms: deltas.filter((d) => d > 20).length,
     longTasks,
     longTaskMs: round(longTaskMs),
     userAgent: navigator.userAgent,

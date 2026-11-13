@@ -23,12 +23,14 @@ try {
     page.on("pageerror", (e) => errors.push(e.message));
     await page.goto(`http://localhost:${flags.port ?? "5199"}/?renderer=${r}&${qs}`);
     const timeoutMs = (Number(qs.get("seconds")) + 60) * 1000;
-    const result = await Promise.race([
-      page.waitForFunction(() => window.__bench, null, { timeout: timeoutMs }).then((h) => h.jsonValue()),
-      page.waitForFunction(() => document.getElementById("out")?.textContent?.startsWith("ERROR"), null, { timeout: timeoutMs }).then(
-        async () => ({ renderer: r, error: await page.textContent("#out") }),
-      ),
-    ]);
+    // One wait on either outcome: racing two waits leaves the loser to reject unhandled later.
+    const done = await page.waitForFunction(
+      () => window.__bench ?? (document.getElementById("out")?.textContent?.startsWith("ERROR") && "error"),
+      null,
+      { timeout: timeoutMs },
+    );
+    const outcome = await done.jsonValue();
+    const result = outcome === "error" ? { renderer: r, error: await page.textContent("#out") } : outcome;
     console.log(JSON.stringify({ ...result, pageErrors: errors }));
     await page.close();
   }
