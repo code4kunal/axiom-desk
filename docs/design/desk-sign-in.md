@@ -19,7 +19,7 @@ Design spec, not build. Plan: `docs/plans/2026-11-13-1804-feat-desk-sign-in-plan
 | Error label | `font-mono` 500 | `text-label uppercase` | `text-geru` | 12px mono 500 uppercase = allowed floor |
 | Error message | `font-body` 500 | `text-body` | `text-ink` | message in ink, not geru: contrast and calm; geru is the label + 2px `border-geru-mark` top rule only |
 | Primary button | `font-body` 500 | `text-ui` (17) | `bg-brass-mark text-on-brass` | `h-12 rounded-2 px-6 inline-flex items-center` |
-| Ghost button (Sign out, reload) | `font-body` 500 | `text-ui` | `text-ink border border-hairline hover:border-ink-dim` | `h-12 rounded-2 px-6`, colour-only hover |
+| Ghost button | none on these screens | | | Sign out is a borderless text button (underline on hover); Reload is primary |
 | User name | `font-display` Eczar 700 | `text-legal-h1` | `text-ink` | the h1 on `/desk` |
 | Tenant | `font-mono` 500 | `text-ui` | `text-ink` | label `BROKER` in `text-label uppercase text-ink-dim` above it |
 

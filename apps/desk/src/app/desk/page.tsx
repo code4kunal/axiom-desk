@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { Alert, Rail, me, primary } from "@/desk/shell";
+import { Alert, Column, Rail, me, primary } from "@/desk/shell";
 import { desk } from "@/landing/content";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -16,8 +16,7 @@ export default async function Desk() {
     return (
       <>
         <Rail />
-        <main id="main" className="frame pt-16 pb-24 md:pt-24">
-          <div className="max-w-[48ch]">
+        <Column>
             <p className="font-mono text-caption uppercase text-ink-dim">{u.caption}</p>
             <h1 className="mt-4 font-display text-legal-h1 font-bold text-balance">{u.heading}</h1>
             <Alert label={u.label}>{u.message}</Alert>
@@ -25,24 +24,23 @@ export default async function Desk() {
             <a href="/desk" className={`mt-8 w-full md:w-auto ${primary}`}>
               {u.reload}
             </a>
-          </div>
-        </main>
+        </Column>
       </>
     );
   }
   return (
     <>
       <Rail>
-        <form method="post" action="/auth/logout" className="flex h-full">
+        <form method="post" action="/auth/logout" className="-mr-4 flex h-full">
           <button
             type="submit"
-            className="px-4 font-body text-ui font-medium text-ink hover:text-ink-dim focus-visible:outline-offset-[-2px]"
+            className="px-4 font-body text-ui font-medium text-ink decoration-1 underline-offset-[3px] hover:underline focus-visible:outline-offset-[-2px]"
           >
             {desk.signOut}
           </button>
         </form>
       </Rail>
-      <main id="main" className="frame pt-16 pb-24 md:pt-24">
+      <Column>
         <p className="font-mono text-caption uppercase text-ink-dim">{desk.caption}</p>
         <h1 className="mt-4 font-display text-legal-h1 font-bold text-balance break-words">{user.name}</h1>
         <dl className="mt-6 border-b border-hairline">
@@ -51,8 +49,8 @@ export default async function Desk() {
             <dd className="font-mono text-ui font-medium break-words text-ink">{user.tenant}</dd>
           </div>
         </dl>
-        <p className="mt-6 max-w-[48ch] text-body text-ink-dim">{desk.body}</p>
-      </main>
+        <p className="mt-6 text-body text-ink-dim">{desk.body}</p>
+      </Column>
     </>
   );
 }

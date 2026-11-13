@@ -48,7 +48,7 @@ export const signInErrors = {
     message: "Your account signed in, but it is not set up on this desk.",
     next: "Ask your desk admin to add you, then sign in again.",
   },
-  expired: { label: "LINK EXPIRED", message: "That sign-in expired or was already used.", next: "Start again with Sign in." },
+  expired: { label: "SIGN-IN EXPIRED", message: "That sign-in expired or was already used.", next: "Start again with Sign in." },
   cancelled: { label: "SIGN-IN CANCELLED", message: "You cancelled sign-in at your provider.", next: "Sign in again when you are ready." },
   provider_unavailable: {
     label: "PROVIDER UNREACHABLE",
@@ -63,7 +63,7 @@ export const signIn = {
   errorTitle: "Sign-in problem | Axiom Desk",
   caption: "AXIOM DESK",
   heading: "Sign in",
-  body: "Use your desk account to open the desk. You will be sent to your sign-in provider and brought back here.",
+  body: "Use your desk account. You will be sent to your sign-in provider and brought back here.",
   action: "Sign in",
   hint: "Trouble signing in? Ask your desk admin.",
 };

@@ -22,7 +22,7 @@ const alert = (page: Page) => page.getByRole("main").getByRole("alert");
 const expected = {
   mfa_required: { label: "SECOND FACTOR NEEDED", message: "Your sign-in did not use multi-factor authentication." },
   unknown_user: { label: "NOT ON THIS DESK", message: "Your account signed in, but it is not set up on this desk." },
-  expired: { label: "LINK EXPIRED", message: "That sign-in expired or was already used." },
+  expired: { label: "SIGN-IN EXPIRED", message: "That sign-in expired or was already used." },
   cancelled: { label: "SIGN-IN CANCELLED", message: "You cancelled sign-in at your provider." },
   provider_unavailable: { label: "PROVIDER UNREACHABLE", message: "We could not reach your sign-in provider." },
   failed: { label: "SIGN-IN FAILED", message: "Sign-in did not complete." },

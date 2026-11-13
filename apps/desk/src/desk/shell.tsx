@@ -20,7 +20,7 @@ export const me = cache(async (): Promise<Me> => {
 });
 
 export const primary =
-  "inline-flex h-12 items-center justify-center rounded-2 bg-brass-mark px-6 font-body text-ui font-medium text-on-brass";
+  "inline-flex h-12 items-center justify-center rounded-2 bg-brass-mark px-6 font-body text-ui font-medium text-on-brass hover:bg-ink-dim";
 
 export function Rail({ children }: { children?: ReactNode }) {
   return (
@@ -35,9 +35,21 @@ export function Rail({ children }: { children?: ReactNode }) {
   );
 }
 
+// The 48ch working column every desk screen uses; at xl a hairline rule closes it off.
+export function Column({ children }: { children: ReactNode }) {
+  return (
+    <main id="main" className="frame xl:grid xl:min-h-[calc(100dvh-3rem)] xl:grid-cols-12 xl:gap-x-6">
+      <div className="max-w-[48ch] pt-16 pb-24 md:pt-24 xl:col-span-5">{children}</div>
+      <div aria-hidden className="hidden border-l border-hairline xl:col-start-6 xl:block" />
+    </main>
+  );
+}
+
+export const alertId = "problem";
+
 export function Alert({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div role="alert" className="mt-6 border-t-2 border-geru-mark pt-4">
+    <div id={alertId} role="alert" className="mt-6 border-t-2 border-geru-mark pt-4">
       <p className="font-mono text-label font-medium uppercase text-geru">{label}</p>
       <p className="mt-2 text-body font-medium text-ink">{children}</p>
     </div>
