@@ -1,4 +1,5 @@
 // Every string the landing shell can show lives here, so the copy test sees all of it.
+import { WEIGHTS_A, WEIGHTS_B } from "./hero/weights.ts";
 
 export const sections = [
   { id: "season", label: "Season" },
@@ -117,6 +118,14 @@ export const meta = {
   ogDescription: statement,
 };
 
+// The basket split in percentages (the user asked for numbers here, not words standing in for them).
+const ASSETS = ["Equity", "Gilts", "Gold", "Cash", "Global"];
+const pct = (w: number) => `${w}%`;
+// Only the assets that move: "EQUITY 61% → 42% · GILTS 18% → 29% · GOLD 9% → 17%".
+const moved = ASSETS.flatMap((a, k) =>
+  WEIGHTS_A[k] === WEIGHTS_B[k] ? [] : [`${a.toUpperCase()} ${pct(WEIGHTS_A[k]!)} → ${pct(WEIGHTS_B[k]!)}`],
+).join(" · ");
+
 export const hero = {
   statement,
   subline,
@@ -127,7 +136,7 @@ export const hero = {
   plates: [
     { caption: "SEASON · RISK-ON · ILLUSTRATIVE", state: "RISK-ON", tone: "monsoon" },
     { caption: "SEASON · EARLY WARNING · ILLUSTRATIVE", state: "EARLY WARNING", tone: "geru" },
-    { caption: "LESS EQUITY · MORE GILTS AND GOLD · ILLUSTRATIVE" },
+    { caption: `${moved} · ILLUSTRATIVE` },
   ],
   hedgeCard,
   // One plain sentence per dock (0, 40, 70, 100), above each mono caption, so the pin reads as a story.
@@ -137,17 +146,19 @@ export const hero = {
     { label: "STEP 3 OF 4", say: "Axiom moves money out of equity and into gilts and gold." },
     { label: "STEP 4 OF 4", say: "It drafts a hedge. Nothing is placed until a person confirms it." },
   ],
-  // The season in the ring's hole: 0 at dock 0, 1 from dock 40 on.
+  // The ring's hole, one per dock (0, 40, 70, 100): the equity share, the slice that moves. The season is in
+  // the step line and caption beside it; repeating it here wrapped to three lines in the narrow plates.
   hole: [
-    { word: "Risk-on", note: "MOST SECTORS RISING", tone: "monsoon" },
-    { word: "Early warning", note: "FEWER SECTORS RISING", tone: "geru" },
+    { word: pct(WEIGHTS_A[0]!), note: "EQUITY", tone: "monsoon" },
+    { word: pct(WEIGHTS_A[0]!), note: "EQUITY", tone: "geru" },
+    { word: pct(WEIGHTS_B[0]!), note: "EQUITY", tone: "geru" },
+    { word: pct(WEIGHTS_B[0]!), note: "EQUITY", tone: "geru" },
   ],
-  // Basket legend under the ring, in words; it cuts from before to after at dock 70.
-  // test/ring.test.ts holds the words to the weights the ring draws.
+  // Basket legend under the ring, from the weights the ring draws; it cuts from before to after at dock 70.
   legend: {
-    labels: ["Equity", "Gilts", "Gold", "Cash", "Global"],
-    before: ["Most", "Some", "Some", "Low", "Low"],
-    after: ["Less", "More", "More", "Same", "Same"],
+    labels: ASSETS,
+    before: WEIGHTS_A.map(pct),
+    after: WEIGHTS_B.map(pct),
   },
 };
 

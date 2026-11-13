@@ -36,7 +36,7 @@ export function RingIsland() {
       const i = docks.filter((d) => scrollY >= d - 1).length - 1;
       if (i === shown) return;
       shown = i;
-      const h = hero.hole[i <= 0 ? 0 : 1]!;
+      const h = hero.hole[Math.max(i, 0)]!;
       const word = hole.firstElementChild as HTMLElement;
       word.textContent = h.word;
       word.dataset.tone = h.tone;
