@@ -137,6 +137,26 @@
   }
 }
 
+/* Section reveals: hidden only when JS is on (html[data-js]), shown once by the observer. */
+html[data-js] [data-reveal]:not([data-shown]) {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  html[data-js] [data-reveal]:not([data-shown]) {
+    translate: 0 16px;
+  }
+  html[data-js] [data-reveal] {
+    transition:
+      opacity 480ms var(--ease-reveal) calc(var(--i, 0) * 60ms),
+      translate 480ms var(--ease-reveal) calc(var(--i, 0) * 60ms);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-js] [data-reveal] {
+    transition: opacity 480ms var(--ease-reveal);
+  }
+}
+
 @utility frame {
   margin-inline: auto;
   width: 100%;

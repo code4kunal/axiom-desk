@@ -19,7 +19,7 @@ export function Nav() {
               <li key={s.id} className="flex">
                 <Link
                   href={`/#${s.id}`}
-                  className="-mx-2 flex items-center gap-2 px-2 font-mono text-label focus-visible:outline-offset-[-2px] font-medium uppercase text-ink-dim hover:text-ink"
+                  className="-mx-2 flex items-center gap-2 border-y-2 border-transparent px-2 font-mono text-label font-medium uppercase text-ink-dim hover:text-ink focus-visible:outline-offset-[-2px] aria-[current=location]:border-b-brass-mark aria-[current=location]:text-brass"
                 >
                   <span className="hidden font-normal xl:inline">{ordinal(i)}</span>
                   {s.label}
