@@ -16,7 +16,11 @@ export function Observers() {
         }),
       { threshold: 0.2 },
     );
-    document.querySelectorAll("[data-reveal]").forEach((el) => reveal.observe(el));
+    document.querySelectorAll<HTMLElement>("[data-reveal]").forEach((el) => {
+      // Already shown by the 3s CSS failsafe (scripts ran late): keep it shown, never hide it again.
+      if (getComputedStyle(el).opacity !== "0") el.dataset.shown = "";
+      else reveal.observe(el);
+    });
     // Hands the reveals from the CSS failsafe to this observer.
     document.documentElement.dataset.observing = "";
 
