@@ -258,11 +258,9 @@ Proposed changes to `docs/plans/2026-11-12-1110-feat-axiom-desk-platform-plan.md
 
 ### Outstanding Questions
 
-**Resolve Before Planning**
-
-- Which two desk users run the R126 and R195 timed tasks, and when SciChart gets a licence key for the spike.
-
 **Deferred to Planning**
+
+- Which two desk users run the R126 and R195 timed tasks, and when SciChart gets a licence key. These block the U14 renderer decision, not planning; see Open blockers.
 
 - Similarity method and time scales for pattern twins (R173).
 - As-of storage and retention design behind R189, and the snapshot density replay needs.
