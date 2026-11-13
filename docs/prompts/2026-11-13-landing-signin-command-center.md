@@ -14,12 +14,13 @@ Groomed with prompt-coach on 2026-11-13. All choices are the user's, except TAST
 | 3D | three.js in the hero only, lazy-loaded, with a static poster fallback |
 | HyperFrames | Pre-rendered product clips (agent answering, regime flip) as video loops on the landing page |
 | 21st.dev | Primitives only (menus, dialogs), restyled to tokens |
-| Audience | Brokers in discovery, plus the desk |
+| Audience | Landing page: the mass Indian public, plus brokers and the desk. Product: desk-first in V1 (changed 2026-11-13; it was "brokers + desk") |
 | Hero | Regime → basket → hedge loop |
 | Landing design model | Fable: the ui-ux-pro-max design step for the landing page runs in a subagent with `model: "fable"` |
 | Brand | Typeset "Axiom" wordmark, designed in G5 |
 | Tone | Quant-precise, evidence-first: numbers carry base rates |
-| TASTE | **OPEN:** {{TASTE_LIKES}} / {{TASTE_HATES}}. Nothing starts without it |
+| TASTE | Recorded in `references/TASTE.md`: 3 likes (Fulgurite, Glyph, Kunal's Desk) as references only, 3 hates (stock SaaS, Bloomberg-clone, crypto hype) |
+| Design authority | ui-ux-pro-max on Fable proposes; impeccable critiques and runs the finish review; DESIGN.md is written from the built world |
 
 ## Prompt
 
@@ -35,7 +36,7 @@ Pipeline for each surface: ce-brainstorm -> ce-plan -> ce-doc-review -> archify 
 
 Stack: Next.js App Router in apps/desk; Tailwind driven only by DESIGN.md tokens; Motion for UI; GSAP ScrollTrigger for the hero scroll; three.js in the hero only; HyperFrames for pre-rendered landing clips; 21st.dev primitives restyled to tokens. No other new dependencies. Pin exact versions at least two weeks old. Check every unfamiliar API against the installed source; mark anything unchecked UNVERIFIED.
 
-1. Landing page (brokers in discovery, plus the desk)
+1. Landing page (the mass Indian public, plus brokers and the desk; readable instantly on a mid-range Android phone)
    - Hero: the regime -> basket -> hedge loop as a three.js ring driven by scroll.
      0%: regime "Expansion". 40%: it turns to "Early deterioration, 68% confidence".
      70%: the basket reweights from equity to gilts and gold. 100%: a hedge card drafts, labelled "a human confirms every order".
