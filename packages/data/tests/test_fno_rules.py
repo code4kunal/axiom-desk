@@ -206,6 +206,16 @@ def test_weekly_synthetic_flag_survives_clean_monthly_row(fno: FnoRulesEngine) -
     assert "synthetic publication date" in rules.limitations
 
 
+def test_position_limit_index_rule_only_for_index_underlyings(fno: FnoRulesEngine) -> None:
+    """A stock underlying must not be given the index position-limit rule."""
+    nifty = fno.get_contract_rules("NSE", "NIFTY", on=date(2026, 1, 5))
+    assert nifty.position_limit_rule == "1500cr_net"
+
+    stock = fno.get_contract_rules("NSE", "RELIANCE", on=date(2026, 1, 5))
+    assert stock.position_limit_rule == ""
+    assert any("position limit" in lim for lim in stock.limitations)
+
+
 def test_golden_rule_dates(fno: FnoRulesEngine) -> None:
     """Every row in golden_rule_dates.csv matches the lookup (KTD8)."""
     golden_path = Path(__file__).parent / "fixtures" / "golden_rule_dates.csv"

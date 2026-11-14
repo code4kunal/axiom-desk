@@ -498,12 +498,21 @@ class FnoRulesEngine:
                 is_verified = False
 
         # 5. Position limits
-        pl_key = f"{exchange}:INDEX"
-        pl_res = self._position_limits_table.resolve(pl_key, on_date)
-        pos_limit = str(pl_res.value.payload.get("position_limit_rule", ""))
-        sources.extend(pl_res.sources)
-        if not pl_res.is_verified:
-            is_verified = False
+        # Index underlyings are the ones with weekly-eligibility rows; others have no INDEX rule.
+        pl_res = None
+        pos_limit = ""
+        try:
+            pl_res = self._position_limits_table.resolve(f"{exchange}:{underlying}", on_date)
+        except RuleUnknown:
+            if self._weekly_eligibility_table.has_key(we_key):
+                pl_res = self._position_limits_table.resolve(f"{exchange}:INDEX", on_date)
+            else:
+                limitations.append(f"no position limit rule for {exchange}:{underlying}")
+        if pl_res is not None:
+            pos_limit = str(pl_res.value.payload.get("position_limit_rule", ""))
+            sources.extend(pl_res.sources)
+            if not pl_res.is_verified:
+                is_verified = False
 
         # 6. Ban status
         banned: bool | None = None

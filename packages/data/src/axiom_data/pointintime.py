@@ -159,6 +159,9 @@ class PointInTimeTable:
                         )
         self._rows = all_rows
 
+    def has_key(self, key: str) -> bool:
+        return any(r.key == key for r in self._rows)
+
     def resolve(self, key: str, on: date | datetime) -> LookupResult[EffectiveDatedRow]:
         """Resolve the row in force for (key, on) as of end of on in IST (KTD2)."""
         if isinstance(on, datetime):
