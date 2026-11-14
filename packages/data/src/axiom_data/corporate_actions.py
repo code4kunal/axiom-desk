@@ -61,6 +61,8 @@ class CorporateAction:
             object.__setattr__(self, "recorded_at", ensure_utc_aware(self.recorded_at))
         except (AttributeError, TypeError) as err:
             raise ValueError("published_at and recorded_at must be valid datetimes") from err
+        if not isinstance(self.ex_date, date):
+            raise TypeError(f"ex_date must be a date, got {self.ex_date!r}")
         if not self.source:
             raise ValueError("source must be non-empty")
         if not self.licence_scope:
@@ -131,7 +133,12 @@ class CorporateActionAdjuster:
                         raise MalformedCorporateAction(
                             f"malformed corporate action {item.get('action_id')!r}: {err!r}"
                         ) from err
-                    act = CorporateAction(**fields)
+                    try:
+                        act = CorporateAction(**fields)
+                    except TypeError as err:  # a ValueError from the field checks stays a ValueError
+                        raise MalformedCorporateAction(
+                            f"malformed corporate action {item.get('action_id')!r}: {err!r}"
+                        ) from err
 
                 pub_iso = act.published_at.isoformat()
                 self._conn.execute(

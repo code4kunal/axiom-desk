@@ -466,6 +466,27 @@ def test_malformed_action_dict_raises_malformed(
         CorporateActionAdjuster(conn).load_corporate_actions([item])
 
 
+@pytest.mark.parametrize("field,value", [("from_qty", "2"), ("ex_date", 20240515)])
+def test_wrong_typed_json_field_raises_malformed(
+    conn: sqlite3.Connection, field: str, value: object
+) -> None:
+    """A JSON string quantity or a non-date ex_date is MalformedCorporateAction, not TypeError."""
+    item: dict[str, object] = {
+        "action_id": "A1",
+        "recorded_at": "2024-01-01T00:00:00Z",
+        "instrument_id": "STOCK",
+        "type": "split",
+        "ex_date": "2024-05-15",
+        "from_qty": 1,
+        "to_qty": 2,
+        "published_at": "2024-01-01T00:00:00Z",
+        "source": "TEST",
+    }
+    item[field] = value
+    with pytest.raises(MalformedCorporateAction):
+        CorporateActionAdjuster(conn).load_corporate_actions([item])
+
+
 def test_bad_dividend_amount_raises_refused(conn: sqlite3.Connection) -> None:
     """A bad amount string must raise a clear Refused subclass, not a bare ValueError."""
     from axiom_core.authz import Refused
