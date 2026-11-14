@@ -133,8 +133,9 @@ class PointInTimeTable:
     def load(self, rows: Iterable[EffectiveDatedRow]) -> None:
         new_rows = list(rows)
         # Validate that no two rows for the same key and same recorded_at overlap in [from, to)
+        all_rows = self._rows + new_rows
         by_key_and_rec: dict[tuple[str, datetime], list[EffectiveDatedRow]] = {}
-        for r in new_rows:
+        for r in all_rows:
             key_rec = (r.key, r.recorded_at)
             by_key_and_rec.setdefault(key_rec, []).append(r)
 
@@ -151,7 +152,7 @@ class PointInTimeTable:
                             f"{rec.isoformat()}: [{r1.effective_from}, {r1.effective_to}) and "
                             f"[{r2.effective_from}, {r2.effective_to})"
                         )
-        self._rows.extend(new_rows)
+        self._rows = all_rows
 
     def resolve(self, key: str, on: date | datetime) -> LookupResult[EffectiveDatedRow]:
         """Resolve the row in force for (key, on) as of end of on in IST (KTD2)."""

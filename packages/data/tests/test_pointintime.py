@@ -149,6 +149,21 @@ def test_overlapping_rows_same_recorded_at_fail_at_load() -> None:
         table.load(rows)
 
 
+def test_loading_same_csv_twice_raises_overlapping_error() -> None:
+    """Loading the same CSV rows twice must raise ValueError for overlapping ranges."""
+    csv_text = (
+        "key,effective_from,effective_to,published_at,recorded_at,source,licence_scope,"
+        "verified_against\n"
+        "NIFTY,2024-01-01,2024-12-31,2023-12-01T00:00:00Z,2023-12-01T00:00:00Z,CIRCULAR/1,"
+        "public,CIRCULAR/1\n"
+    )
+    rows1 = parse_csv_rule_rows(csv_text)
+    rows2 = parse_csv_rule_rows(csv_text)
+    table = PointInTimeTable("test_rule", rows1)
+    with pytest.raises(ValueError, match="overlapping rows"):
+        table.load(rows2)
+
+
 def test_correction_recorded_later_wins() -> None:
     """A correction recorded today for a 2025 row is the answer for a 2025 lookup."""
     initial = EffectiveDatedRow(
