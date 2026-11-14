@@ -1,0 +1,10 @@
+rule,key,date,expected,circular
+contract_value,NSE:NIFTY,2024-11-20,1500000,SEBI/HO/MRD/TPD-1/P/CIR/2024/132
+weekly_eligibility,NSE:BANKNIFTY,2024-11-20,false,SEBI/HO/MRD/TPD-1/P/CIR/2024/132
+weekly_eligibility,NSE:NIFTY,2024-11-20,true,SEBI/HO/MRD/TPD-1/P/CIR/2024/132
+expiry_margin_rules,NSE:ALL,2025-02-01,false,SEBI/HO/MRD/TPD-1/P/CIR/2024/132
+expiry_rules,NSE:NIFTY,2025-09-01,Tuesday,NSE/CIRCULAR/2025
+expiry_rules,BSE:SENSEX,2025-09-01,Thursday,BSE/CIRCULAR/2025
+position_limits,NSE:INDEX,2025-12-06,1500cr_net,SEBI/HO/MRD/TPD-1/P/CIR/2025/79
+elm_margin_short_options,NSE:ALL,2025-02-01,not_stored,SEBI/HO/MRD/TPD-1/P/CIR/2024/132
+intraday_monitoring_limits,NSE:ALL,2025-04-01,not_stored,SEBI/HO/MRD/TPD-1/P/CIR/2024/132
