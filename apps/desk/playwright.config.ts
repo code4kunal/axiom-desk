@@ -7,16 +7,20 @@ const port = 3100;
 const repo = resolve(import.meta.dirname, "../..");
 const issuer = "http://127.0.0.1:9411";
 const api = "http://127.0.0.1:8765";
-// A fresh records database each run, with the MFA test user on the axiom-desk directory.
+// A fresh records database each run, with the MFA test user on the axiom-desk directory and one published regime run.
 const db = join(mkdtempSync(join(tmpdir(), "axiom-e2e-")), "desk.db");
 const seed = [
   "import sqlite3, sys, time",
+  "from datetime import datetime, timezone",
   "from axiom_core.db import migrate",
+  "from axiom_core.envelope import Source",
+  "from axiom_core.runs import RunStore",
   "from axiom_core.audit import AuditLog",
   "from axiom_core.tenancy import Directory",
   "c = sqlite3.connect(sys.argv[1])",
   "migrate(c)",
   "Directory(c, AuditLog(c, time.time)).bootstrap_admin('axiom-desk', 'user-mfa')",
+  "RunStore(c, time.time).publish('regime', datetime(2026, 11, 13, tzinfo=timezone.utc), {'state': 'risk-on'}, (Source('nse-eod', 'public'),))",
 ].join("; ");
 
 export default defineConfig({
