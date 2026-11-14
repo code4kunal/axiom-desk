@@ -46,6 +46,10 @@ class Capability:
     bindings: frozenset[Binding]
     version: str
     parity_inputs: Mapping[str, JsonValue] | None
+    # Why a person, never the agent, must take this action; exempts it from the agent binding.
+    human_only_reason: str | None = None
+    # Shape of the envelope's value, for typed clients; None leaves it untyped.
+    output: type[BaseModel] | None = None
 
 
 class Entitlements:
@@ -90,8 +94,12 @@ class Registry:
     def check(self) -> list[str]:
         problems: list[str] = []
         for cap in self.capabilities():
-            for missing in sorted(ALL_BINDINGS - cap.bindings):
+            human_only = bool(cap.human_only_reason and cap.human_only_reason.strip())
+            expected = ALL_BINDINGS - {Binding.AGENT} if human_only else ALL_BINDINGS
+            for missing in sorted(expected - cap.bindings):
                 problems.append(f"{cap.name}: missing {missing} binding")
+            if human_only and Binding.AGENT in cap.bindings:
+                problems.append(f"{cap.name}: human-only but bound to the agent")
             if cap.parity_inputs is None:
                 problems.append(f"{cap.name}: missing parity fixture")
                 continue
@@ -108,6 +116,12 @@ class Registry:
         if cap is None:
             raise NotFound("capability", name)
         if surface not in cap.bindings:
+            self._audit.record(
+                principal,
+                "capability_surface",
+                "refused",
+                {"capability": name, "surface": surface.value},
+            )
             raise Forbidden(f"{name} is not available on the {surface} surface")
         inputs = cap.inputs.model_validate(raw_inputs)
         self._authz.check(

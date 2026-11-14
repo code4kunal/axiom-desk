@@ -1,6 +1,6 @@
-import type { CapabilityInputs, CapabilityName, Envelope } from "./generated.ts";
+import type { CapabilityInputs, CapabilityName, CapabilityOutputs, Envelope } from "./generated.ts";
 
-export type { CapabilityInputs, CapabilityName, Envelope, Source } from "./generated.ts";
+export type { CapabilityInputs, CapabilityName, CapabilityOutputs, Envelope, Source } from "./generated.ts";
 export { capabilityNames } from "./generated.ts";
 
 export type Surface = "screen" | "command";
@@ -22,7 +22,7 @@ export async function callCapability<N extends CapabilityName>(
   input: CapabilityInputs[N],
   surface: Surface = "screen",
   fetchImpl: typeof fetch = fetch,
-): Promise<Envelope> {
+): Promise<Envelope<CapabilityOutputs[N]>> {
   const response = await fetchImpl(`${baseUrl}/capabilities/${name}`, {
     method: "POST",
     headers: {
@@ -37,5 +37,5 @@ export async function callCapability<N extends CapabilityName>(
     const error = (body as { error?: unknown }).error;
     throw new CapabilityError(response.status, typeof error === "string" ? error : JSON.stringify(error));
   }
-  return body as Envelope;
+  return body as Envelope<CapabilityOutputs[N]>;
 }

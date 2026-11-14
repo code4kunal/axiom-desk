@@ -81,6 +81,18 @@ def test_every_registered_capability_answers_its_parity_fixture_on_every_surface
         assert len(ids) == 1, capability.name
 
 
+# Capabilities the agent may never call, each with the reason it must stay with a person.
+# Adding one is a deliberate change: name it here so review sees it.
+EXPECTED_HUMAN_ONLY: dict[str, str] = {}
+
+
+def test_human_only_capabilities_match_the_reviewed_allowlist(services: Services) -> None:
+    human_only = {
+        c.name: c.human_only_reason for c in services.registry.capabilities() if c.human_only_reason
+    }
+    assert human_only == EXPECTED_HUMAN_ONLY
+
+
 def test_request_without_a_session_is_refused(services: Services) -> None:
     client = TestClient(create_app(services))
     assert client.post("/capabilities/runs_latest", json={"kind": "regime"}).status_code == 401

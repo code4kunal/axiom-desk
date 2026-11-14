@@ -2,6 +2,9 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import { CapabilityError, callCapability } from "./index.ts";
+import type { CapabilityOutputs, Envelope } from "./index.ts";
+
+type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? true : false;
 
 test("sends the token, surface and input to the capability route", async () => {
   let seen: { url: string; init: RequestInit } | undefined;
@@ -30,4 +33,10 @@ test("raises with the status and server message on refusal", async () => {
     callCapability("http://api", "tok", "runs_latest", { kind: "regime" }, "screen", fakeFetch),
     (err: unknown) => err instanceof CapabilityError && err.status === 403 && /licence/.test(err.message),
   );
+});
+
+test("types the envelope value with the capability's output", () => {
+  type Returned = Awaited<ReturnType<typeof callCapability<"runs_latest">>>;
+  const typed: Equal<Returned, Envelope<CapabilityOutputs["runs_latest"]>> = true;
+  assert.equal(typed, true);
 });
