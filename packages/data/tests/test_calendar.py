@@ -129,6 +129,22 @@ def test_date_past_horizon_raises_horizon_error(calendar: TradingCalendar) -> No
         calendar.sessions_in_range("equity", horizon - timedelta(days=5), past_horizon)
 
 
+def test_reference_rows_carry_synthetic_flag_and_calendar_reports_it() -> None:
+    """Every holiday and special-session row has the flag; unverified rows give limitations."""
+    import csv
+    import importlib.resources
+
+    ref = importlib.resources.files("axiom_data.reference")
+    for name in ("holidays.csv", "special_sessions.csv"):
+        rows = list(csv.DictReader(ref.joinpath(name).read_text(encoding="utf-8").splitlines()))
+        assert all(r["published_at_synthetic"] in ("true", "false") for r in rows)
+    c = TradingCalendar()
+    assert "unverified rule" in c.limitations
+    assert "synthetic publication date" in c.limitations
+    assert {s.name for s in c.sources} == {"UNSOURCED"}
+    assert TradingCalendar(holidays={}, special_sessions={}, session_hours={}).limitations == ()
+
+
 def test_previous_session(calendar: TradingCalendar) -> None:
     # Monday morning 08:00 IST -> previous session was Friday 09:15-15:30
     ts = datetime(2024, 4, 8, 8, 0, tzinfo=IST)

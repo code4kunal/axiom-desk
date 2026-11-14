@@ -10,6 +10,7 @@ from datetime import date, datetime, time, timedelta
 from io import StringIO
 
 from axiom_core.authz import Refused
+from axiom_core.envelope import Source
 
 from axiom_data.pointintime import (
     IST,
@@ -63,11 +64,22 @@ class TradingCalendar:
         start_date: date | None = None,
         horizon_date: date | None = None,
     ) -> None:
+        # Provenance of the reference rows (R10); empty when the caller injects its own data.
+        self.limitations: tuple[str, ...] = ()
+        self.sources: tuple[Source, ...] = ()
         if holidays is None or special_sessions is None or session_hours is None:
-            hols, specials, hours = self._load_from_reference()
+            hols, specials, hours, rows = self._load_from_reference()
             self._holidays = holidays if holidays is not None else hols
             self._special_sessions = special_sessions if special_sessions is not None else specials
             self._session_hours = session_hours if session_hours is not None else hours
+            if any(not r["verified_against"].strip() for r in rows):
+                self.limitations += ("unverified rule",)
+            if any(r["published_at_synthetic"].strip() == "true" for r in rows):
+                self.limitations += ("synthetic publication date",)
+            row_sources = dict.fromkeys(
+                (r["source"].strip(), r["licence_scope"].strip()) for r in rows
+            )
+            self.sources = tuple(Source(n, s) for n, s in row_sources)
         else:
             self._holidays = holidays
             self._special_sessions = special_sessions
@@ -82,14 +94,17 @@ class TradingCalendar:
         dict[str, set[date]],
         dict[tuple[str, date], Session],
         dict[str, tuple[time, time]],
+        list[dict[str, str]],
     ]:
         ref_pkg = importlib.resources.files("axiom_data.reference")
+        rows: list[dict[str, str]] = []
 
         # 1. Holidays
         holidays: dict[str, set[date]] = {}
         h_text = ref_pkg.joinpath("holidays.csv").read_text(encoding="utf-8")
         h_reader = csv.DictReader(StringIO(h_text))
         for row in h_reader:
+            rows.append(row)
             seg = row["segment"].strip()
             d = date.fromisoformat(row["date"].strip())
             holidays.setdefault(seg, set()).add(d)
@@ -99,6 +114,7 @@ class TradingCalendar:
         sp_text = ref_pkg.joinpath("special_sessions.csv").read_text(encoding="utf-8")
         sp_reader = csv.DictReader(StringIO(sp_text))
         for row in sp_reader:
+            rows.append(row)
             seg = row["segment"].strip()
             d = date.fromisoformat(row["date"].strip())
             o_time = time.fromisoformat(row["open_time"].strip())
@@ -120,7 +136,7 @@ class TradingCalendar:
             c_time = time.fromisoformat(row["close_time"].strip())
             session_hours[seg] = (o_time, c_time)
 
-        return holidays, special_sessions, session_hours
+        return holidays, special_sessions, session_hours, rows
 
     @property
     def horizon(self) -> date:

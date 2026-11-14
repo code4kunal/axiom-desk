@@ -125,6 +125,22 @@ def test_trading_calendar_holiday_returns_no_session_and_next_session(
     assert val["next_session"]["start"].startswith("2019-03-05")
 
 
+def test_trading_calendar_reports_unverified_synthetic_and_row_sources(
+    app_services: Services,
+) -> None:
+    """Unverified calendar rows surface limitations and their real source, not a generic one."""
+    token = sign_in(app_services, "ana")
+    agent_principal = app_services.sessions.agent_principal(token)
+
+    inputs = {"segment": "equity", "on": "2025-02-03"}
+    env = app_services.registry.call(agent_principal, "trading_calendar", inputs, Binding.AGENT)
+
+    assert any("unverified rule" in lim for lim in env.limitations)
+    assert any("synthetic publication date" in lim for lim in env.limitations)
+    assert "exchange-calendar" not in [s.name for s in env.sources]
+    assert "UNSOURCED" in [s.name for s in env.sources]
+
+
 def test_non_public_scope_refused_for_unentitled_tenant(app_services: Services) -> None:
     """A source whose scope the tenant lacks is refused by the registry."""
     # Insert an instrument with a proprietary licence scope

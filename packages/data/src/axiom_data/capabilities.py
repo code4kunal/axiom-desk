@@ -156,9 +156,9 @@ def trading_calendar(calendar: TradingCalendar) -> Capability:
         return HandlerResult(
             value=value,
             as_of=as_of,
-            sources=(Source("exchange-calendar", "public"),),
+            sources=calendar.sources,
             method="trading calendar lookup",
-            limitations=(),
+            limitations=calendar.limitations,
         )
 
     return Capability(
