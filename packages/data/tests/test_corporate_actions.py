@@ -428,6 +428,30 @@ def test_dividend_amount_must_be_positive(amount: str | None) -> None:
         )
 
 
+@pytest.mark.parametrize("drop,bad", [("published_at", None), (None, ("ex_date", "not-a-date"))])
+def test_malformed_action_dict_raises_malformed(
+    conn: sqlite3.Connection, drop: str | None, bad: tuple[str, str] | None
+) -> None:
+    """A dict with a missing key or bad value raises MalformedCorporateAction."""
+    item = {
+        "action_id": "A1",
+        "recorded_at": "2024-01-01T00:00:00Z",
+        "instrument_id": "STOCK",
+        "type": "split",
+        "ex_date": "2024-05-15",
+        "from_qty": 1,
+        "to_qty": 2,
+        "published_at": "2024-01-01T00:00:00Z",
+        "source": "TEST",
+    }
+    if drop:
+        del item[drop]
+    if bad:
+        item[bad[0]] = bad[1]
+    with pytest.raises(MalformedCorporateAction):
+        CorporateActionAdjuster(conn).load_corporate_actions([item])
+
+
 def test_bad_dividend_amount_raises_refused(conn: sqlite3.Connection) -> None:
     """A bad amount string must raise a clear Refused subclass, not a bare ValueError."""
     from axiom_core.authz import Refused

@@ -107,25 +107,31 @@ class CorporateActionAdjuster:
                 if isinstance(item, CorporateAction):
                     act = item
                 else:
-                    ex_d = (
-                        date.fromisoformat(item["ex_date"])
-                        if isinstance(item["ex_date"], str)
-                        else item["ex_date"]
-                    )
-                    act = CorporateAction(
-                        action_id=item["action_id"],
-                        recorded_at=datetime.fromisoformat(item["recorded_at"]),
-                        instrument_id=item["instrument_id"],
-                        type=item["type"],
-                        status=item.get("status", "active"),
-                        ex_date=ex_d,
-                        published_at=datetime.fromisoformat(item["published_at"]),
-                        source=item["source"],
-                        from_qty=item.get("from_qty"),
-                        to_qty=item.get("to_qty"),
-                        amount=item.get("amount"),
-                        licence_scope=item.get("licence_scope", "public"),
-                    )
+                    try:
+                        ex_d = (
+                            date.fromisoformat(item["ex_date"])
+                            if isinstance(item["ex_date"], str)
+                            else item["ex_date"]
+                        )
+                        fields: dict[str, Any] = {
+                            "action_id": item["action_id"],
+                            "recorded_at": datetime.fromisoformat(item["recorded_at"]),
+                            "instrument_id": item["instrument_id"],
+                            "type": item["type"],
+                            "status": item.get("status", "active"),
+                            "ex_date": ex_d,
+                            "published_at": datetime.fromisoformat(item["published_at"]),
+                            "source": item["source"],
+                            "from_qty": item.get("from_qty"),
+                            "to_qty": item.get("to_qty"),
+                            "amount": item.get("amount"),
+                            "licence_scope": item.get("licence_scope", "public"),
+                        }
+                    except (KeyError, ValueError, TypeError) as err:
+                        raise MalformedCorporateAction(
+                            f"malformed corporate action {item.get('action_id')!r}: {err!r}"
+                        ) from err
+                    act = CorporateAction(**fields)
 
                 pub_iso = act.published_at.isoformat()
                 self._conn.execute(
