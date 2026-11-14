@@ -1,16 +1,16 @@
-asset_class,role,effective_from,effective_to,published_at,recorded_at,source,licence_scope,verified_against
-equity,basket-eligible,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,
-fno,basket-eligible,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,
-mutual_fund,basket-eligible,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,
-etf,basket-eligible,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,
-commodity_etf_sgb,basket-eligible,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,
-reit_invit,basket-eligible,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,
-gsec_tbill_sdl,broker-executable only,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,
-corporate_bond,tracking only,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,
-international_fund_fof,investable while open to inflows,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,
-global_index,analysis-only,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,
-fx,analysis-only,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,
-global_commodity,analysis-only,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,
-foreign_yield,analysis-only,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,
-foreign_stock,out of scope,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,
-crypto,out of scope,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,
+asset_class,role,effective_from,effective_to,published_at,recorded_at,source,licence_scope,verified_against,published_at_synthetic
+equity,basket-eligible,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,,true
+fno,basket-eligible,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,,true
+mutual_fund,basket-eligible,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,,true
+etf,basket-eligible,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,,true
+commodity_etf_sgb,basket-eligible,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,,true
+reit_invit,basket-eligible,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,,true
+gsec_tbill_sdl,broker-executable only,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,,true
+corporate_bond,tracking only,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,,true
+international_fund_fof,investable while open to inflows,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,,true
+global_index,analysis-only,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,,true
+fx,analysis-only,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,,true
+global_commodity,analysis-only,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,,true
+foreign_yield,analysis-only,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,,true
+foreign_stock,out of scope,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,,true
+crypto,out of scope,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,,true

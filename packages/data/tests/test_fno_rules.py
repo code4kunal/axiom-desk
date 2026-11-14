@@ -180,10 +180,11 @@ def test_ae3_rule_asked_before_first_row_raises_rule_unknown(fno: FnoRulesEngine
 
 
 def test_unverified_rule_limitation(fno: FnoRulesEngine) -> None:
-    """An answer built on an unverified row carries R10 limitation."""
+    """An answer built on an unverified row carries R10 limitation and synthetic date limitation."""
     rules = fno.get_contract_rules("NSE", "NIFTY", on=date(2025, 9, 2))
     assert rules.is_verified is False
     assert "unverified rule" in rules.limitations
+    assert "synthetic publication date" in rules.limitations
 
 
 def test_golden_rule_dates(fno: FnoRulesEngine) -> None:

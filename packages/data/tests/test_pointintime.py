@@ -164,6 +164,26 @@ def test_loading_same_csv_twice_raises_overlapping_error() -> None:
         table.load(rows2)
 
 
+def test_synthetic_published_at_adds_limitation() -> None:
+    """When a row has published_at_synthetic=true,
+
+    limitations includes 'synthetic publication date'.
+    """
+    row = EffectiveDatedRow(
+        key="NIFTY",
+        effective_from=date(2024, 1, 1),
+        effective_to=None,
+        published_at=_dt(2023, 12, 1),
+        recorded_at=_dt(2023, 12, 1),
+        source="CIRCULAR/1",
+        verified_against="CIRCULAR/1",
+        payload={"published_at_synthetic": "true"},
+    )
+    table = PointInTimeTable("test_rule", [row])
+    res = table.resolve("NIFTY", date(2024, 6, 1))
+    assert "synthetic publication date" in res.limitations
+
+
 def test_correction_recorded_later_wins() -> None:
     """A correction recorded today for a 2025 row is the answer for a 2025 lookup."""
     initial = EffectiveDatedRow(

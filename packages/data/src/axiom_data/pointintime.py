@@ -101,7 +101,12 @@ class LookupResult[T]:
 
     @property
     def limitations(self) -> tuple[str, ...]:
-        return () if self.is_verified else ("unverified rule",)
+        lims: list[str] = []
+        if not self.is_verified:
+            lims.append("unverified rule")
+        if any(r.payload.get("published_at_synthetic") == "true" for r in self.rows):
+            lims.append("synthetic publication date")
+        return tuple(lims)
 
     @property
     def sources(self) -> tuple[Source, ...]:

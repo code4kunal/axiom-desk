@@ -1,5 +1,5 @@
-key,effective_from,effective_to,published_at,recorded_at,source,licence_scope,verified_against,position_limit_rule
-NSE:INDEX,2019-01-01,2025-12-06,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,,500cr_or_15pct_oi
-NSE:INDEX,2025-12-06,,2025-06-01T00:00:00Z,2025-06-01T00:00:00Z,SEBI/HO/MRD/TPD-1/P/CIR/2025/79,public,,1500cr_net
-BSE:INDEX,2019-01-01,2025-12-06,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,,500cr_or_15pct_oi
-BSE:INDEX,2025-12-06,,2025-06-01T00:00:00Z,2025-06-01T00:00:00Z,SEBI/HO/MRD/TPD-1/P/CIR/2025/79,public,,1500cr_net
+key,effective_from,effective_to,published_at,recorded_at,source,licence_scope,verified_against,position_limit_rule,published_at_synthetic
+NSE:INDEX,2019-01-01,2025-12-06,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,,500cr_or_15pct_oi,true
+NSE:INDEX,2025-12-06,,2025-06-01T00:00:00Z,2025-06-01T00:00:00Z,SEBI/HO/MRD/TPD-1/P/CIR/2025/79,public,,1500cr_net,false
+BSE:INDEX,2019-01-01,2025-12-06,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,UNSOURCED,public,,500cr_or_15pct_oi,true
+BSE:INDEX,2025-12-06,,2025-06-01T00:00:00Z,2025-06-01T00:00:00Z,SEBI/HO/MRD/TPD-1/P/CIR/2025/79,public,,1500cr_net,false

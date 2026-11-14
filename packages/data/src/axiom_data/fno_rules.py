@@ -461,6 +461,7 @@ class FnoRulesEngine:
 
         # 2. Weekly eligibility
         we_key = f"{exchange}:{underlying}"
+        we_res = None
         try:
             we_res = self._weekly_eligibility_table.resolve(we_key, on_date)
             weekly_eligible = we_res.value.payload.get("weekly_eligible") == "true"
@@ -507,8 +508,14 @@ class FnoRulesEngine:
         except RuleUnknown:
             banned = None
 
-        if not is_verified:
+        if not is_verified and "unverified rule" not in limitations:
             limitations.append("unverified rule")
+
+        for res in (cv_res, we_res, em_res, res_w, pl_res):
+            if res is not None:
+                for lim in res.limitations:
+                    if lim not in limitations:
+                        limitations.append(lim)
 
         # De-duplicate sources
         seen: set[tuple[str, str]] = set()
