@@ -1,0 +1,167 @@
+{
+  "instruments": [
+    {
+      "instrument_id": "SPX_INDEX",
+      "asset_class": "global_index",
+      "kind": "index",
+      "exchange": "CBOE",
+      "name": "S&P 500 Index",
+      "source": "REF_FIXTURE",
+      "licence_scope": "public"
+    },
+    {
+      "instrument_id": "MO_SP500_ETF",
+      "asset_class": "etf",
+      "kind": "etf",
+      "exchange": "NSE",
+      "name": "Motilal Oswal S&P 500 ETF",
+      "source": "REF_FIXTURE",
+      "licence_scope": "public"
+    },
+    {
+      "instrument_id": "OLD_SP500_ETF",
+      "asset_class": "etf",
+      "kind": "etf",
+      "exchange": "NSE",
+      "name": "Defunct Tracking ETF",
+      "source": "REF_FIXTURE",
+      "licence_scope": "public"
+    },
+    {
+      "instrument_id": "RELIANCE_EQ",
+      "asset_class": "equity",
+      "kind": "equity",
+      "exchange": "NSE",
+      "name": "Reliance Industries Ltd",
+      "source": "REF_FIXTURE",
+      "licence_scope": "public"
+    },
+    {
+      "instrument_id": "GSEC_10Y_2034",
+      "asset_class": "gsec_tbill_sdl",
+      "kind": "bond",
+      "exchange": "NSE",
+      "name": "7.10% GS 2034 10Y",
+      "source": "REF_FIXTURE",
+      "licence_scope": "public"
+    },
+    {
+      "instrument_id": "HDFC_CORP_BOND",
+      "asset_class": "corporate_bond",
+      "kind": "bond",
+      "exchange": "NSE",
+      "name": "HDFC 7.80% 2028 Corporate Bond",
+      "source": "REF_FIXTURE",
+      "licence_scope": "public"
+    },
+    {
+      "instrument_id": "FRANKLIN_US_FOF",
+      "asset_class": "international_fund_fof",
+      "kind": "mutual_fund",
+      "exchange": "NSE",
+      "name": "Franklin India Feeder - Templeton US Opportunities",
+      "source": "REF_FIXTURE",
+      "licence_scope": "public"
+    },
+    {
+      "instrument_id": "RENAMED_STOCK",
+      "asset_class": "equity",
+      "kind": "equity",
+      "exchange": "NSE",
+      "name": "Renamed Corporation Ltd",
+      "source": "REF_FIXTURE",
+      "licence_scope": "public"
+    }
+  ],
+  "identifiers": [
+    {
+      "instrument_id": "SPX_INDEX",
+      "identifier_type": "symbol",
+      "value": "SPX",
+      "effective_from": "2019-01-01",
+      "effective_to": null,
+      "published_at": "2018-12-01T00:00:00Z",
+      "recorded_at": "2018-12-01T00:00:00Z",
+      "source": "REF_FIXTURE",
+      "licence_scope": "public"
+    },
+    {
+      "instrument_id": "MO_SP500_ETF",
+      "identifier_type": "symbol",
+      "value": "MON100",
+      "effective_from": "2020-01-01",
+      "effective_to": null,
+      "published_at": "2019-12-01T00:00:00Z",
+      "recorded_at": "2019-12-01T00:00:00Z",
+      "source": "REF_FIXTURE",
+      "licence_scope": "public"
+    },
+    {
+      "instrument_id": "RELIANCE_EQ",
+      "identifier_type": "symbol",
+      "value": "RELIANCE",
+      "effective_from": "2019-01-01",
+      "effective_to": null,
+      "published_at": "2018-12-01T00:00:00Z",
+      "recorded_at": "2018-12-01T00:00:00Z",
+      "source": "REF_FIXTURE",
+      "licence_scope": "public"
+    },
+    {
+      "instrument_id": "RENAMED_STOCK",
+      "identifier_type": "symbol",
+      "value": "OLDTICKER",
+      "effective_from": "2020-01-01",
+      "effective_to": "2024-05-01",
+      "published_at": "2019-12-01T00:00:00Z",
+      "recorded_at": "2019-12-01T00:00:00Z",
+      "source": "REF_FIXTURE",
+      "licence_scope": "public"
+    },
+    {
+      "instrument_id": "RENAMED_STOCK",
+      "identifier_type": "symbol",
+      "value": "NEWTICKER",
+      "effective_from": "2024-05-01",
+      "effective_to": null,
+      "published_at": "2024-04-15T00:00:00Z",
+      "recorded_at": "2024-04-15T00:00:00Z",
+      "source": "REF_FIXTURE",
+      "licence_scope": "public"
+    }
+  ],
+  "roles": [
+    {
+      "instrument_id": "FRANKLIN_US_FOF",
+      "role": "closed to inflows",
+      "effective_from": "2024-03-15",
+      "effective_to": null,
+      "published_at": "2024-03-01T00:00:00Z",
+      "recorded_at": "2024-03-01T00:00:00Z",
+      "source": "REF_FIXTURE",
+      "licence_scope": "public"
+    }
+  ],
+  "tracks": [
+    {
+      "instrument_id": "MO_SP500_ETF",
+      "tracked_instrument_id": "SPX_INDEX",
+      "effective_from": "2020-01-01",
+      "effective_to": null,
+      "published_at": "2019-12-01T00:00:00Z",
+      "recorded_at": "2019-12-01T00:00:00Z",
+      "source": "REF_FIXTURE",
+      "licence_scope": "public"
+    },
+    {
+      "instrument_id": "OLD_SP500_ETF",
+      "tracked_instrument_id": "SPX_INDEX",
+      "effective_from": "2020-01-01",
+      "effective_to": "2023-01-01",
+      "published_at": "2019-12-01T00:00:00Z",
+      "recorded_at": "2019-12-01T00:00:00Z",
+      "source": "REF_FIXTURE",
+      "licence_scope": "public"
+    }
+  ]
+}

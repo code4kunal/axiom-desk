@@ -225,7 +225,9 @@ def parse_csv_rule_rows(
             "licence_scope",
             "verified_against",
         }
-        payload = {k: v.strip() for k, v in row.items() if k not in std_fields}
+        payload = {
+            k: v.strip() for k, v in row.items() if k and k not in std_fields and isinstance(v, str)
+        }
 
         rows.append(
             EffectiveDatedRow(
