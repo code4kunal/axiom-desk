@@ -64,18 +64,16 @@ class TradingCalendar:
         horizon_date: date | None = None,
     ) -> None:
         if holidays is None or special_sessions is None or session_hours is None:
-            hols, specials, hours, s_date, h_date = self._load_from_reference()
+            hols, specials, hours = self._load_from_reference()
             self._holidays = holidays if holidays is not None else hols
             self._special_sessions = special_sessions if special_sessions is not None else specials
             self._session_hours = session_hours if session_hours is not None else hours
-            self._start_date = start_date or s_date
-            self._horizon_date = horizon_date or h_date
         else:
             self._holidays = holidays
             self._special_sessions = special_sessions
             self._session_hours = session_hours
-            self._start_date = start_date or date(2019, 1, 1)
-            self._horizon_date = horizon_date or date(2026, 12, 31)
+        self._start_date = start_date or COVERAGE_START
+        self._horizon_date = horizon_date or COVERAGE_END
 
     @classmethod
     def _load_from_reference(
@@ -84,27 +82,17 @@ class TradingCalendar:
         dict[str, set[date]],
         dict[tuple[str, date], Session],
         dict[str, tuple[time, time]],
-        date,
-        date,
     ]:
         ref_pkg = importlib.resources.files("axiom_data.reference")
 
         # 1. Holidays
         holidays: dict[str, set[date]] = {}
-        all_dates: list[date] = []
         h_text = ref_pkg.joinpath("holidays.csv").read_text(encoding="utf-8")
         h_reader = csv.DictReader(StringIO(h_text))
         for row in h_reader:
             seg = row["segment"].strip()
             d = date.fromisoformat(row["date"].strip())
             holidays.setdefault(seg, set()).add(d)
-            all_dates.append(d)
-
-        min_year = min(d.year for d in all_dates) if all_dates else 2019
-        s_date = date(min_year, 1, 1)
-        # Year coverage horizon
-        max_year = max(d.year for d in all_dates) if all_dates else 2026
-        h_date = date(max_year, 12, 31)
 
         # 2. Special sessions
         special_sessions: dict[tuple[str, date], Session] = {}
@@ -132,14 +120,10 @@ class TradingCalendar:
             c_time = time.fromisoformat(row["close_time"].strip())
             session_hours[seg] = (o_time, c_time)
 
-        return holidays, special_sessions, session_hours, s_date, h_date
+        return holidays, special_sessions, session_hours
 
     @property
     def horizon(self) -> date:
-        return self._horizon_date
-
-    @property
-    def coverage_end(self) -> date:
         return self._horizon_date
 
     @property

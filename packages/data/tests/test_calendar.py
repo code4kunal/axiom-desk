@@ -160,9 +160,36 @@ def test_coverage_end_constant_and_past_horizon_raises_rule_unknown(
     from axiom_data.calendar import COVERAGE_END
     from axiom_data.pointintime import RuleUnknown
 
-    assert calendar.coverage_end == COVERAGE_END
+    assert calendar.horizon == COVERAGE_END
     past_date = COVERAGE_END + timedelta(days=1)
     with pytest.raises(RuleUnknown):
         calendar.is_regular_session_day("equity", past_date)
     with pytest.raises(RuleUnknown):
         calendar.get_session("equity", past_date)
+
+
+def test_horizon_comes_from_coverage_constants_not_csv(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The horizon is COVERAGE_START..COVERAGE_END, whatever years holidays.csv happens to hold."""
+    import axiom_data.calendar as cal
+
+    monkeypatch.setattr(cal, "COVERAGE_START", date(2020, 1, 1))
+    monkeypatch.setattr(cal, "COVERAGE_END", date(2025, 12, 31))
+    c = TradingCalendar()
+    assert (c.start_date, c.horizon) == (date(2020, 1, 1), date(2025, 12, 31))
+    with pytest.raises(CalendarHorizonExceeded):
+        c.get_session("equity", date(2026, 1, 2))
+
+
+def test_every_holiday_and_special_session_row_lies_inside_coverage() -> None:
+    """Rows outside [COVERAGE_START, COVERAGE_END] would be silently unreachable."""
+    import csv
+    import importlib.resources
+
+    from axiom_data.calendar import COVERAGE_END, COVERAGE_START
+
+    ref = importlib.resources.files("axiom_data.reference")
+    for name in ("holidays.csv", "special_sessions.csv"):
+        rows = list(csv.DictReader(ref.joinpath(name).read_text(encoding="utf-8").splitlines()))
+        assert rows
+        for r in rows:
+            assert COVERAGE_START <= date.fromisoformat(r["date"]) <= COVERAGE_END, (name, r)
