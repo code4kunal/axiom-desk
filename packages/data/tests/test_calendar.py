@@ -5,12 +5,24 @@ from axiom_data.calendar import (
     CalendarHorizonExceeded,
     TradingCalendar,
 )
-from axiom_data.pointintime import IST, NaiveTimestampRefused
+from axiom_data.pointintime import IST, NaiveTimestampRefused, RuleUnknown
 
 
 @pytest.fixture
 def calendar() -> TradingCalendar:
     return TradingCalendar()
+
+
+@pytest.mark.parametrize("segment", ["equty", "currency", "commodity"])
+def test_segment_without_holiday_data_is_rule_unknown(
+    calendar: TradingCalendar, segment: str
+) -> None:
+    """A typo or a segment with no holiday rows must not report a regular session."""
+    d = date(2024, 3, 29)  # Good Friday
+    with pytest.raises(RuleUnknown):
+        calendar.get_session(segment, d)
+    with pytest.raises(RuleUnknown):
+        calendar.is_regular_session_day(segment, d)
 
 
 def test_listed_holiday_has_no_session_and_next_session_is_following_open(

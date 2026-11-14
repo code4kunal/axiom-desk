@@ -150,9 +150,15 @@ class TradingCalendar:
         if d < self._start_date or d > self._horizon_date:
             raise CalendarHorizonExceeded(d, self._horizon_date)
 
+    def _check_segment(self, segment: str, d: date) -> None:
+        # No holiday data means we cannot tell a holiday from a trading day (typo or no rows).
+        if segment not in self._holidays:
+            raise RuleUnknown(f"holidays for segment {segment!r}", d)
+
     def is_regular_session_day(self, segment: str, d: date) -> bool:
         """Check if d is a regular trading session day (weekday and not an exchange holiday)."""
         self._check_horizon(d)
+        self._check_segment(segment, d)
         if d.weekday() >= 5:  # Saturday or Sunday
             return False
         return d not in self._holidays.get(segment, set())
@@ -160,6 +166,7 @@ class TradingCalendar:
     def get_session(self, segment: str, d: date) -> Session | None:
         """Return the trading session on date d, or None if market is closed all day."""
         self._check_horizon(d)
+        self._check_segment(segment, d)
         # Check special session first
         if (segment, d) in self._special_sessions:
             return self._special_sessions[(segment, d)]
