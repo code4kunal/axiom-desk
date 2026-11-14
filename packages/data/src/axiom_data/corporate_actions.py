@@ -56,10 +56,11 @@ class CorporateAction:
     def __post_init__(self) -> None:
         if not self.action_id:
             raise ValueError("action_id must be non-empty")
-        if self.published_at is None:
-            raise ValueError("published_at is required")
-        object.__setattr__(self, "published_at", ensure_utc_aware(self.published_at))
-        object.__setattr__(self, "recorded_at", ensure_utc_aware(self.recorded_at))
+        try:
+            object.__setattr__(self, "published_at", ensure_utc_aware(self.published_at))
+            object.__setattr__(self, "recorded_at", ensure_utc_aware(self.recorded_at))
+        except (AttributeError, TypeError) as err:
+            raise ValueError("published_at and recorded_at must be valid datetimes") from err
         if not self.source:
             raise ValueError("source must be non-empty")
         if not self.licence_scope:

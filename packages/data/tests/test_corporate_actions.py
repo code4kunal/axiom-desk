@@ -2,6 +2,7 @@ import json
 import sqlite3
 from datetime import UTC, date, datetime
 from pathlib import Path
+from typing import cast
 
 import pytest
 from axiom_data.corporate_actions import (
@@ -271,14 +272,14 @@ def test_demerger_leaves_bars_unchanged_and_returns_limitation(
 def test_corporate_action_published_at_required_refuses_none() -> None:
     """published_at is required; None must be refused when building CorporateAction."""
     with pytest.raises((ValueError, TypeError)):
-        CorporateAction(  # pyright: ignore[reportCallIssue]
+        CorporateAction(
             action_id="ACT1",
             recorded_at=datetime(2024, 1, 1, 0, 0, tzinfo=UTC),
             instrument_id="STOCK",
             type="split",
             status="active",
             ex_date=date(2024, 5, 15),
-            published_at=None,
+            published_at=cast(datetime, None),
             source="TEST",
         )
 
