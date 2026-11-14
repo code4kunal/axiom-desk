@@ -1,0 +1,61 @@
+{
+ "indicator": "delivery_pct",
+ "version": 1,
+ "params": {},
+ "bars": [
+  {
+   "ts": "2026-10-12T09:15:00+05:30",
+   "open": 100.0,
+   "high": 101,
+   "low": 99,
+   "close": 100,
+   "volume": 1000,
+   "oi": 10000,
+   "delivery_qty": 400
+  },
+  {
+   "ts": "2026-10-13T09:15:00+05:30",
+   "open": 100.0,
+   "high": 101,
+   "low": 99,
+   "close": 100,
+   "volume": 2000,
+   "oi": 12000,
+   "delivery_qty": 500
+  },
+  {
+   "ts": "2026-10-14T09:15:00+05:30",
+   "open": 100.0,
+   "high": 101,
+   "low": 99,
+   "close": 100,
+   "volume": 1500,
+   "oi": 11500,
+   "delivery_qty": 1500
+  },
+  {
+   "ts": "2026-10-15T09:15:00+05:30",
+   "open": 100.0,
+   "high": 101,
+   "low": 99,
+   "close": 100,
+   "volume": 800,
+   "oi": 11500,
+   "delivery_qty": null
+  }
+ ],
+ "source": "hand-computed; arithmetic in specs/quant/indicators.md",
+ "how": "delivery quantity / traded volume * 100",
+ "tolerance": {
+  "rel": 1e-09,
+  "abs": 1e-09
+ },
+ "outputs": {
+  "delivery_pct": [
+   40,
+   25,
+   100,
+   null
+  ]
+ }
+}
