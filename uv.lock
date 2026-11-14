@@ -12,6 +12,7 @@ members = [
     "axiom-api",
     "axiom-chartmath",
     "axiom-core",
+    "axiom-data",
     "axiom-desk",
 ]
 
@@ -84,6 +85,17 @@ dependencies = [
 requires-dist = [{ name = "pydantic", specifier = ">=2.8" }]
 
 [[package]]
+name = "axiom-data"
+version = "0.1.0"
+source = { editable = "packages/data" }
+dependencies = [
+    { name = "axiom-core" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "axiom-core", editable = "packages/core" }]
+
+[[package]]
 name = "axiom-desk"
 version = "0.1.0"
 source = { virtual = "." }
@@ -91,6 +103,7 @@ dependencies = [
     { name = "axiom-api" },
     { name = "axiom-chartmath" },
     { name = "axiom-core" },
+    { name = "axiom-data" },
 ]
 
 [package.dev-dependencies]
@@ -105,6 +118,7 @@ requires-dist = [
     { name = "axiom-api", editable = "services/api" },
     { name = "axiom-chartmath", editable = "packages/chartmath" },
     { name = "axiom-core", editable = "packages/core" },
+    { name = "axiom-data", editable = "packages/data" },
 ]
 
 [package.metadata.requires-dev]
