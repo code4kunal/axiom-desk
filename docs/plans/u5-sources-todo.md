@@ -347,3 +347,22 @@ Per review rule B1: *"Never invent a circular number. For every row where you ca
 | `BSE:SENSEX` | `2019-01-01` | Verify historical weekly option eligibility true against exchange product launch circular |
 | `BSE:BANKEX` | `2019-01-01` | Verify historical weekly option eligibility true against exchange product launch circular |
 
+## Rows citing a SEBI circular that has not been read (12 rows)
+
+These rows carry `SEBI/HO/MRD/TPD-1/P/CIR/2024/132` or `SEBI/HO/MRD/TPD-1/P/CIR/2025/79` as `source`. They are not UNSOURCED and are not counted in the total above, but nobody has read the primary circular. Each needs a human to open the circular, confirm the number, its date and the row's value, and only then fill `verified_against`. `verified_against` stays blank and the source values are unchanged until then.
+
+| File | Key | Effective From | Source | Value to check |
+|---|---|---|---|---|
+| `contract_value.csv` | `NSE:NIFTY` | `2024-11-20` | `SEBI/HO/MRD/TPD-1/P/CIR/2024/132` | min_contract_value 1500000 |
+| `contract_value.csv` | `NSE:ALL` | `2024-11-20` | `SEBI/HO/MRD/TPD-1/P/CIR/2024/132` | min_contract_value 1500000 |
+| `contract_value.csv` | `BSE:SENSEX` | `2024-11-20` | `SEBI/HO/MRD/TPD-1/P/CIR/2024/132` | min_contract_value 1500000 |
+| `contract_value.csv` | `BSE:ALL` | `2024-11-20` | `SEBI/HO/MRD/TPD-1/P/CIR/2024/132` | min_contract_value 1500000 |
+| `expiry_margin_rules.csv` | `NSE:ALL` | `2025-02-01` | `SEBI/HO/MRD/TPD-1/P/CIR/2024/132` | calendar_spread_benefit false |
+| `expiry_margin_rules.csv` | `BSE:ALL` | `2025-02-01` | `SEBI/HO/MRD/TPD-1/P/CIR/2024/132` | calendar_spread_benefit false |
+| `weekly_eligibility.csv` | `NSE:BANKNIFTY` | `2024-11-20` | `SEBI/HO/MRD/TPD-1/P/CIR/2024/132` | weekly_eligible false |
+| `weekly_eligibility.csv` | `NSE:FINNIFTY` | `2024-11-20` | `SEBI/HO/MRD/TPD-1/P/CIR/2024/132` | weekly_eligible false |
+| `weekly_eligibility.csv` | `NSE:MIDCPNIFTY` | `2024-11-20` | `SEBI/HO/MRD/TPD-1/P/CIR/2024/132` | weekly_eligible false |
+| `weekly_eligibility.csv` | `BSE:BANKEX` | `2024-11-20` | `SEBI/HO/MRD/TPD-1/P/CIR/2024/132` | weekly_eligible false |
+| `position_limits.csv` | `NSE:INDEX` | `2025-12-06` | `SEBI/HO/MRD/TPD-1/P/CIR/2025/79` | position_limit_rule 1500cr_net |
+| `position_limits.csv` | `BSE:INDEX` | `2025-12-06` | `SEBI/HO/MRD/TPD-1/P/CIR/2025/79` | position_limit_rule 1500cr_net |
+
