@@ -71,6 +71,18 @@ class CorporateAction:
             raise ValueError(f"to_qty must be positive, got {self.to_qty}")
         if self.type in ("split", "bonus") and (self.from_qty is None or self.to_qty is None):
             raise ValueError(f"{self.type} requires from_qty and to_qty")
+        if self.type == "dividend":
+            if self.amount is None:
+                raise MalformedCorporateAction(f"dividend {self.action_id} requires an amount")
+            try:
+                positive = float(self.amount) > 0
+            except ValueError:
+                positive = True  # non-numeric text is refused later, in adjust_bars
+            if not positive:
+                raise MalformedCorporateAction(
+                    f"dividend amount must be greater than 0, got {self.amount!r} "
+                    f"on action {self.action_id}"
+                )
 
 
 @dataclass(frozen=True)

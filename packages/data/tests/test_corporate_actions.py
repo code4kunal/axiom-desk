@@ -9,6 +9,7 @@ from axiom_data.corporate_actions import (
     Bar,
     CorporateAction,
     CorporateActionAdjuster,
+    MalformedCorporateAction,
 )
 from axiom_data.pointintime import IST, NaiveTimestampRefused
 
@@ -408,6 +409,23 @@ def test_dividend_at_or_above_prior_close_skipped(conn: sqlite3.Connection) -> N
     # Price must not flip negative
     assert res.bars[0].close == 1000.0
     assert any("skipped" in lim for lim in res.limitations)
+
+
+@pytest.mark.parametrize("amount", ["-1.50", "0", "0.00", None])
+def test_dividend_amount_must_be_positive(amount: str | None) -> None:
+    """Negative, zero or missing dividend amount is refused at construction."""
+    with pytest.raises(MalformedCorporateAction):
+        CorporateAction(
+            action_id="DIV",
+            recorded_at=datetime(2024, 1, 1, tzinfo=UTC),
+            instrument_id="STOCK",
+            type="dividend",
+            status="active",
+            ex_date=date(2024, 5, 15),
+            published_at=datetime(2024, 1, 1, tzinfo=UTC),
+            source="TEST",
+            amount=amount,
+        )
 
 
 def test_bad_dividend_amount_raises_refused(conn: sqlite3.Connection) -> None:
