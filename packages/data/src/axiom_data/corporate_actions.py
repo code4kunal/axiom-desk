@@ -235,9 +235,7 @@ class CorporateActionAdjuster:
                     else:
                         prior_close = prior_bars[-1].close
                         try:
-                            amount_flt = (
-                                float(action.amount) if action.amount is not None else 0.0
-                            )
+                            amount_flt = float(action.amount) if action.amount is not None else 0.0
                         except (ValueError, TypeError) as err:
                             raise MalformedCorporateAction(
                                 f"invalid dividend amount {action.amount!r} "
