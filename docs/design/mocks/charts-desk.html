@@ -231,7 +231,7 @@ table.res tr:hover td{background:var(--raised)}
     <div class="session">
       <span class="live lab">NSE open</span>
       <span class="clock num" aria-label="Exchange time">10:32:14 IST</span>
-      <button class="ghost ask-btn" style="display:none" aria-label="Ask or change symbol">/ Ask</button><button class="ghost" id="theme" aria-pressed="false">Dark theme</button>
+      <button class="ghost ask-btn" style="display:none" aria-label="Ask or change symbol">/ Ask</button><button class="ghost" id="theme">Dark theme</button>
     </div>
   </header>
   <nav class="dock" aria-label="Desk" id="dock"></nav>
@@ -310,7 +310,7 @@ function drawPrice(svg,{seed,n=64,start=24300,vol=18,ladder=false,cone=false,vwa
   if(cone){lo=Math.min(lo,last-2.1*sig);hi=Math.max(hi,last+2.1*sig)}
   const padv=(hi-lo)*0.06;lo-=padv;hi+=padv;
   const y=yScale(lo,hi,top,bot);
-  const step=W<500?(n>40?6:10):1;const vis=data.slice(-Math.floor(n/ (W<500?(ladder?2.5:1.3):1)));const off=n-vis.length;
+  const vis=data.slice(-Math.floor(n/ (W<500?(ladder?2.5:1.3):1)));const off=n-vis.length;
   const slot=(plotR-8)/(vis.length+coneN);const cw=Math.max(2,slot*0.62);const x=i=>8+(i-off+0.5)*slot;
   grid(svg,W,y,lo,hi,(hi-lo)>300?100:50,0,plotR,W-axisW);
   // VWAP + bands
@@ -398,7 +398,7 @@ function drawPositioning(svg){
   const m=Math.max(...rows.map(o=>Math.max(o.c,o.p)));const k=(mid-T-8)/m;
   el('line',{x1:L,x2:R,y1:mid,y2:mid,stroke:css('--ink-dim')},svg);
   rows.forEach((o,i)=>{const xx=L+i*bw+bw*0.18,w=bw*0.64;el('rect',{x:xx,y:mid-o.c*k,width:w,height:o.c*k,fill:css('--c-call-mark')},svg);el('rect',{x:xx,y:mid,width:w,height:o.p*k,fill:css('--c-put-mark')},svg);if(i%(W<560?4:2)===0)txt(svg,xx-6,H-8,fmt(o.s,0))});
-  txt(svg,L,T-10,'C  CALL OI ADDED TODAY, LAKH',{fill:css('--c-call')});txt(svg,L,B+2,'',{});
+  txt(svg,L,T-10,'C  CALL OI ADDED TODAY, LAKH',{fill:css('--c-call')});
   txt(svg,L,B-4,'P  PUT OI ADDED TODAY',{fill:css('--c-put')});
   [[`C ${fmt(m,1)}`,T+6],['0',mid+4],[`P ${fmt(m,1)}`,B-8]].forEach(([s,yy])=>txt(svg,R+6,yy,s));
   const ax=L+((24312-24000)/50+0.5)*bw;el('line',{x1:ax,x2:ax,y1:T,y2:B,stroke:css('--ink'),'stroke-dasharray':'1 3'},svg);txt(svg,ax+4,T+12,'SPOT',{fill:css('--ink')});
@@ -429,7 +429,7 @@ function drawTPO(svg){
   el('line',{x1:x0-6,x2:W-axisW,y1:y(poc),y2:y(poc),stroke:css('--c-magnet-mark'),'stroke-width':2},svg);tag(svg,Math.max(x0+prof[poc].length*lw+8,tpoR-46),y(poc),'POC',css('--c-magnet'));
   // IB bracket
   const by1=y(ibHi)-rh/2,by2=y(ibLo)+rh/2;el('path',{d:`M${x0-10} ${by1}H${x0-16}V${by2}H${x0-10}`,fill:'none',stroke:css('--c-auction-mark'),'stroke-width':2},svg);
-  const ibt=txt(svg,x0-34,(by1+by2)/2+4,'IB',{fill:css('--c-auction')});
+  txt(svg,x0-34,(by1+by2)/2+4,'IB',{fill:css('--c-auction')});
   // price axis
   for(let v=lo;v<=hi;v+=50){txt(svg,W-axisW+6,y(v)+4,fmt(v,0))}
   // composite lane
@@ -469,7 +469,6 @@ function drawFootprint(svg){
     el('line',{x1:x0+cw,x2:x0+cw,y1:T,y2:H-24,stroke:css('--hairline')},svg);
     const dy=B+18;txt(svg,x0+cw/2-3,dy,sgn(d),{'text-anchor':'middle',fill:d>=0?css('--c-up'):css('--c-down')});
   }
-  txt(svg,8,B+18-0,'',{});
   // delta labels
   el('line',{x1:0,x2:W,y1:B+2,y2:B+2,stroke:css('--hairline')},svg);
   txt(svg,W-axisW+6,B+18,'DELTA');
@@ -497,7 +496,7 @@ function nav(){
   const panes=SCREEN==='auction'?3:4;if(SCREEN==='screener')$('#layouts').style.display='none';
   $('#layouts').innerHTML=[1,2,3,4,6,9,16].map(n=>`<button aria-pressed="${n===panes}" aria-label="${n} panes">${n}</button>`).join('');
 }
-function card({type,sw,stamp,time,title,body,facts,acts}){return `<article class="card"><div class="card-top"><span class="sw" style="--sw:var(${sw})"></span><span class="lab">${type}</span><span class="stamp ${stamp.toLowerCase()}">${stamp}</span><time class="num">${time}</time></div><h3>${title}</h3><p>${body}</p>${facts?`<div class="facts">${facts.map(([k,v,c])=>`<div><span class="lab">${k}</span><span class="num ${c||''}">${v}</span></div>`).join('')}</div>`:''}<div class="acts">${(acts||['Show on chart']).map((a,i)=>`<button class="${i?'ghost':'ghost'}">${a}</button>`).join('')}</div></article>`}
+function card({type,sw,stamp,time,title,body,facts,acts}){return `<article class="card"><div class="card-top"><span class="sw" style="--sw:var(${sw})"></span><span class="lab">${type}</span><span class="stamp ${stamp.toLowerCase()}">${stamp}</span><time class="num">${time}</time></div><h3>${title}</h3><p>${body}</p>${facts?`<div class="facts">${facts.map(([k,v,c])=>`<div><span class="lab">${k}</span><span class="num ${c||''}">${v}</span></div>`).join('')}</div>`:''}<div class="acts">${(acts||['Show on chart']).map((a,i)=>`<button class="ghost">${a}</button>`).join('')}</div></article>`}
 
 const RAIL={
   workspace:[
