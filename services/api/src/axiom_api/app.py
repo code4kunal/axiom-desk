@@ -8,13 +8,17 @@ from dataclasses import dataclass
 from typing import Annotated, Any
 
 from axiom_core.audit import AuditLog
-from axiom_core.authz import Authorizer, Forbidden, NotFound
+from axiom_core.authz import Authorizer, Forbidden, NotFound, Refused
 from axiom_core.capabilities import latest_run
 from axiom_core.db import migrate
 from axiom_core.registry import Binding, Entitlements, Registry
 from axiom_core.runs import RunStore
 from axiom_core.session import PendingLogins, SessionStore, Unauthenticated
 from axiom_core.tenancy import Directory
+from axiom_data.calendar import TradingCalendar
+from axiom_data.capabilities import fno_contract_rules, instrument_lookup, trading_calendar
+from axiom_data.fno_rules import FnoRulesEngine
+from axiom_data.instruments import InstrumentStore
 from fastapi import Body, FastAPI, Header
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
@@ -36,6 +40,9 @@ class Services:
     runs: RunStore
     entitlements: Entitlements
     registry: Registry
+    instruments: InstrumentStore | None = None
+    calendar: TradingCalendar | None = None
+    fno_rules: FnoRulesEngine | None = None
 
 
 def build_services(conn: sqlite3.Connection, clock: Callable[[], float]) -> Services:
@@ -45,10 +52,28 @@ def build_services(conn: sqlite3.Connection, clock: Callable[[], float]) -> Serv
     runs = RunStore(conn, clock)
     entitlements = Entitlements(conn)
     registry = Registry(authz, entitlements, audit)
+    calendar = TradingCalendar()
+    instruments = InstrumentStore(conn)
+    fno_rules = FnoRulesEngine(conn, calendar)
     registry.register(latest_run(runs))
+    registry.register(instrument_lookup(instruments))
+    registry.register(trading_calendar(calendar))
+    registry.register(fno_contract_rules(fno_rules))
     sessions = SessionStore(conn, directory, audit, clock)
     pending = PendingLogins(conn, clock)
-    return Services(audit, directory, authz, sessions, pending, runs, entitlements, registry)
+    return Services(
+        audit,
+        directory,
+        authz,
+        sessions,
+        pending,
+        runs,
+        entitlements,
+        registry,
+        instruments,
+        calendar,
+        fno_rules,
+    )
 
 
 def create_app(svc: Services, settings: Settings | None = None) -> FastAPI:
@@ -80,6 +105,8 @@ def create_app(svc: Services, settings: Settings | None = None) -> FastAPI:
             return JSONResponse({"error": str(err)}, status_code=403)
         except NotFound as err:
             return JSONResponse({"error": str(err)}, status_code=404)
+        except Refused as err:
+            return JSONResponse({"error": str(err)}, status_code=422)
         except ValidationError as err:
             return JSONResponse({"error": err.errors(include_url=False)}, status_code=422)
         return JSONResponse(envelope.to_json())

@@ -53,6 +53,7 @@ version = "0.1.0"
 source = { editable = "services/api" }
 dependencies = [
     { name = "axiom-core" },
+    { name = "axiom-data" },
     { name = "fastapi" },
     { name = "httpx2" },
     { name = "pyjwt", extra = ["crypto"] },
@@ -62,6 +63,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "axiom-core", editable = "packages/core" },
+    { name = "axiom-data", editable = "packages/data" },
     { name = "fastapi", specifier = ">=0.115" },
     { name = "httpx2", specifier = ">=2.16" },
     { name = "pyjwt", extras = ["crypto"], specifier = "==2.15.1" },

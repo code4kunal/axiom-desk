@@ -1,5 +1,85 @@
 [
   {
+    "name": "fno_contract_rules",
+    "description": "F&O contract rules, expiry cycle weekdays, lot value and ban status",
+    "input_schema": {
+      "properties": {
+        "exchange": {
+          "title": "Exchange",
+          "type": "string"
+        },
+        "underlying": {
+          "title": "Underlying",
+          "type": "string"
+        },
+        "on": {
+          "title": "On",
+          "type": "string"
+        }
+      },
+      "required": [
+        "exchange",
+        "underlying",
+        "on"
+      ],
+      "title": "FnoContractRulesInput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "instrument_lookup",
+    "description": "Point-in-time instrument resolution, asset-class role and eligibility",
+    "input_schema": {
+      "properties": {
+        "on": {
+          "title": "On",
+          "type": "string"
+        },
+        "symbol": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Symbol"
+        },
+        "instrument_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Instrument Id"
+        },
+        "purpose": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Purpose"
+        }
+      },
+      "required": [
+        "on"
+      ],
+      "title": "InstrumentLookupInput",
+      "type": "object"
+    }
+  },
+  {
     "name": "runs_latest",
     "description": "Latest published run of a kind (for example the current regime)",
     "input_schema": {
@@ -13,6 +93,47 @@
         "kind"
       ],
       "title": "LatestRunInput",
+      "type": "object"
+    }
+  },
+  {
+    "name": "trading_calendar",
+    "description": "Trading session status, holidays and adjacent sessions per segment",
+    "input_schema": {
+      "properties": {
+        "segment": {
+          "title": "Segment",
+          "type": "string"
+        },
+        "on": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "On"
+        },
+        "timestamp": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Timestamp"
+        }
+      },
+      "required": [
+        "segment"
+      ],
+      "title": "TradingCalendarInput",
       "type": "object"
     }
   }

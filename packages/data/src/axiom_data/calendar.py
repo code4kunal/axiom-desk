@@ -93,7 +93,8 @@ class TradingCalendar:
             holidays.setdefault(seg, set()).add(d)
             all_dates.append(d)
 
-        s_date = min(all_dates) if all_dates else date(2019, 1, 1)
+        min_year = min(d.year for d in all_dates) if all_dates else 2019
+        s_date = date(min_year, 1, 1)
         # Year coverage horizon
         max_year = max(d.year for d in all_dates) if all_dates else 2026
         h_date = date(max_year, 12, 31)
