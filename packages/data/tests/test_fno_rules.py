@@ -234,6 +234,37 @@ def test_row_missing_a_needed_column_raises_malformed_rule(
         fno.get_contract_rules("NSE", "NIFTY", on=date(2026, 6, 1))
 
 
+@pytest.mark.parametrize(
+    ("table", "key", "column", "value"),
+    [
+        ("_contract_value_table", "NSE:NIFTY", "min_contract_value", ""),
+        ("_expiry_rules_table", "NSE:NIFTY:monthly", "expiry_weekday", ""),
+        ("_expiry_rules_table", "NSE:NIFTY:monthly", "expiry_weekday", "Tuesdai"),
+    ],
+)
+def test_blank_or_misspelt_cell_raises_malformed_rule(
+    fno: FnoRulesEngine, table: str, key: str, column: str, value: str
+) -> None:
+    """A present but blank or misspelt cell is MalformedRule (Refused), not ValueError/KeyError."""
+    ts = datetime(2026, 1, 1, tzinfo=UTC)
+    row = EffectiveDatedRow(
+        key=key,
+        effective_from=date(2026, 1, 1),
+        effective_to=None,
+        published_at=ts,
+        recorded_at=ts,
+        source="TEST",
+        verified_against="TEST",
+        payload={column: value},
+    )
+    getattr(fno, table).load([row])
+    with pytest.raises(MalformedRule, match=column):
+        fno.get_contract_rules("NSE", "NIFTY", on=date(2026, 6, 1))
+    if column == "expiry_weekday":
+        with pytest.raises(MalformedRule, match=column):
+            fno.resolve_expiry("NSE", "NIFTY", "monthly", date(2026, 6, 1), date(2026, 6, 1))
+
+
 def test_position_limit_index_rule_only_for_index_underlyings(fno: FnoRulesEngine) -> None:
     """A stock underlying must not be given the index position-limit rule."""
     nifty = fno.get_contract_rules("NSE", "NIFTY", on=date(2026, 1, 5))

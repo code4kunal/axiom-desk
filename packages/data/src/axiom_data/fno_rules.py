@@ -43,7 +43,7 @@ class MalformedRule(Refused):
     """Raised when a rule row lacks a column the engine needs; no default is invented."""
 
     def __init__(self, key: str, column: str) -> None:
-        super().__init__(f"malformed rule: row {key} has no {column} column")
+        super().__init__(f"malformed rule: row {key} has no usable {column} column")
 
 
 def _column(row: EffectiveDatedRow, column: str) -> Any:
@@ -51,6 +51,20 @@ def _column(row: EffectiveDatedRow, column: str) -> Any:
         return row.payload[column]
     except KeyError:
         raise MalformedRule(row.key, column) from None
+
+
+def _weekday(row: EffectiveDatedRow) -> int:
+    try:
+        return WEEKDAY_NAME_TO_INT[_column(row, "expiry_weekday").strip().lower()]
+    except (KeyError, AttributeError):
+        raise MalformedRule(row.key, "expiry_weekday") from None
+
+
+def _min_contract_value(row: EffectiveDatedRow) -> int:
+    try:
+        return int(_column(row, "min_contract_value"))
+    except (ValueError, TypeError):
+        raise MalformedRule(row.key, "min_contract_value") from None
 
 
 @dataclass(frozen=True)
@@ -406,15 +420,11 @@ class FnoRulesEngine:
             # Find candidate day by probing rules across days of this week
             # First probe Thursday / Tuesday based on rules at target_date
             res_rule = self._resolve_expiry_rule(rule_key, fallback_key, target_date)
-            target_weekday_int = WEEKDAY_NAME_TO_INT[
-                _column(res_rule.value, "expiry_weekday").lower()
-            ]
+            target_weekday_int = _weekday(res_rule.value)
             candidate_d = monday + timedelta(days=target_weekday_int)
             # Re-check rule at candidate date
             res_cand = self._resolve_expiry_rule(rule_key, fallback_key, candidate_d)
-            cand_weekday_int = WEEKDAY_NAME_TO_INT[
-                _column(res_cand.value, "expiry_weekday").lower()
-            ]
+            cand_weekday_int = _weekday(res_cand.value)
             candidate_d = monday + timedelta(days=cand_weekday_int)
 
             # Check weekly eligibility on candidate date
@@ -432,7 +442,7 @@ class FnoRulesEngine:
             last_day_of_month = next_month_first - timedelta(days=1)
 
             res_month = self._resolve_expiry_rule(rule_key, fallback_key, last_day_of_month)
-            weekday_int = WEEKDAY_NAME_TO_INT[_column(res_month.value, "expiry_weekday").lower()]
+            weekday_int = _weekday(res_month.value)
 
             # Find last occurrence of weekday_int in target month
             curr = last_day_of_month
@@ -473,7 +483,7 @@ class FnoRulesEngine:
             cv_res = self._contract_value_table.resolve(cv_key, on_date)
         except RuleUnknown:
             cv_res = self._contract_value_table.resolve(f"{exchange}:ALL", on_date)
-        min_contract_value = int(_column(cv_res.value, "min_contract_value"))
+        min_contract_value = _min_contract_value(cv_res.value)
         sources.extend(cv_res.sources)
         if not cv_res.is_verified:
             is_verified = False
@@ -509,6 +519,7 @@ class FnoRulesEngine:
             except RuleUnknown:
                 res_w = self._expiry_rules_table.resolve(f"{exchange}:ALL:{cycle}", on_date)
             expiry_results.append(res_w)
+            _weekday(res_w.value)  # refuse a blank or misspelt weekday
             expiry_weekdays[cycle] = _column(res_w.value, "expiry_weekday")
             sources.extend(res_w.sources)
             if not res_w.is_verified:
