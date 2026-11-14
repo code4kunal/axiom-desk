@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "513979e7-b013-454a-afb6-d203adaef14f",
+  "status": "current",
+  "command": "deliver",
+  "type": "dataflow",
+  "input": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/pensive-chebyshev-640052/.archify/dataflow-charts-pr1-20261114-120000/candidate.json",
+  "output": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/pensive-chebyshev-640052/docs/diagrams/charts-pr1-foundations.html",
+  "specification": {
+    "sha256": "800f8e880408683f14a8fe018b3cfd731e8045d0cdaa2b3262f2c9ceafd85e17",
+    "bytes": 10336
+  },
+  "artifact": {
+    "sha256": "01cb5776142dfcf9110273b2ced941e835637d14a6f141ce357c333550b0531c",
+    "bytes": 873996
+  }
+}
