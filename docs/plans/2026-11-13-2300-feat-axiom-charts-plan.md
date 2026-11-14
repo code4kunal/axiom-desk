@@ -12,13 +12,15 @@ execution: code
 
 ## Goal Capsule
 
-- **Objective:** A desk trader opens one chart and gets everything needed to decide on an Indian F&O or equity instrument: price, strikes, positioning, volatility, and what the evidence says, each with its base rate. The desk stops opening TradingView for charts and Sensibull, Opstra or Tradl for position building.
-- **Means:** An options-native chart with strikes on the price axis and the strategy builder on the chart. An insight rail driven by a quant-specified detector catalogue. Cross-stock pattern twins. An AI screener builder that backtests itself. Point-in-time replay across all of it.
-- **Product authority:** Extends `docs/plans/2026-11-12-1110-feat-axiom-desk-platform-plan.md` (the platform plan), units U14–U17, and proposes amendments to R12, R20, R110, R116, R126, KTD6, units U7, U12, U14–U19 and U25, gate G5 and PR5 sequencing, listed under Platform Plan Amendments. Platform R-IDs are not edited here. New IDs continue the platform plan's sequences: R155+, F11+, AE21+. Where this contract and the platform plan disagree, the platform plan stands until an amendment is accepted into it.
+- **Objective:** A desk trader opens one chart and gets everything needed to decide on an Indian F&O or equity instrument: price, strikes, positioning, volatility, and what the evidence says, each with its base rate. The desk stops opening TradingView for charts, Sensibull, Opstra or Tradl for position building, and GoCharting for market profile and order flow.
+- **Means:** An options-native chart with strikes on the price axis and the strategy builder on the chart. An insight rail driven by a quant-specified detector catalogue. Cross-stock pattern twins. An AI screener builder that backtests itself. One auction model per instrument that reads market profile, volume profile and order flow across nested timeframes, with a DOM ladder that sends confirmed orders through the broker. Point-in-time replay across all of it.
+- **Product authority:** Extends `docs/plans/2026-11-12-1110-feat-axiom-desk-platform-plan.md` (the platform plan), units U14–U17, and proposes amendments to R12, R14, R20, R49, R56, R110, R116, R126, KTD6, units U7, U12, U14–U19, U21 and U25, gates G1, G2 and G5, and PR5 sequencing, listed under Platform Plan Amendments. Platform R-IDs are not edited here. New IDs continue the platform plan's sequences: R155+, F11+, AE21+. Where this contract and the platform plan disagree, the platform plan stands until an amendment is accepted into it.
 - **Open blockers:**
   - The U14 renderer decision is open. SciChart was not run (no licence key), the R126 timed tasks were not run (no named desk testers), and 16 charts with the rail open has never been measured.
   - `DESIGN.md` has no chart-pane tokens. G5 blocks chart screen work until it does.
-  - Desk quants have not specified the V1 detector catalogues (R169, R200). Intraday detectors launch uncalibrated until Axiom's own archive is deep enough.
+  - Desk quants have not specified the V1 detector catalogues (R169, R200) or the auction pattern catalogue (R209). Intraday detectors launch uncalibrated until Axiom's own archive is deep enough.
+  - No tick-by-tick and depth feed is contracted (G1). Footprint, delta, absorption, the heatmap and the DOM depth view (R205, R215) cannot ship without it.
+  - Sending orders from the chart (R215) waits on G2 legal review of the broker-API order path.
 
 ---
 
@@ -26,7 +28,7 @@ execution: code
 
 ### Summary
 
-Axiom Charts becomes an options-native workbench. Strikes, OI and surface IV sit on the price axis, and strategies are built by clicking strikes and drawn as payoff on the price chart. An insight rail beside the focused chart answers a few desk questions per instrument, then streams evidence-graded insights from quant-signed detectors. Equity charts find pattern twins across stocks and show past analogs, winners and losers. An AI screener builder backtests every screen point-in-time, reports its efficacy, and says plainly when no tweak improves it. Replay restores all of this exactly as known at any past moment.
+Axiom Charts becomes an options-native workbench. Strikes, OI and surface IV sit on the price axis, and strategies are built by clicking strikes and drawn as payoff on the price chart. An insight rail beside the focused chart answers a few desk questions per instrument, then streams evidence-graded insights from quant-signed detectors. Equity charts find pattern twins across stocks and show past analogs, winners and losers. An AI screener builder backtests every screen point-in-time, reports its efficacy, and says plainly when no tweak improves it. A single auction model per instrument reads market profile, volume profile and order flow across today, the current balance and the expiry cycle with no setup, and streams a pre-open plan and scenario cards in Dalton's terms with Axiom's own base rates. A DOM ladder stages an order on a click and sends it through the broker after one confirm. Replay restores all of this exactly as known at any past moment.
 
 ### Problem Frame
 
@@ -45,6 +47,8 @@ Its options strategy builder and AI Copilot mean that a payoff diagram and a cha
 
 Equity charts have the same gap. Patterns are shown without the story of what followed past occurrences. Screens are built without any measure of whether they ever worked, so the desk backtests them separately in Excel or Python.
 
+Market profile and order flow cost a separate subscription and a separate tool. On GoCharting, the desk's current one, market profile is complex to set up and does not stay clean across timeframes, yet a profile read needs the day, the multi-day balance and the expiry cycle together, with HVN/LVN and order flow beside it. The trader still does the Dalton-style synthesis in their head, and none of these tools says how often a profile pattern has meant anything on NSE.
+
 ### Key Decisions
 
 - **The wedge is the options-native chart.** Evidence on the chart, point-in-time replay and speed are kept as supporting pillars, not the lead. Governs R155–R164. (session-settled: user-approved — chosen over evidence-on-chart, point-in-time replay and speed-plus-agent as the primary wedge: TradingView is weakest for NSE F&O.)
@@ -57,6 +61,12 @@ Equity charts have the same gap. Patterns are shown without the story of what fo
 - **Everything ships in sequence, with no MVP cut.** (session-settled: user-directed — chosen over a one-month index-only slice: the user wants every piece built one by one.)
 - **Replay shows detectors as they were live, and includes paper trading.** Governs R184, R187, R196. (session-settled: user-approved — chosen over replaying with today's detector versions by default, and over leaving paper trading in V1.5 per platform R47: keeps "as known then" true while serving practice.)
 - **"Easy" is measured, and the look is designed elsewhere.** Ease is judged by timed tasks against TradingView. Finish and motion come from the repo's design pipeline (DESIGN.md, ui-ux-pro-max, impeccable) under G5. Governs R192, R195.
+- **Order flow runs on a contracted tick-by-tick feed and is labelled as inferred.** Governs R205, R206. (session-settled: user-approved — chosen over coarse delta from snapshot feeds and over shipping profile in V1 with order flow in V1.5: a real footprint needs per-trade data, and no NSE feed carries the aggressor side.)
+- **Composite profiles with naked POCs, the VWAP family, the liquidity heatmap and options flow by strike are all in.** Governs R202, R204, R205, R207. (session-settled: user-directed — chosen from a list where each was optional.)
+- **Profiles sit per session inside the chart, Dalton-style.** The strike ladder keeps the price axis, and a composite profile lane sits at the far right. Governs R203. (session-settled: user-approved — chosen over stacked permanent axis lanes and one switchable axis lens, judged on a rough layout sketch.)
+- **Suggestions come as a pre-open plan plus live scenario cards and quiet chart marks.** Governs R212, R213. (session-settled: user-approved — chosen over live scenarios only and over marks only.)
+- **One auction model per instrument drives every profile and order-flow suggestion.** Overlays are views of it. Governs R208–R214. (session-settled: user-approved — chosen over an indicator toolkit of separate overlays: the user wants the synthesis done for them, not more parts.)
+- **The chart sends orders through the broker after one confirm in Axiom.** Governs R164, R215, R216. (session-settled: user-directed — chosen over true one-click sending and over keeping DOM clicks as drafts confirmed in the broker's window: the user wants order placement on the chart through the broker integration.)
 - **No 3D on chart panes.** The volatility surface in 3D lives in the Volatility Lab. Chart panes keep the renderer's frame budget, per the repo's UI constraints.
 
 ### Actors
@@ -76,7 +86,7 @@ Uses the platform plan's actors: A1 desk user (traders, PMs, analysts, quants) a
 - R161. OI walls and positioning-derived support and resistance levels are drawn on price with their strength, today's shift, and their historical hold rate per R86–R93.
 - R162. The positioning pane (R114) adds rollover percentage and cost against their own history and futures build-up class over time. Participant-wise OI changes (FII, DII, Pro, Client) appear as market-level context, labelled as such and never attributed to the charted instrument.
 - R163. Every options-native element reads one chain and surface snapshot and shows its as-of time and freshness per KTD9. An element whose input is unavailable is hidden with the reason shown.
-- R164. An on-chart strategy can be sent to a multi-leg ticket draft per R55. The chart never places an order.
+- R164. An on-chart strategy is sent as a multi-leg order through the R215 stage-and-confirm path. Until G2 clears that path, sending creates a ticket draft per R55.
 
 **Insight rail**
 
@@ -130,6 +140,34 @@ Uses the platform plan's actors: A1 desk user (traders, PMs, analysts, quants) a
 - R188. Alerts and triggers evaluate in replay as replay events and never send a live notification.
 - R189. Chain, surface and every detector output can be read as of any past timestamp in the archive.
 
+**Auction, market profile and order flow**
+
+- R201. Every intraday chart opens with market profile and no setup: 30-minute TPO periods over the NSE session, the 09:15–10:15 initial balance, a 70% value area and the POC. Index profiles are built on index futures, because index spot has no volume. A changed setting is labelled non-default and carries no base rate.
+- R202. Profiles combine three nested timeframes by default: today, the current balance (a composite from the session the market last entered balance, with a rolling 5 sessions as fallback), and the expiry cycle (last expiry to next expiry under the SEBI calendar in force). Weekly and monthly value appear as reference levels. Composites use a basis-adjusted continuous futures series, so contract rolls add no false structure.
+- R203. The chart draws each session's TPO profile inside the chart beside that session's bars, with a composite profile lane at the far right. On F&O charts the strike ladder keeps the price axis.
+- R204. The volume profile (R14) marks HVNs and LVNs. Naked POCs, unfilled single prints and poor highs and lows carry forward as reference levels until traded. Session and anchored VWAP draw with deviation bands, anchored by click or to an event: an expiry, results or a gap day.
+- R205. Zooming in past a threshold replaces bars with a footprint of volume at bid and ask, delta and imbalances per price. A cumulative-delta pane and a liquidity heatmap of resting depth by price, with large-order pulls, refills and large-trade prints, are toggles. These appear only where the tick-by-tick feed covers the instrument; elsewhere they are hidden with the reason shown.
+- R206. Every order-flow value is labelled as using an inferred aggressor and shows the measured classification accuracy for that instrument.
+- R207. The strike ladder (R155) adds options volume and OI change by strike, and dealer gamma levels labelled as a model resting on a stated assumption about who is short options.
+- R208. One auction model per instrument tracks: balance or imbalance and its duration, the day type and open type forming, location against prior and composite value, other-timeframe or day-timeframe control, and whether order flow confirms. Desk quants specify and sign it off like the R168 catalogue.
+- R209. The V1 auction pattern catalogue covers:
+  - day types: normal, normal variation, trend, double distribution, neutral, neutral extreme, non-trend, P and b profiles
+  - open types: open drive, open test drive, open rejection reverse, open auction in and out of range, each read against prior value and range, plus inventory correction at the open
+  - structure: the 80% rule, IB and range extension, single prints, poor highs and lows, excess, balance-area breakouts with look above or below and fail, value migration, naked POCs, HVN acceptance and LVN fast travel, other-timeframe control
+  - order flow: absorption, exhaustion, stacked imbalances, delta divergence, initiative against responsive activity, trapped traders
+
+  Each pattern records its source theory, detection rule, timeframes, what the source says follows, and what invalidates it.
+- R210. Every pattern shows the source's reading, such as "Dalton's reading: …", beside Axiom's own NSE walk-forward base rate and sample per R86–R93, or "uncalibrated". Profile patterns may calibrate from purchased 1-minute history. Order-flow patterns stay uncalibrated until Axiom's tick archive is deep enough. No pattern is stated as fact.
+- R211. Day type and open type are provisional during the session, shown as a probability per period, and fixed at 15:30. The shortened 15:15–15:30 period is excluded from day-type thresholds, and the futures pre-open auction is its own open reference.
+- R212. Before the open, each instrument gets a plan card: the open relative to prior value and range, likely day types, the key reference levels, and scenarios with base rates and invalidation.
+- R213. During the session, auction scenario cards stream into the insight rail (R167) as they trigger. Quiet chart marks label poor highs and lows, single prints, IB breaks, range extension and absorption. Each mark carries a one-line plain explanation and opens its evidence card. Wording follows R171.
+- R214. Auction-model fields are screener criteria (R183). Replay (R184) restores profiles, the auction state, footprint and cards as known then. Individual trades replay for a recent window, and older sessions replay from per-price, per-minute totals.
+
+**Orders from the chart**
+
+- R215. A DOM ladder shows depth by price. Clicking a price stages a priced order, and one explicit confirm in Axiom sends it through the broker integration. Each send records who confirmed it and when. Until G2 clears the broker-API path, the confirm creates a ticket draft per R55.
+- R216. The agent can stage an order but never confirm one. Replay never sends a live order (R196).
+
 **Layout, speed and ease**
 
 - R190. A layout holds up to 16 charts synced by symbol, interval, crosshair, time and date range. Price-anchored drawings sync across charts that plot the same price series, and time-only drawings sync across all charts.
@@ -137,6 +175,8 @@ Uses the platform plan's actors: A1 desk user (traders, PMs, analysts, quants) a
 - R192. Every chart tool has a keyboard path and a command-bar entry (R127), and the most-used tools take one keystroke.
 - R193. The rail is on by default for every instrument with catalogued detectors. The strike ladder and positioning pane are on by default for F&O charts only, within the U17 overlay budget.
 - R197. Chart focus moves by keyboard, by cycling or by jumping to a slot, with a visible focus ring that matches the rail's instrument. Ladder strikes, rail items and strategy legs are labelled controls reachable by keyboard and screen reader. Gain or loss, call or put, and wall strength are never shown by colour alone.
+- R217. Every chart element has a named colour role on the white ground, including TPO periods shaded by time, the value area, POC, HVN and LVN, two-sided delta and imbalance, the heatmap ramp, VWAP bands, naked levels, the strike ladder and rail card types. Each role pairs with a shape or label per R197.
+- R218. Profiles and the heatmap sit inside the R191 budget. Footprint has its own budget: up to 4 footprint charts in a layout hold the R191 frame limits.
 - R194. The agent can build an on-chart strategy, rank strikes, find twins, build and explain a screen, and start a replay on request, with the same results as the screen (R4). It explains any rail item by citing its detector and evidence card.
 - R195. The R126 timed-task set adds six tasks:
   - build a short straddle on the chart
@@ -145,6 +185,11 @@ Uses the platform plan's actors: A1 desk user (traders, PMs, analysts, quants) a
   - find twins of a pattern
   - build and backtest a screen
   - start a synced replay
+  - read the day's plan card
+  - find the naked POCs in the current balance
+  - spot absorption at a level
+
+  The last three are also timed against the desk's current profile tool, GoCharting.
 
 ### Visualizations
 
@@ -183,7 +228,7 @@ flowchart LR
 
 - F11. Instrument to strategy draft
   - **Trigger:** A trader opens BankNifty from the command bar.
-  - **Steps:** The ladder, positioning pane and rail load for the nearest expiry. The trader reads the "where will it settle" card and the short-covering insight, and opens its evidence card. They rank strikes for "highest theta per unit of risk", shift-click two strikes to sell a strangle, drag IV down 2 points to see P&L, and send it to a ticket draft.
+  - **Steps:** The ladder, positioning pane and rail load for the nearest expiry. The trader reads the "where will it settle" card and the short-covering insight, and opens its evidence card. They rank strikes for "highest theta per unit of risk", shift-click two strikes to sell a strangle, drag IV down 2 points to see P&L, and send it as a staged order they confirm in Axiom.
   - **Covers:** R155–R160, R164, R166, R170.
 - F12. Pattern to twins to screen
   - **Trigger:** A flag is detected on an equity chart.
@@ -197,6 +242,10 @@ flowchart LR
   - **Trigger:** The trader replays the expiry day of a past week across a 4-chart layout.
   - **Steps:** Chain, rail and patterns appear as they were known then. The trader paper-trades a straddle at that moment's bid-ask. A trigger hit shows as a replay event.
   - **Covers:** R184–R188.
+- F15. Auction read to order
+  - **Trigger:** Before 09:15, a trader opens NIFTY futures.
+  - **Steps:** The plan card shows the open below yesterday's value, the current balance in its sixth session, and two scenarios with base rates. At 09:45 an "open test drive" mark appears at yesterday's poor low, with absorption on the footprint. A scenario card for acceptance back into value streams into the rail. The trader stages a buy limit on the DOM at the value-area low and confirms it in Axiom.
+  - **Covers:** R201–R206, R208–R213, R215.
 
 ### Acceptance Examples
 
@@ -208,7 +257,11 @@ flowchart LR
 - AE26. **Covers R188.** A price trigger is crossed during replay. It is logged as a replay event and no email or in-app live alert is sent.
 - AE27. **Covers R174.** The analogs for a cup-and-handle include a since-delisted company whose pattern failed, and it counts in the loser split.
 - AE28. **Covers R165.** With 16 charts open, focus moves from chart 3 to chart 11. The rail switches to chart 11's instrument and shows nothing from chart 3.
-- AE29. **Covers R164.** Sending an on-chart iron condor creates a four-leg ticket draft awaiting confirmation, and no order exists until the user confirms it in the broker flow.
+- AE29. **Covers R164, R215.** Sending an on-chart iron condor stages a four-leg order. Nothing reaches the broker until the user confirms it in Axiom, and the send records who confirmed it.
+- AE31. **Covers R211.** At 11:00 the engine shows "trend day forming, 58%". At 15:30 the day closes back inside the IB, and the label fixes as normal variation. Replay at 11:00 shows the 58% read, not the final label.
+- AE32. **Covers R210.** An 80% rule card reads "Dalton's reading: value-area re-entry often traverses value" beside Axiom's NSE base rate for NIFTY futures with its sample, or "uncalibrated" when the sample is below the R88 minimum.
+- AE33. **Covers R205.** A cash stock with no tick-by-tick coverage shows TPO, volume profile and VWAP. Footprint, delta and heatmap are hidden with "no tick-by-tick coverage for this instrument".
+- AE34. **Covers R216.** The agent stages a two-lot NIFTY futures order from the DOM on request. The order waits for the user's confirm, and the agent has no way to confirm it.
 - AE30. **Covers R196.** During a replay of a past expiry day, the builder offers "Paper trade" and no "Send to ticket". After exit, the paper straddle stays in the replay book, and no live draft exists.
 
 ### Success Criteria
@@ -217,7 +270,8 @@ flowchart LR
 - In the R126 and R195 timed tasks with named desk users, Axiom's median time beats TradingView's on every task TradingView supports. Tasks TradingView cannot do are recorded as unsupported there.
 - On the R195 options tasks (short straddle, implied range, strike ranking), Axiom's median also beats each tester's current options tool: Sensibull, Opstra or Tradl.
 - The desk builds and backtests its screens in Axiom instead of Excel or Python. This counts toward the platform V1 gate.
-- The R191 frame budget holds in the U14 harness with 16 charts and the rail open.
+- The R191 frame budget holds in the U14 harness with 16 charts and the rail open, and R218 holds with 4 footprint charts.
+- The desk cancels its separate market profile and order flow subscriptions, and Axiom's median beats GoCharting on the three profile tasks in R195.
 - Every detector in the catalogue appears in the Edge Ledger (R144) and is demoted when it stops beating its base rate.
 
 ### Scope Boundaries
@@ -226,13 +280,14 @@ flowchart LR
 
 - Retail-client voice, plain-language layer and RA routing for rail content and screens (V2, per R60, R62, R125).
 - Pine-like scripting (V1.5+, per R15).
-- Footprint and TPO, plus replay of them (V1.5, per R49).
+- Custom profile scripting (with Pine-like scripting, V1.5+).
+- Order flow on global or crypto instruments.
 - Webhook and messaging alert delivery (V1.5, per R128).
 - Detectors beyond the R169 catalogue and equity question cards beyond R166. Each is added after quant sign-off.
 
 **Outside this product's identity**
 
-- Placing or routing orders from the chart.
+- Sending an order without the user's explicit confirm of that order, including engine-fired automatic, bracket or conditional orders.
 - Naming entities behind positioning or calling activity manipulation (R77).
 - Outcome language that promises or reassures ("assured", "favourable", "sure-shot").
 - An agent-written narrative that computes its own numbers.
@@ -243,6 +298,9 @@ flowchart LR
 Proposed changes to `docs/plans/2026-11-12-1110-feat-axiom-desk-platform-plan.md`. None is applied by this document.
 
 - **R12:** raise the layout cap from 8 to 16 charts and add date-range and drawing sync, as stated in R190.
+- **R14:** volume profile adds HVN and LVN marks per R204.
+- **R49:** market profile, footprint and order flow move from V1.5 into V1 per R201–R214.
+- **R56:** an explicit per-order confirm inside Axiom, sent through the broker integration, satisfies R56 per R215. It replaces confirmation inside the broker's own order window.
 - **R20:** replace "step through history" with point-in-time replay per R184–R188.
 - **R110:** add as-of reads of chain, surface and detector outputs per R189. Today R110 archives daily, and only U7 has an intraday snapshot as-of query.
 - **R116:** extend analogs from the charted instrument to the whole point-in-time universe per R173–R176.
@@ -251,13 +309,16 @@ Proposed changes to `docs/plans/2026-11-12-1110-feat-axiom-desk-platform-plan.md
 - **KTD6:** change the spike's load from 8 to 16 synced charts with the rail open, and judge it against R191.
 - **U7:** owns R189.
 - **U12:** registers detectors (R168) and counts twins, story conditions and screen suggestions as tested variants (R176, R180).
-- **U14:** re-runs the spike at 16 charts, with SciChart licensed and two named desk testers, before any chart feature work. It owns R184–R186, R188, R190, R191, R196 and R197.
-- **U15:** owns R173–R176, R198 and the strike-ranking math in R159.
+- **U14:** re-runs the spike at 16 charts, with SciChart licensed and two named desk testers, before any chart feature work. It owns R184–R186, R188, R190, R191, R196, R197, and the rendering in R203, R205, R217 and R218.
+- **U15:** owns R173–R176, R198, the strike-ranking math in R159, and the profile math in R201, R202 and R204.
 - **U16:** owns R192 and R195.
-- **U17:** owns the strike ladder, implied range, OI walls and positioning additions (R155, R160–R163), plus the rail (R165–R172), the equity catalogue (R200) and R193.
+- **U17:** owns the strike ladder, implied range, OI walls and positioning additions (R155, R160–R163), plus the rail (R165–R172), the equity catalogue (R200), R193, R207, and the auction model and its cards (R208–R213).
 - **U18:** owns the screener builder (R177–R183, R199). The platform plan has no screen-efficacy or screen-backtest requirement today.
 - **U19:** keeps the strategy engine (R38, R81). The on-chart builder surface (R156–R158, R164, R187) moves to U17.
-- **U25:** owns the agent actions in R194.
+- **U25:** owns the agent actions in R194 and the stage-only rule in R216.
+- **U21:** owns the order path in R215: staging, the Axiom confirm, broker send and the record of who confirmed.
+- **G1:** adds a tick-by-tick and depth feed for index and liquid stock futures (R205).
+- **G2:** adds legal review of sending confirmed orders through the broker API (R215).
 - **G5:** `DESIGN.md` adds chart-pane tokens: ladder, rail, payoff, cone and evidence card.
 - **PR5 sequencing:** U17 and U18 now depend on U7 as-of reads and the U12 detector registry. `ce-plan` decides whether PR5 splits.
 
@@ -266,6 +327,9 @@ Proposed changes to `docs/plans/2026-11-12-1110-feat-axiom-desk-platform-plan.md
 - The archive (R110) holds intraday chain and surface snapshots dense enough for tick, second or bar replay of options elements. Where it does not, replay offers only the steps the data supports (R186).
 - Participant-wise OI is end-of-day NSE data, published by category (index or stock, futures, calls or puts, long or short) across all underlyings, not per instrument. Intraday participant shifts are not available, and R162 shows the as-of date. The per-instrument "who is positioned" card (R166) answers from contract- and strike-level build-up and OI change.
 - Desk quants can specify and sign off the R169 catalogue. Rail breadth grows only as fast as they do.
+- A vendor streams NSE and NFO tick by tick with depth (Global Datafeeds does, per `docs/research/2026-11-12-build-research.md`). Its history depth and licence terms for storing ticks are UNVERIFIED.
+- No NSE feed flags the trade aggressor, so delta is classified from quotes per R206.
+- NSE monthly expiry is the last Tuesday for contracts from 1 Sep 2025, and futures have a 09:00–09:15 pre-open auction from 8 Dec 2025 (secondary sources, see `docs/research/2026-11-14-market-profile-order-flow-patterns.md`).
 - The custom Canvas2D renderer measured 120 fps (p95 9.2 ms) at 8 charts, in single runs. 16 charts are unmeasured.
 
 ### Outstanding Questions
@@ -279,10 +343,14 @@ Proposed changes to `docs/plans/2026-11-12-1110-feat-axiom-desk-platform-plan.md
 - How the rail and strike ladder behave below the tablet breakpoint, given that U14 collapses to one chart there.
 - Minimum history before a detector's evidence card leaves "uncalibrated" (R93).
 - Replay speed steps and the paper-trading cost model (R186, R187).
+- Profile row size per instrument, the footprint zoom threshold, and HVN/LVN cut-offs (R201, R204, R205). Each is fixed per catalogue version.
+- The aggressor classification method and how R206 accuracy is measured.
+- The tick retention window behind R214 and the vendor's storage terms.
 
 ### Sources / Research
 
 - Platform plan: `docs/plans/2026-11-12-1110-feat-axiom-desk-platform-plan.md`. Covers R9–R30, R38, R68, R74–R95, R110–R129, R144–R154, KTD5, KTD6 and KTD9, U7, U12, U14–U19, and G5.
+- Market profile and order-flow pattern research: `docs/research/2026-11-14-market-profile-order-flow-patterns.md`. Dalton's *Mind Over Markets* and *Markets in Profile*, Steidlmayer's CBOT material, Cont–Kukanov–Stoikov (2014), Osler (2003). It found no peer-reviewed test of profile patterns, which is why R210 pairs the source's reading with Axiom's own base rate.
 - Renderer spike: `tools/benchmarks/renderer/RESULT.md` (partial, no decision).
 - Design inputs: `PRODUCT.md`, `DESIGN.md` (provisional, no chart tokens), `references/TASTE.md`.
 - Options research: `docs/research/2026-11-12-options-benchmark.md`, `docs/research/2026-11-12-options-literature.md`.
