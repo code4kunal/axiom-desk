@@ -274,6 +274,34 @@ def test_ineligible_weekly_has_no_weekly_expiry_weekday(fno: FnoRulesEngine) -> 
     assert "weekly" in before.expiry_weekdays
 
 
+def test_weekday_text_is_returned_trimmed_and_capitalised(fno: FnoRulesEngine) -> None:
+    """A rule cell like ' tuesday ' passes validation and comes back as 'Tuesday'."""
+    ts = datetime(2026, 1, 1, tzinfo=UTC)
+    fno._expiry_rules_table.load(  # pyright: ignore[reportPrivateUsage]
+        [
+            EffectiveDatedRow(
+                key="NSE:NIFTY:monthly",
+                effective_from=date(2026, 1, 1),
+                effective_to=None,
+                published_at=ts,
+                recorded_at=ts,
+                source="TEST",
+                verified_against="TEST",
+                payload={"expiry_weekday": " tuesday "},
+            )
+        ]
+    )
+    rules = fno.get_contract_rules("NSE", "NIFTY", on=date(2026, 6, 1))
+    assert rules.expiry_weekdays["monthly"] == "Tuesday"
+
+
+def test_unknown_weekly_eligibility_is_reported(fno: FnoRulesEngine) -> None:
+    """A stock with no weekly-eligibility row is not weekly-eligible, and says why."""
+    rules = fno.get_contract_rules("NSE", "RELIANCE", on=date(2026, 1, 5))
+    assert not rules.weekly_eligible
+    assert any("weekly eligibility unknown" in lim for lim in rules.limitations)
+
+
 def test_position_limit_index_rule_only_for_index_underlyings(fno: FnoRulesEngine) -> None:
     """A stock underlying must not be given the index position-limit rule."""
     nifty = fno.get_contract_rules("NSE", "NIFTY", on=date(2026, 1, 5))

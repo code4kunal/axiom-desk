@@ -61,7 +61,10 @@ class CorporateAction:
             object.__setattr__(self, "recorded_at", ensure_utc_aware(self.recorded_at))
         except (AttributeError, TypeError) as err:
             raise ValueError("published_at and recorded_at must be valid datetimes") from err
-        if not isinstance(self.ex_date, date):  # pyright: ignore[reportUnnecessaryIsInstance]
+        # datetime is a date subclass but would store a time part
+        if not isinstance(self.ex_date, date) or isinstance(  # pyright: ignore[reportUnnecessaryIsInstance]
+            self.ex_date, datetime
+        ):
             raise TypeError(f"ex_date must be a date, got {self.ex_date!r}")
         if not self.source:
             raise ValueError("source must be non-empty")
@@ -78,10 +81,8 @@ class CorporateAction:
             and (self.from_qty is None or self.to_qty is None)
         ):
             raise ValueError(f"{self.type} requires from_qty and to_qty")
-        if self.type == "dividend":
+        if self.type == "dividend" and not cancelled:
             if self.amount is None:
-                if cancelled:
-                    return
                 raise MalformedCorporateAction(f"dividend {self.action_id} requires an amount")
             try:
                 positive = float(self.amount) > 0

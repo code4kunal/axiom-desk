@@ -499,6 +499,7 @@ class FnoRulesEngine:
                 is_verified = False
         except RuleUnknown:
             weekly_eligible = False
+            limitations.append(f"weekly eligibility unknown for {exchange}:{underlying}")
 
         # 3. Expiry margin
         em_key = f"{exchange}:ALL"
@@ -522,7 +523,7 @@ class FnoRulesEngine:
                 res_w = self._expiry_rules_table.resolve(f"{exchange}:ALL:{cycle}", on_date)
             expiry_results.append(res_w)
             _weekday(res_w.value)  # refuse a blank or misspelt weekday
-            expiry_weekdays[cycle] = _column(res_w.value, "expiry_weekday")
+            expiry_weekdays[cycle] = _column(res_w.value, "expiry_weekday").strip().capitalize()
             sources.extend(res_w.sources)
             if not res_w.is_verified:
                 is_verified = False

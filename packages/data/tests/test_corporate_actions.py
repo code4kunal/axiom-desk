@@ -206,10 +206,28 @@ def test_cancellation_rows_without_amount_or_ratio_load_and_are_ignored(
         [
             {**base, "action_id": "D1", "type": "dividend"},
             {**base, "action_id": "S1", "type": "split"},
+            {**base, "action_id": "D2", "type": "dividend", "amount": "0"},
         ]
     )
     res = adj.adjust_bars("STOCK", _sample_bars(), as_of=date(2024, 6, 1))
     assert res.bars == _sample_bars()
+
+
+def test_datetime_ex_date_is_malformed(conn: sqlite3.Connection) -> None:
+    """A datetime would be stored with a time part, so it is refused like any wrong type."""
+    row = {
+        "action_id": "X1",
+        "recorded_at": "2024-01-01T00:00:00Z",
+        "instrument_id": "STOCK",
+        "type": "split",
+        "ex_date": datetime(2024, 5, 15),
+        "published_at": "2024-01-01T00:00:00Z",
+        "source": "TEST",
+        "from_qty": 1,
+        "to_qty": 2,
+    }
+    with pytest.raises(MalformedCorporateAction):
+        CorporateActionAdjuster(conn).load_corporate_actions([row])
 
 
 def test_moved_ex_date_applies_at_corrected_date(adjuster: CorporateActionAdjuster) -> None:
