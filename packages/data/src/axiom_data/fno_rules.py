@@ -17,6 +17,8 @@ from axiom_core.envelope import Source
 from axiom_data.calendar import TradingCalendar
 from axiom_data.pointintime import (
     IST,
+    EffectiveDatedRow,
+    LookupResult,
     NaiveTimestampRefused,
     PointInTimeTable,
     RuleUnknown,
@@ -481,6 +483,7 @@ class FnoRulesEngine:
 
         # 4. Expiry weekdays
         expiry_weekdays: dict[str, str] = {}
+        expiry_results: list[LookupResult[EffectiveDatedRow]] = []
         for cycle in ("weekly", "monthly"):
             try:
                 res_w = self._expiry_rules_table.resolve(
@@ -488,6 +491,7 @@ class FnoRulesEngine:
                 )
             except RuleUnknown:
                 res_w = self._expiry_rules_table.resolve(f"{exchange}:ALL:{cycle}", on_date)
+            expiry_results.append(res_w)
             expiry_weekdays[cycle] = res_w.value.payload.get("expiry_weekday", "")
             sources.extend(res_w.sources)
             if not res_w.is_verified:
@@ -511,7 +515,7 @@ class FnoRulesEngine:
         if not is_verified and "unverified rule" not in limitations:
             limitations.append("unverified rule")
 
-        for res in (cv_res, we_res, em_res, res_w, pl_res):
+        for res in (cv_res, we_res, em_res, *expiry_results, pl_res):
             if res is not None:
                 for lim in res.limitations:
                     if lim not in limitations:

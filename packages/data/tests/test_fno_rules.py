@@ -1,13 +1,13 @@
 import csv
 import json
 import sqlite3
-from datetime import date
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 import pytest
 from axiom_core.authz import Refused
 from axiom_data.fno_rules import FnoRulesEngine
-from axiom_data.pointintime import RuleUnknown
+from axiom_data.pointintime import EffectiveDatedRow, RuleUnknown
 
 
 @pytest.fixture
@@ -184,6 +184,25 @@ def test_unverified_rule_limitation(fno: FnoRulesEngine) -> None:
     rules = fno.get_contract_rules("NSE", "NIFTY", on=date(2025, 9, 2))
     assert rules.is_verified is False
     assert "unverified rule" in rules.limitations
+    assert "synthetic publication date" in rules.limitations
+
+
+def test_weekly_synthetic_flag_survives_clean_monthly_row(fno: FnoRulesEngine) -> None:
+    """A synthetic weekly row surfaces its flag even when the monthly row is clean."""
+    ts = datetime(2025, 11, 1, tzinfo=UTC)
+    clean_monthly = EffectiveDatedRow(
+        key="NSE:BANKNIFTY:monthly",
+        effective_from=date(2025, 9, 1),
+        effective_to=None,
+        published_at=ts,
+        recorded_at=ts,
+        source="TEST",
+        verified_against="TEST",
+        payload={"expiry_weekday": "Tuesday", "published_at_synthetic": "false"},
+    )
+    fno._expiry_rules_table.load([clean_monthly])  # pyright: ignore[reportPrivateUsage]
+    # 2025-12-10: every other table resolves to a real circular, so only the weekly row is synthetic
+    rules = fno.get_contract_rules("NSE", "BANKNIFTY", on=date(2025, 12, 10))
     assert "synthetic publication date" in rules.limitations
 
 
