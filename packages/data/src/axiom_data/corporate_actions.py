@@ -61,7 +61,7 @@ class CorporateAction:
             object.__setattr__(self, "recorded_at", ensure_utc_aware(self.recorded_at))
         except (AttributeError, TypeError) as err:
             raise ValueError("published_at and recorded_at must be valid datetimes") from err
-        if not isinstance(self.ex_date, date):
+        if not isinstance(self.ex_date, date):  # pyright: ignore[reportUnnecessaryIsInstance]
             raise TypeError(f"ex_date must be a date, got {self.ex_date!r}")
         if not self.source:
             raise ValueError("source must be non-empty")
