@@ -128,6 +128,10 @@ class Registry:
             principal, cap.permission, Resource(principal.tenant_id, "capability", name)
         )
         result = cap.handler(CallContext(principal, surface), inputs)
+        if (
+            cap.output is not None
+        ):  # the generated client trusts this type, so hold the server to it
+            cap.output.model_validate(result.value)
         for source in result.sources:
             if not self._entitlements.allows(principal.tenant_id, source.licence_scope):
                 self._audit.record(

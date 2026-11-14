@@ -1,5 +1,6 @@
 import sqlite3
 from collections.abc import Iterable
+from dataclasses import replace
 from datetime import UTC, datetime
 
 import pytest
@@ -16,7 +17,7 @@ from axiom_core.registry import (
 )
 from axiom_core.tenancy import Directory
 from conftest import Clock
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 AS_OF = datetime(2026, 11, 12, 9, 15, tzinfo=UTC)
 
@@ -135,6 +136,25 @@ def test_internal_only_source_carries_its_scope_and_needs_entitlement(
     Entitlements(conn).grant("desk", "internal-only")
     env = registry.call(ana, "echo", {"text": "hi"}, Binding.SCREEN)
     assert [s.licence_scope for s in env.sources] == ["internal-only"]
+
+
+class EchoOut(BaseModel):
+    echo: str
+
+
+class Scored(BaseModel):
+    score: float
+
+
+def test_a_value_that_breaks_its_declared_output_never_leaves_the_registry(
+    registry: Registry, directory: Directory, clock: Clock
+) -> None:
+    registry.register(replace(cap("typed"), output=EchoOut))
+    registry.register(replace(cap("mistyped"), output=Scored))
+    ana = directory.principal("desk", "ana", authenticated_at=clock.now)
+    assert registry.call(ana, "typed", {"text": "hi"}, Binding.SCREEN).value == {"echo": "hi"}
+    with pytest.raises(ValidationError):
+        registry.call(ana, "mistyped", {"text": "hi"}, Binding.SCREEN)
 
 
 def test_surface_without_binding_is_refused(registry: Registry, directory: Directory) -> None:
