@@ -52,7 +52,15 @@ class RunStore:
     def latest(self, kind: str) -> Run | None:
         return self._one("WHERE kind = ? ORDER BY published_at DESC, rowid DESC LIMIT 1", (kind,))
 
-    def _one(self, where: str, args: tuple[str, ...]) -> Run | None:
+    def latest_as_of(self, kind: str, as_of: datetime) -> Run | None:
+        if as_of.tzinfo is None:
+            raise ValueError("as_of must be timezone-aware")
+        return self._one(
+            "WHERE kind = ? AND published_at <= ? ORDER BY published_at DESC, rowid DESC LIMIT 1",
+            (kind, as_of.timestamp()),
+        )
+
+    def _one(self, where: str, args: tuple[str | float, ...]) -> Run | None:
         row = self._conn.execute(
             f"SELECT id, kind, as_of, published_at, payload, sources FROM runs {where}", args
         ).fetchone()

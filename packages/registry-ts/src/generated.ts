@@ -29,6 +29,10 @@ export interface CapabilityInputs {
   runs_latest: RunsLatestInput;
 }
 
+export interface CapabilityOutputs {
+  runs_latest: unknown;
+}
+
 export type CapabilityName = keyof CapabilityInputs;
 
 export const capabilityNames: CapabilityName[] = ["runs_latest"];

@@ -1,0 +1,3 @@
+# Every chart capability the charts plan adds, one name per line.
+# The chart manifest test fails when a name here is not registered or fails the registry check,
+# so a planned capability cannot go missing silently. Lines starting with # are comments.

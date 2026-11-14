@@ -42,6 +42,8 @@ export interface Envelope<T = unknown> {
 
 
 def ts_type(schema: dict[str, Any]) -> str:
+    if "$ref" in schema:
+        return schema["$ref"].rsplit("/", 1)[-1]
     if "enum" in schema:
         return " | ".join(json.dumps(v) for v in schema["enum"])
     if "anyOf" in schema:
@@ -57,33 +59,61 @@ def ts_type(schema: dict[str, Any]) -> str:
     return scalar.get(str(kind), "null" if kind == "null" else "unknown")
 
 
+def ts_declaration(name: str, schema: dict[str, Any]) -> str:
+    if "properties" not in schema and schema.get("type") != "object":
+        return f"export type {name} = {ts_type(schema)};\n"
+    required = set(schema.get("required", []))
+    fields = [
+        f"  {p}{'' if p in required else '?'}: {ts_type(s)};"
+        for p, s in schema.get("properties", {}).items()
+    ]
+    return f"export interface {name} {{\n" + "\n".join(fields) + "\n}\n"
+
+
 def pascal(name: str) -> str:
     return "".join(part.capitalize() for part in name.split("_"))
 
 
 def render(registry: Registry) -> dict[Path, str]:
+    defs: dict[str, dict[str, Any]] = {}
+
+    def top_level(schema: dict[str, Any]) -> dict[str, Any]:
+        for name, body in schema.get("$defs", {}).items():
+            if defs.setdefault(name, body) != body:
+                raise ValueError(f"two different models are both named {name}; rename one")
+        # A recursive root model comes back as a $ref to its own definition.
+        return defs[ts_type(schema)] if "$ref" in schema else schema
+
+    cap_blocks: list[str] = []
+    names: list[str] = []
+    outputs: list[str] = []
+    for cap in registry.capabilities():
+        cap_blocks.append(f"/** {cap.summary} */")
+        inputs = top_level(cap.inputs.model_json_schema())
+        cap_blocks.append(ts_declaration(f"{pascal(cap.name)}Input", inputs))
+        output = "unknown"
+        if cap.output is not None:
+            output = f"{pascal(cap.name)}Output"
+            schema = top_level(cap.output.model_json_schema(mode="serialization"))
+            cap_blocks.append(ts_declaration(output, schema))
+        names.append(cap.name)
+        outputs.append(output)
     blocks = [
         "// Generated from the capability registry by `uv run python -m axiom_api.codegen`.",
         "// Do not edit by hand.",
         "",
         ENVELOPE_TS,
+        *(ts_declaration(name, defs[name]) for name in sorted(defs)),
+        *cap_blocks,
     ]
-    names: list[str] = []
-    for cap in registry.capabilities():
-        schema = cap.inputs.model_json_schema()
-        required = set(schema.get("required", []))
-        fields = [
-            f"  {p}{'' if p in required else '?'}: {ts_type(s)};"
-            for p, s in schema.get("properties", {}).items()
-        ]
-        blocks.append(f"/** {cap.summary} */")
-        blocks.append(
-            f"export interface {pascal(cap.name)}Input {{\n" + "\n".join(fields) + "\n}\n"
-        )
-        names.append(cap.name)
     blocks.append(
         "export interface CapabilityInputs {\n"
         + "\n".join(f"  {n}: {pascal(n)}Input;" for n in names)
+        + "\n}\n"
+    )
+    blocks.append(
+        "export interface CapabilityOutputs {\n"
+        + "\n".join(f"  {n}: {o};" for n, o in zip(names, outputs, strict=True))
         + "\n}\n"
     )
     blocks.append("export type CapabilityName = keyof CapabilityInputs;\n")

@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "dataflow",
+  "quality": "showcase",
+  "specification": {
+    "path": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/pensive-chebyshev-640052/.archify/dataflow-charts-pr1-20261114-120000/candidate.json",
+    "sha256": "800f8e880408683f14a8fe018b3cfd731e8045d0cdaa2b3262f2c9ceafd85e17",
+    "bytes": 10336
+  },
+  "artifact": {
+    "path": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/pensive-chebyshev-640052/docs/diagrams/charts-pr1-foundations.html",
+    "sha256": "01cb5776142dfcf9110273b2ced941e835637d14a6f141ce357c333550b0531c",
+    "bytes": 873996
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/pensive-chebyshev-640052/docs/diagrams/charts-pr1-foundations.finalize.json",
+    "summaryReceipt": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/pensive-chebyshev-640052/docs/diagrams/charts-pr1-foundations.finalize-summary.json",
+    "browserCheckReceipt": "/Users/kunalsaxena/Desktop/axiom-desk/.claude/worktrees/pensive-chebyshev-640052/docs/diagrams/charts-pr1-foundations.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-11-13T05:57:44.956Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 2320,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}

@@ -2,7 +2,7 @@
 name = "axiom-desk"
 version = "0.1.0"
 requires-python = ">=3.12,<3.13"
-dependencies = ["axiom-core", "axiom-api"]
+dependencies = ["axiom-core", "axiom-api", "axiom-chartmath"]
 
 [dependency-groups]
 dev = [
@@ -19,9 +19,10 @@ exclude-newer-package = { click = "2026-10-30T00:00:00Z" }
 [tool.uv.sources]
 axiom-core = { workspace = true }
 axiom-api = { workspace = true }
+axiom-chartmath = { workspace = true }
 
 [tool.uv.workspace]
-members = ["packages/core", "services/api"]
+members = ["packages/core", "packages/chartmath", "services/api"]
 
 [tool.pytest.ini_options]
 testpaths = ["packages", "tools", "services"]

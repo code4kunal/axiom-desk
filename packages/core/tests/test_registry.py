@@ -1,5 +1,6 @@
 import sqlite3
 from collections.abc import Iterable
+from dataclasses import replace
 from datetime import UTC, datetime
 
 import pytest
@@ -16,7 +17,7 @@ from axiom_core.registry import (
 )
 from axiom_core.tenancy import Directory
 from conftest import Clock
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 AS_OF = datetime(2026, 11, 12, 9, 15, tzinfo=UTC)
 
@@ -43,6 +44,7 @@ def cap(
     bindings: Iterable[Binding] = ALL_BINDINGS,
     parity: bool = True,
     scope: str = "public",
+    human_only_reason: str | None = None,
 ) -> Capability:
     return Capability(
         name=name,
@@ -53,6 +55,7 @@ def cap(
         bindings=frozenset(bindings),
         version="1",
         parity_inputs={"text": "hi"} if parity else None,
+        human_only_reason=human_only_reason,
     )
 
 
@@ -71,6 +74,35 @@ def test_entry_missing_its_agent_binding_fails_the_check(registry: Registry) -> 
     assert any("no_agent" in p and "agent" in p for p in problems)
     assert any("no_fixture" in p and "parity" in p for p in problems)
     assert not any(p.startswith("ok:") for p in problems)
+
+
+def test_human_only_entry_needs_a_stated_reason(registry: Registry) -> None:
+    screen_only = {Binding.SCREEN, Binding.COMMAND}
+    registry.register(cap("confirm", bindings=screen_only, human_only_reason="a person confirms"))
+    registry.register(cap("blank", bindings=screen_only, human_only_reason="  "))
+    registry.register(cap("silent", bindings=screen_only))
+    registry.register(cap("both", human_only_reason="agent-bound but claims human-only"))
+    problems = registry.check()
+    assert not any(p.startswith("confirm:") for p in problems)
+    assert "blank: missing agent binding" in problems
+    assert "silent: missing agent binding" in problems
+    assert any(p.startswith("both:") and "human-only" in p for p in problems)
+    human_only = [c.name for c in registry.capabilities() if c.human_only_reason]
+    assert sorted(human_only) == ["blank", "both", "confirm"]
+
+
+def test_human_only_entry_refuses_the_agent_and_audits_it(
+    registry: Registry, directory: Directory, audit: AuditLog
+) -> None:
+    registry.register(
+        cap(bindings={Binding.SCREEN, Binding.COMMAND}, human_only_reason="a person confirms")
+    )
+    ana = directory.principal("desk", "ana")
+    with pytest.raises(Forbidden, match="agent"):
+        registry.call(ana, "echo", {"text": "hi"}, Binding.AGENT)
+    last = audit.records()[-1]
+    assert (last.action, last.verdict) == ("capability_surface", "refused")
+    assert last.ids == {"capability": "echo", "surface": "agent"}
 
 
 def test_names_must_be_valid_tool_names(registry: Registry) -> None:
@@ -104,6 +136,25 @@ def test_internal_only_source_carries_its_scope_and_needs_entitlement(
     Entitlements(conn).grant("desk", "internal-only")
     env = registry.call(ana, "echo", {"text": "hi"}, Binding.SCREEN)
     assert [s.licence_scope for s in env.sources] == ["internal-only"]
+
+
+class EchoOut(BaseModel):
+    echo: str
+
+
+class Scored(BaseModel):
+    score: float
+
+
+def test_a_value_that_breaks_its_declared_output_never_leaves_the_registry(
+    registry: Registry, directory: Directory, clock: Clock
+) -> None:
+    registry.register(replace(cap("typed"), output=EchoOut))
+    registry.register(replace(cap("mistyped"), output=Scored))
+    ana = directory.principal("desk", "ana", authenticated_at=clock.now)
+    assert registry.call(ana, "typed", {"text": "hi"}, Binding.SCREEN).value == {"echo": "hi"}
+    with pytest.raises(ValidationError):
+        registry.call(ana, "mistyped", {"text": "hi"}, Binding.SCREEN)
 
 
 def test_surface_without_binding_is_refused(registry: Registry, directory: Directory) -> None:

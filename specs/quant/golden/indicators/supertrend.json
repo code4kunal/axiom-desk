@@ -1,0 +1,122 @@
+{
+ "indicator": "supertrend",
+ "version": 1,
+ "params": {
+  "period": 3,
+  "multiplier": 1
+ },
+ "bars": [
+  {
+   "ts": "2026-10-10T09:15:00+05:30",
+   "open": 9.0,
+   "high": 10,
+   "low": 8,
+   "close": 9,
+   "volume": 1000
+  },
+  {
+   "ts": "2026-10-11T09:15:00+05:30",
+   "open": 10.0,
+   "high": 11,
+   "low": 9,
+   "close": 10,
+   "volume": 1000
+  },
+  {
+   "ts": "2026-10-12T09:15:00+05:30",
+   "open": 11.0,
+   "high": 12,
+   "low": 10,
+   "close": 11,
+   "volume": 1000
+  },
+  {
+   "ts": "2026-10-13T09:15:00+05:30",
+   "open": 12.0,
+   "high": 13,
+   "low": 11,
+   "close": 12,
+   "volume": 1000
+  },
+  {
+   "ts": "2026-10-14T09:15:00+05:30",
+   "open": 13.0,
+   "high": 14,
+   "low": 12,
+   "close": 13,
+   "volume": 1000
+  },
+  {
+   "ts": "2026-10-15T09:15:00+05:30",
+   "open": 10.5,
+   "high": 12,
+   "low": 9,
+   "close": 9,
+   "volume": 1000
+  },
+  {
+   "ts": "2026-10-16T09:15:00+05:30",
+   "open": 7.5,
+   "high": 9,
+   "low": 6,
+   "close": 7,
+   "volume": 1000
+  },
+  {
+   "ts": "2026-10-17T09:15:00+05:30",
+   "open": 8.5,
+   "high": 10,
+   "low": 7,
+   "close": 9.5,
+   "volume": 1000
+  },
+  {
+   "ts": "2026-10-18T09:15:00+05:30",
+   "open": 11.5,
+   "high": 13,
+   "low": 10,
+   "close": 12.5,
+   "volume": 1000
+  },
+  {
+   "ts": "2026-10-19T09:15:00+05:30",
+   "open": 13.0,
+   "high": 14,
+   "low": 12,
+   "close": 13.5,
+   "volume": 1000
+  }
+ ],
+ "source": "hand-computed; arithmetic in specs/quant/indicators.md",
+ "how": "hl2 +/- m*ATR (TA-Lib Wilder ATR), ratcheting bands, flip on close through the active band",
+ "tolerance": {
+  "rel": 1e-09,
+  "abs": 1e-09
+ },
+ "outputs": {
+  "supertrend": [
+   null,
+   null,
+   null,
+   14,
+   14,
+   13.166666666666666,
+   10.277777777777779,
+   10.277777777777779,
+   8.432098765432098,
+   10.2880658436214
+  ],
+  "direction": [
+   null,
+   null,
+   null,
+   -1,
+   -1,
+   -1,
+   -1,
+   -1,
+   1,
+   1
+  ]
+ }
+}

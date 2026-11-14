@@ -15,6 +15,8 @@ function mulberry32(seed: number): () => number {
 export const BAR_SECONDS = 60;
 const START = Date.UTC(2026, 0, 5, 3, 45) / 1000; // 09:15 IST
 
+export const ticksPerSecond = (ticksPerBar: number, speed: number) => (ticksPerBar * speed) / BAR_SECONDS;
+
 /**
  * Synthetic 1-minute session for one symbol.
  * shortcut: random walk, not recorded vendor ticks; swap in U6 replay files once G1 sample data exists.
