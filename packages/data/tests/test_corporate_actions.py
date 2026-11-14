@@ -9,6 +9,7 @@ from axiom_data.corporate_actions import (
     CorporateAction,
     CorporateActionAdjuster,
 )
+from axiom_data.pointintime import IST, NaiveTimestampRefused
 
 
 def _bar(d: date, p: float, v: float = 100.0) -> Bar:
@@ -280,6 +281,66 @@ def test_corporate_action_published_at_required_refuses_none() -> None:
             published_at=None,
             source="TEST",
         )
+
+
+def test_corporate_action_utc_normalization_and_naive_refusal(conn: sqlite3.Connection) -> None:
+    """CorporateAction normalizes recorded_at and published_at to UTC,
+
+    rejects naive, and gives identical results.
+    """
+    # 1. Naive datetime refused
+    with pytest.raises(NaiveTimestampRefused):
+        CorporateAction(
+            action_id="NAIVE",
+            recorded_at=datetime(2024, 1, 1, 12, 0),  # naive
+            instrument_id="STOCK",
+            type="split",
+            status="active",
+            ex_date=date(2024, 5, 15),
+            published_at=datetime(2024, 1, 1, 12, 0, tzinfo=UTC),
+            source="TEST",
+        )
+
+    # 2. Same instant written in IST vs UTC gives identical normalized values and results
+    dt_utc = datetime(2024, 5, 14, 20, 0, tzinfo=UTC)  # 20:00 UTC on May 14
+    dt_ist = datetime(2024, 5, 15, 1, 30, tzinfo=IST)  # 01:30 IST on May 15 == 20:00 UTC on May 14
+
+    act_utc = CorporateAction(
+        action_id="ACT_UTC",
+        recorded_at=dt_utc,
+        instrument_id="STOCK_UTC",
+        type="split",
+        status="active",
+        ex_date=date(2024, 5, 15),
+        published_at=dt_utc,
+        source="TEST",
+        from_qty=1,
+        to_qty=2,
+    )
+    act_ist = CorporateAction(
+        action_id="ACT_IST",
+        recorded_at=dt_ist,
+        instrument_id="STOCK_IST",
+        type="split",
+        status="active",
+        ex_date=date(2024, 5, 15),
+        published_at=dt_ist,
+        source="TEST",
+        from_qty=1,
+        to_qty=2,
+    )
+    assert act_ist.published_at.tzinfo == UTC
+    assert act_ist.published_at == act_utc.published_at
+    assert act_ist.recorded_at.tzinfo == UTC
+    assert act_ist.recorded_at == act_utc.recorded_at
+
+    adj = CorporateActionAdjuster(conn)
+    adj.load_corporate_actions([act_utc, act_ist])
+
+    res_utc = adj.get_actions_as_of("STOCK_UTC", as_of=date(2024, 5, 15))
+    res_ist = adj.get_actions_as_of("STOCK_IST", as_of=date(2024, 5, 15))
+    assert len(res_utc) == len(res_ist) == 1
+    assert res_utc[0].published_at == res_ist[0].published_at
 
 
 def test_zero_or_negative_ratio_refused_at_load(conn: sqlite3.Connection) -> None:

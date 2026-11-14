@@ -53,6 +53,8 @@ class CorporateAction:
             raise ValueError("action_id must be non-empty")
         if self.published_at is None:
             raise ValueError("published_at is required")
+        object.__setattr__(self, "published_at", ensure_utc_aware(self.published_at))
+        object.__setattr__(self, "recorded_at", ensure_utc_aware(self.recorded_at))
         if not self.source:
             raise ValueError("source must be non-empty")
         if not self.licence_scope:
@@ -85,8 +87,6 @@ class CorporateActionAdjuster:
                 if isinstance(item, CorporateAction):
                     act = item
                 else:
-                    pub = ensure_utc_aware(datetime.fromisoformat(item["published_at"]))
-                    rec = ensure_utc_aware(datetime.fromisoformat(item["recorded_at"]))
                     ex_d = (
                         date.fromisoformat(item["ex_date"])
                         if isinstance(item["ex_date"], str)
@@ -94,16 +94,16 @@ class CorporateActionAdjuster:
                     )
                     act = CorporateAction(
                         action_id=item["action_id"],
-                        recorded_at=rec,
+                        recorded_at=datetime.fromisoformat(item["recorded_at"]),
                         instrument_id=item["instrument_id"],
                         type=item["type"],
                         status=item.get("status", "active"),
                         ex_date=ex_d,
+                        published_at=datetime.fromisoformat(item["published_at"]),
+                        source=item["source"],
                         from_qty=item.get("from_qty"),
                         to_qty=item.get("to_qty"),
                         amount=item.get("amount"),
-                        published_at=pub,
-                        source=item["source"],
                         licence_scope=item.get("licence_scope", "public"),
                     )
 
