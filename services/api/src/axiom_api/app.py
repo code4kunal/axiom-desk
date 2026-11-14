@@ -54,7 +54,7 @@ def build_services(conn: sqlite3.Connection, clock: Callable[[], float]) -> Serv
     registry = Registry(authz, entitlements, audit)
     calendar = TradingCalendar()
     instruments = InstrumentStore(conn)
-    fno_rules = FnoRulesEngine(conn, calendar)
+    fno_rules = FnoRulesEngine(conn, calendar, instruments)
     registry.register(latest_run(runs))
     registry.register(instrument_lookup(instruments))
     registry.register(trading_calendar(calendar))

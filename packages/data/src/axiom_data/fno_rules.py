@@ -88,8 +88,14 @@ class ContractRulesResult:
 class FnoRulesEngine:
     """Engine for F&O contract rules, expiry resolution, lot sizes and ban list."""
 
-    def __init__(self, conn: sqlite3.Connection, calendar: TradingCalendar | None = None) -> None:
+    def __init__(
+        self,
+        conn: sqlite3.Connection,
+        calendar: TradingCalendar | None = None,
+        instruments: InstrumentStore | None = None,
+    ) -> None:
         self._conn = conn
+        self._instruments = instruments or InstrumentStore(conn)
         self._calendar = calendar or TradingCalendar()
         self._load_reference_tables()
 
@@ -548,7 +554,7 @@ class FnoRulesEngine:
         # 6. Ban status
         # The ban list is keyed by instrument id, so map the underlying symbol first.
         banned: bool | None = None
-        inst = InstrumentStore(self._conn).resolve_identifier("symbol", underlying, on_date)
+        inst = self._instruments.resolve_identifier("symbol", underlying, on_date)
         if inst is None:
             limitations.append(f"ban status unknown: no instrument id for {underlying}")
         else:

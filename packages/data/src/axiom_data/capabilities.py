@@ -14,7 +14,7 @@ from axiom_core.envelope import HandlerResult, Source
 from axiom_core.registry import ALL_BINDINGS, CallContext, Capability
 from pydantic import BaseModel, model_validator
 
-from axiom_data.calendar import Session, TradingCalendar
+from axiom_data.calendar import CalendarHorizonExceeded, Session, TradingCalendar
 from axiom_data.fno_rules import FnoRulesEngine
 from axiom_data.instruments import InstrumentStore
 from axiom_data.pointintime import IST, NaiveTimestampRefused
@@ -146,11 +146,20 @@ def trading_calendar(calendar: TradingCalendar) -> Capability:
         session = calendar.get_session(inputs.segment, d)
         is_trading_day = session is not None
 
-        prev_session = calendar.previous_session(inputs.segment, ref_dt)
-        if session is not None:
-            next_session = calendar.next_session(inputs.segment, session.end)
-        else:
-            next_session = calendar.next_session(inputs.segment, ref_dt)
+        limitations = list(calendar.limitations)
+        # Next/previous may fall outside the holiday data; the asked day itself is still answerable.
+        try:
+            prev_session = calendar.previous_session(inputs.segment, ref_dt)
+        except CalendarHorizonExceeded:
+            prev_session = None
+            limitations.append("previous session is before calendar coverage")
+        try:
+            next_session = calendar.next_session(
+                inputs.segment, session.end if session is not None else ref_dt
+            )
+        except CalendarHorizonExceeded:
+            next_session = None
+            limitations.append("next session is after calendar coverage")
 
         value = {
             "segment": inputs.segment,
@@ -167,7 +176,7 @@ def trading_calendar(calendar: TradingCalendar) -> Capability:
             as_of=as_of,
             sources=calendar.sources,
             method="trading calendar lookup",
-            limitations=calendar.limitations,
+            limitations=tuple(limitations),
         )
 
     return Capability(

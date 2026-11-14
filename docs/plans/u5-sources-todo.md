@@ -4,6 +4,8 @@ This document tracks every row in `packages/data/src/axiom_data/reference/` whos
 
 Per review rule B1: *"Never invent a circular number. For every row where you cannot point to a primary document you actually read, set source to UNSOURCED. Keep verified_against blank."*
 
+**Due before 2026-12-31:** add 2027 exchange holidays to `holidays.csv` and raise `COVERAGE_END` in `calendar.py`. Until then every date after 2026-12-31 is refused (CalendarHorizonExceeded).
+
 **Total UNSOURCED rows: 296**
 
 ## `asset_class_roles.csv` (15 rows)

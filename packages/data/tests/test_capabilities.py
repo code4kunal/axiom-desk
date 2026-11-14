@@ -125,6 +125,26 @@ def test_trading_calendar_holiday_returns_no_session_and_next_session(
     assert val["next_session"]["start"].startswith("2019-03-05")
 
 
+@pytest.mark.parametrize(
+    ("on", "gap", "limitation"),
+    [
+        ("2026-12-31", "next_session", "next session is after calendar coverage"),
+        ("2019-01-01", "previous_session", "previous session is before calendar coverage"),
+    ],
+)
+def test_trading_calendar_answers_edge_days_without_the_missing_neighbour(
+    app_services: Services, on: str, gap: str, limitation: str
+) -> None:
+    """The last and first covered days are answered; the neighbour past coverage is None."""
+    token = sign_in(app_services, "ana")
+    agent_principal = app_services.sessions.agent_principal(token)
+    inputs = {"segment": "equity", "on": on}
+    env = app_services.registry.call(agent_principal, "trading_calendar", inputs, Binding.AGENT)
+    assert env.value["session"] is not None
+    assert env.value[gap] is None
+    assert limitation in env.limitations
+
+
 def test_trading_calendar_reports_unverified_synthetic_and_row_sources(
     app_services: Services,
 ) -> None:
