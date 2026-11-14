@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Axiom Charts desk mock</title>
+<!-- mock only: production self-hosts via next/font (OFL: Eczar, Anek Latin, Martian Mono). Spec: DESIGN.md §8 -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@400..700&family=Eczar:wght@600..800&family=Martian+Mono:wght@400..500&display=swap">
+<style>
+:root{
+  --ground:#FFFFFF; --raised:#F2F4F7; --hairline:#D7DCE2;
+  --ink:#0E1319; --ink-dim:#4E5966; --ink-faint:#7B8692; --on-ink:#FFFFFF;
+  /* chart roles, DESIGN.md §8.2: base = text, -mark = graphics */
+  --c-up:#107A3A; --c-up-mark:#1E9A4A;
+  --c-down:#BF3D12; --c-down-mark:#E0501C;
+  --c-call:#0F7B7A; --c-call-mark:#149892;
+  --c-put:#B8206F; --c-put-mark:#D42E7E;
+  --c-magnet:#956208; --c-magnet-mark:#B97D0C;
+  --c-auction:#5A6B0E; --c-auction-mark:#738A12;
+  --c-band:#636E7A; --c-band-mark:#808D9B;
+  --heat-1:#FBF1D9; --heat-2:#F0D58E; --heat-3:#D9A73A; --heat-4:#B0740F; --heat-5:#7A4708; --heat-6:#3F2304;
+  --cnf:var(--c-up); --cnf-mark:var(--c-up-mark); --rac:var(--c-magnet); --rac-mark:var(--c-magnet-mark); --wl:var(--c-band); --wl-mark:var(--c-band-mark);
+  --font-display:"Eczar",Georgia,serif; --font-body:"Anek Latin",system-ui,sans-serif; --font-mono:"Martian Mono",ui-monospace,monospace;
+  --ctl:32px; --dock:64px; --rail:360px; --strip:40px;
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --ground:#0E1114; --raised:#171B20; --hairline:#2B313A;
+  --ink:#F1F3F5; --ink-dim:#A7AFB9; --ink-faint:#6E7884; --on-ink:#0E1114;
+  --c-up:#49C27A; --c-up-mark:#49C27A; --c-down:#F5805A; --c-down-mark:#F5805A;
+  --c-call:#3DBDB9; --c-call-mark:#3DBDB9; --c-put:#EE6CAB; --c-put-mark:#EE6CAB;
+  --c-magnet:#E3AC3C; --c-magnet-mark:#E3AC3C; --c-auction:#B3C94A; --c-auction-mark:#B3C94A;
+  --c-band:#98A2AE; --c-band-mark:#98A2AE;
+  --heat-1:#2A2210; --heat-2:#4E3A12; --heat-3:#80601A; --heat-4:#B88A28; --heat-5:#E3B84C; --heat-6:#FBE7A6;
+  color-scheme:dark;
+}
+@media (pointer:coarse){ :root{ --ctl:48px } }
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--ground);color:var(--ink);font:400 15px/1.4 var(--font-body);-webkit-font-smoothing:antialiased;overflow:hidden}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+.lab{font:500 12px/1 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+.num{font:400 13px/1.2 var(--font-mono);font-variant-numeric:tabular-nums}
+.up{color:var(--c-up)} .down{color:var(--c-down)} .call{color:var(--c-call)} .put{color:var(--c-put)} .magnet{color:var(--c-magnet)} .auction{color:var(--c-auction)} .band{color:var(--c-band)}
+
+/* ---- frame ---- */
+.desk{display:grid;height:100dvh;grid-template:"top top top" 48px "dock ws rail" 1fr "dock strip rail" var(--strip) / var(--dock) 1fr var(--rail)}
+.top{grid-area:top;display:flex;align-items:center;gap:16px;padding:0 16px;border-bottom:1px solid var(--hairline)}
+.mark{font:800 22px/1 var(--font-display);letter-spacing:-.03em;display:flex;align-items:baseline;gap:8px}
+.mark i{font-style:normal;color:var(--c-down-mark)}
+.mark small{font:500 12px/1 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim)}
+.layouts{display:flex;border:1px solid var(--hairline);border-radius:2px}
+.layouts button{min-width:var(--ctl);height:var(--ctl);background:none;border:0;border-left:1px solid var(--hairline);font:500 12px/1 var(--font-mono);color:var(--ink-dim);cursor:pointer}
+.layouts button:first-child{border-left:0}
+.layouts button[aria-pressed="true"]{background:var(--ink);color:var(--on-ink)}
+.cmd{flex:1;max-width:420px;height:var(--ctl);display:flex;align-items:center;gap:8px;padding:0 12px;border:1px solid var(--hairline);border-radius:2px;color:var(--ink-dim)}
+.cmd kbd{font:500 12px/1 var(--font-mono);border:1px solid var(--hairline);border-radius:2px;padding:3px 5px}
+.cmd input{border:0;background:none;outline:0;flex:1;min-width:0;font-size:15px}
+.cmd:focus-within{outline:2px solid var(--ink);outline-offset:2px}
+.session{margin-left:auto;display:flex;align-items:center;gap:12px;white-space:nowrap}
+.session .live{display:flex;align-items:center;gap:6px}
+.session .live::before{content:"";width:8px;height:8px;background:var(--c-up-mark);border-radius:1px}
+.ghost{height:var(--ctl);padding:0 12px;border:1px solid var(--hairline);border-radius:4px;background:none;cursor:pointer;font:500 14px/1 var(--font-body)}
+.ghost:hover{border-color:var(--ink-dim)}
+.primary{height:var(--ctl);padding:0 16px;border:0;border-radius:4px;background:var(--ink);color:var(--on-ink);cursor:pointer;font:500 14px/1 var(--font-body)}
+
+.dock{grid-area:dock;border-right:1px solid var(--hairline);display:flex;flex-direction:column;padding:8px 0}
+.dock a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;height:64px;text-decoration:none;color:var(--ink-dim);border-left:2px solid transparent}
+.dock a b{font:500 12px/1 var(--font-mono)}
+.dock a span{font:500 12px/1 var(--font-body)}
+.dock a[aria-current="page"]{color:var(--ink);border-left-color:var(--ink)}
+.dock a:hover{color:var(--ink)}
+
+/* ---- workspace ---- */
+.ws{grid-area:ws;display:grid;gap:0;min-height:0;min-width:0;border-bottom:1px solid var(--hairline)}
+.ws.g4{grid-template:1fr 1fr / 1fr 1fr}
+.ws.g3{grid-template:1fr 1fr / 1fr 1fr}
+.ws.g3 > .pane:first-child{grid-row:1 / 3}
+.ws.g2{grid-template:1fr / 1fr 1fr}
+.pane{container-type:inline-size;position:relative;display:flex;flex-direction:column;min-width:0;min-height:0;border-right:1px solid var(--hairline);border-bottom:1px solid var(--hairline)}
+.pane-head{height:var(--ctl);flex:none;display:flex;align-items:center;gap:12px;padding:0 12px;border-bottom:1px solid var(--hairline);white-space:nowrap;overflow:hidden}
+.pane-head .idx{font:500 12px/1 var(--font-mono);color:var(--ink-dim)}
+.pane-head .sym{font:600 15px/1 var(--font-body)}
+.pane-head .tog{background:none;border:0;font:500 12px/1 var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-dim);cursor:pointer;height:100%;padding:0 2px;border-bottom:2px solid transparent}
+.pane-head .tog[aria-pressed="true"]{color:var(--ink);border-bottom-color:currentColor}
+.pane-head .tog.sw::before{content:"";display:inline-block;width:8px;height:8px;margin-right:5px;vertical-align:0;background:var(--sw)}
+.pane-head .spacer{flex:1}
+@container (max-width:560px){.pane-head .pct{display:none}}
+@container (max-width:470px){.pane-head .tog:not(.keep){display:none}}
+@container (max-width:420px){.pane-head .tog,.pane-head .ivl{display:none}}
+.pane-body{position:relative;flex:1;min-height:0}
+.pane-body svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.pane[data-replay]{outline:2px solid var(--ink);outline-offset:-2px}
+.replay-tag{position:absolute;top:8px;left:12px;z-index:2;display:flex;gap:8px;align-items:center;padding:4px 8px;background:var(--ground);border:1.5px solid var(--ink);border-radius:2px;font:500 12px/1 var(--font-mono);letter-spacing:.08em}
+
+/* ---- rail ---- */
+.rail{grid-area:rail;border-left:1px solid var(--hairline);display:flex;flex-direction:column;min-height:0}
+.rail-head{min-height:48px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--hairline)}
+.rail-head h2{font:700 22px/1 var(--font-display)}
+.rail-head .peek{display:none;flex:1;min-width:0;margin:0 12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:500 14px/1.2 var(--font-body);color:var(--ink-dim)}
+.rail-list{overflow:auto;flex:1}
+.card{padding:16px;border-bottom:1px solid var(--hairline)}
+.card-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.card-top .sw{width:8px;height:8px;background:var(--sw);flex:none}
+.card-top time{margin-left:auto}
+.card h3{font:600 17px/1.3 var(--font-body);margin-bottom:6px}
+.card p{color:var(--ink-dim);font-size:15px;line-height:1.45}
+.card .facts{display:grid;grid-template-columns:repeat(3,1fr);margin:12px 0;border:1px solid var(--hairline)}
+.card .facts div{padding:8px;border-left:1px solid var(--hairline)}
+.card .facts div:first-child{border-left:0}
+.card .facts .num{display:block;margin-top:4px;font-size:14px;color:var(--ink)}
+.card .acts{display:flex;gap:8px;margin-top:12px}
+.stamp{display:inline-block;font:500 12px/1 var(--font-mono);letter-spacing:.12em;padding:2px 6px;border:1.5px solid;border-radius:2px}
+.stamp.cnf{color:var(--cnf);border-color:var(--cnf-mark)}
+.stamp.rac{color:var(--rac);border-color:var(--rac-mark)}
+.stamp.wl{color:var(--wl);border-color:var(--wl-mark)}
+
+/* ---- strip / replay ---- */
+.strip{grid-area:strip;display:flex;align-items:center;gap:12px;padding:0 12px;min-width:0}
+.strip .scrub{flex:1;position:relative;height:100%;min-width:0}
+.strip svg{position:absolute;inset:0;width:100%;height:100%}
+.strip button{width:var(--ctl);height:var(--ctl);border:1px solid var(--hairline);border-radius:2px;background:none;cursor:pointer;font:500 12px/1 var(--font-mono)}
+
+/* ---- auction screen extras ---- */
+.dom{width:100%;border-collapse:collapse;font:400 13px/1 var(--font-mono);font-variant-numeric:tabular-nums}
+.dom thead{height:40px}.dom th{position:sticky;top:0;background:var(--ground);font:500 12px/1 var(--font-mono);letter-spacing:.08em;color:var(--ink-dim);padding:8px;border-bottom:1px solid var(--hairline);text-align:right}
+.dom td{padding:0 8px;height:24px;text-align:right;border-bottom:1px solid var(--hairline)}
+.dom td.px{text-align:center;color:var(--ink);cursor:pointer}
+.dom td.px:hover{background:var(--raised)}
+.dom tr.last td.px{background:var(--ink);color:var(--on-ink)}
+.dom td.heat{width:40px;padding:0;border-left:1px solid var(--hairline)}
+.dom td.heat i{display:block;height:100%;background:var(--h)}
+.dom tr.staged td{border-top:1.5px dashed var(--ink);border-bottom:1.5px dashed var(--ink)}
+.dom tr.staged td:first-child{border-left:1.5px dashed var(--ink)}
+.dom tr.staged td:last-child{border-right:1.5px dashed var(--ink)}
+.dom .big{font-weight:500}
+.dom-wrap{overflow:auto;position:absolute;inset:0 0 172px 0}
+.ticket{position:absolute;left:0;right:0;bottom:0;height:172px;border-top:1px solid var(--hairline);padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--ground)}
+.ticket .btns{display:flex;gap:8px}.ticket .btns button{white-space:nowrap}
+.ticket .what{font:500 14px/1.35 var(--font-mono)}
+.ticket .what em{font-style:normal;font:500 12px/1 var(--font-mono);letter-spacing:.1em;border:1.5px dashed var(--ink);padding:2px 6px;border-radius:2px;margin-right:8px}
+.ticket .why{grid-column:1/-1;color:var(--ink-dim);font-size:14px}
+.legend{display:flex;align-items:center;gap:4px}
+.legend i{display:block;width:10px;height:10px;background:var(--h)}
+
+/* ---- screener ---- */
+.scr{grid-area:ws;display:grid;grid-template-rows:auto 1fr;min-height:0;overflow:auto;border-bottom:1px solid var(--hairline)}
+.builder{padding:24px;border-bottom:1px solid var(--hairline)}
+.builder h1{font:700 28px/1.1 var(--font-display);margin-bottom:4px}
+.builder .ask{display:flex;gap:8px;margin:16px 0}
+.builder .ask input{flex:1;height:48px;border:1px solid var(--ink-dim);border-radius:4px;padding:0 14px;font-size:17px;background:var(--ground)}
+.crit{display:grid;grid-template-columns:32px 1.3fr .7fr 1fr 1fr;border:1px solid var(--hairline)}
+.crit > *{padding:10px 12px;border-top:1px solid var(--hairline);border-left:1px solid var(--hairline);min-width:0}
+.crit > :nth-child(5n+1){border-left:0}
+.crit .hd{border-top:0}
+.crit .op{font:500 13px/1.2 var(--font-mono)}
+.crit .src{color:var(--ink-dim);font-size:14px}
+.results{padding:0 24px 24px}
+.results-head{display:flex;align-items:baseline;gap:16px;padding:20px 0 12px}
+.results-head h2{font:700 22px/1 var(--font-display)}
+table.res{width:100%;border-collapse:collapse}
+table.res th{text-align:left;padding:8px;border-bottom:1px solid var(--ink);font:500 12px/1 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-dim);white-space:nowrap}
+table.res td{padding:10px 8px;border-bottom:1px solid var(--hairline);vertical-align:middle}
+table.res td.r,table.res th.r{text-align:right}
+table.res .sym{font-weight:600}
+table.res svg{display:block}
+table.res tr:hover td{background:var(--raised)}
+.why-list{color:var(--ink-dim);font-size:14px}
+
+/* ---- responsive ---- */
+.sheet-handle,.pane-switch{display:none}
+@media (max-width:1279px){ :root{--rail:320px} }
+@media (max-width:1023px){
+  .desk{grid-template:"top top" 48px "dock ws" 1fr "dock strip" var(--strip) "dock sheet" 56px / var(--dock) 1fr}
+  .rail{grid-area:sheet;border-left:0;border-top:1px solid var(--ink);overflow:hidden}
+  .rail-head{min-height:56px;padding:16px}
+  .rail-list{display:none}
+  .sheet-handle{display:block;position:absolute;inset:0;width:100%;background:none;border:0;cursor:pointer;z-index:1}
+  .sheet-handle::before{content:"";position:absolute;left:50%;top:6px;width:32px;height:2px;background:var(--ink-dim);transform:translateX(-50%)}
+  .rail-head .peek{display:block}
+  .rail{position:relative}
+  .cmd{max-width:none}
+  .session .clock,.session .live,.mark small,.hide-m{display:none}
+}
+@media (max-width:767px){
+  :root{--dock:0px}
+  .dock{display:none}
+  .desk{grid-template:"top" 48px "tabs" 48px "pswitch" auto "ws" 1fr "strip" var(--strip) "sheet" 56px / 1fr}
+  .tabs{grid-area:tabs;display:flex;border-bottom:1px solid var(--hairline)}
+  .tabs a{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;color:var(--ink-dim);font:500 14px/1 var(--font-body);border-bottom:2px solid transparent}
+  .tabs a b{font:500 12px/1 var(--font-mono)}
+  .tabs a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--ink)}
+  .layouts,.cmd,.session .live{display:none}
+  .ws.g4,.ws.g3,.ws.g2{grid-template:1fr / 1fr}
+  .ws > .pane:not(:first-child){display:none}
+  .ws.g3 > .pane:first-child{grid-row:auto}
+  .pane-switch{grid-area:pswitch;display:flex;align-items:center;border-bottom:1px solid var(--hairline)}
+  .pane-switch span{flex:1;text-align:center}
+  .pane-switch button{width:48px;height:48px;border:0;background:none;cursor:pointer;font:500 16px/1 var(--font-mono)}
+  .ask-btn{display:inline-flex!important;align-items:center}
+  .pane-head{height:48px}
+  .pane-head .tog:not(.keep){display:none}
+  .mark small{display:none}
+  .builder{padding:16px}
+  .builder h1{font-size:24px}
+  .builder .ask{flex-direction:column}
+  .builder .ask input{flex:none}
+  .builder .ask .primary{height:48px}
+  .crit{grid-template-columns:28px 1fr 60px 1fr}
+  .crit .src,.crit .hd.src{display:none}
+  .crit > *{border-left:1px solid var(--hairline)}
+  .crit > :nth-child(5n+1){border-left:0}
+  .results{padding:0 16px 16px}
+  table.res .hide-s{display:none}
+  .strip .lab.hide-s{display:none}
+}
+@media (min-width:768px){ .tabs{display:none} }
+@media (prefers-reduced-motion:no-preference){ .tog,.dock a,.ghost{transition:color .16s,border-color .16s,background-color .16s} }
+</style>
+</head>
+<body>
+<div class="desk" id="desk">
+  <header class="top">
+    <div class="mark"><span>Ax<i>i</i>om</span><small>Charts</small></div>
+    <div class="layouts" role="group" aria-label="Panes in workspace" id="layouts"></div>
+    <label class="cmd"><kbd>/</kbd><input id="cmd" placeholder="Symbol, indicator or ask: “where is the put wall?”" aria-label="Command"></label>
+    <div class="session">
+      <span class="live lab">NSE open</span>
+      <span class="clock num" aria-label="Exchange time">10:32:14 IST</span>
+      <button class="ghost ask-btn" style="display:none" aria-label="Ask or change symbol">/ Ask</button><button class="ghost" id="theme">Dark theme</button>
+    </div>
+  </header>
+  <nav class="dock" aria-label="Desk" id="dock"></nav>
+  <nav class="tabs" aria-label="Desk" id="tabs"></nav>
+  <div class="pane-switch" id="pswitch"></div>
+  <main id="main" style="display:contents"></main>
+  <aside class="rail" aria-label="Insights">
+    <button class="sheet-handle" aria-label="Open insights" aria-expanded="false"></button>
+    <div class="rail-head"><h2 id="rail-title">Insights</h2><span class="peek" id="peek"></span><span class="lab" id="rail-count"></span></div>
+    <div class="rail-list" id="rail"></div>
+  </aside>
+  <div class="strip" id="strip"></div>
+</div>
+<script>
+const Q=new URLSearchParams(location.search);
+const SCREEN=Q.get('screen')||'workspace';
+if(Q.get('theme')==='dark')document.documentElement.dataset.theme='dark';
+const $=s=>document.querySelector(s);
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const NS='http://www.w3.org/2000/svg';
+function el(tag,attrs={},parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e}
+function txt(parent,x,y,s,attrs={}){const t=el('text',{x,y,'font-family':css('--font-mono').split(',')[0].replace(/"/g,''),'font-size':12,'font-weight':500,fill:css('--ink-dim'),...attrs},parent);t.textContent=s;return t}
+function rng(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+// one fixture: every pane, wall and rail fact reads these (PRODUCT principle: the engine computes, screens show the same number)
+const FX={spot:24312.45,chg:86.30,pct:0.36,callWall:24450,putWall:24100,maxPain:24300};
+const GLOSS={'CALL WALL':'Strike with the most call open interest','CW':'Call wall: strike with the most call open interest','PUT WALL':'Strike with the most put open interest','PW':'Put wall: strike with the most put open interest','MAX PAIN':'Strike where option buyers lose the most at expiry','MP':'Max pain: strike where option buyers lose the most at expiry','POC':'Point of control: price traded most today','VAH':'Value area high: top of the 70% of trade','VAL':'Value area low: bottom of the 70% of trade','IB':'Initial balance: range of the first hour','HVN':'High-volume node: a price the market accepted','LVN':'Low-volume node: a price the market rejected','SP':'Single prints: prices traded in one period only','STACK 3':'Three adjacent prices where buyers outnumbered sellers 3 to 1','nPOC 13 NOV':'Naked POC: 13 Nov point of control, not yet revisited','VWAP':'Volume-weighted average price'};
+const fmt=(n,d=2)=>n.toLocaleString('en-IN',{minimumFractionDigits:d,maximumFractionDigits:d});
+const sgn=(n,d=0)=>(n>=0?'+':'−')+fmt(Math.abs(n),d);
+
+/* ---------- data ---------- */
+function bars(seed,n,start,vol){const r=rng(seed);let p=start;const out=[];for(let i=0;i<n;i++){const o=p;const c=o+(r()-0.48)*vol;const h=Math.max(o,c)+r()*vol*0.6;const l=Math.min(o,c)-r()*vol*0.6;out.push({o,h,l,c,v:500+r()*1500});p=c}return out}
+
+/* ---------- chart primitives ---------- */
+function frame(svg,w,h,pad){svg.setAttribute('viewBox',`0 0 ${w} ${h}`);svg.innerHTML='';
+  const defs=el('defs',{},svg);
+  const hatch=el('pattern',{id:'hatch'+svg.id,width:6,height:6,patternUnits:'userSpaceOnUse',patternTransform:'rotate(45)'},defs);
+  el('line',{x1:0,y1:0,x2:0,y2:6,stroke:css('--c-band-mark'),'stroke-width':1.2},hatch);
+  const sp=el('pattern',{id:'sp'+svg.id,width:5,height:5,patternUnits:'userSpaceOnUse',patternTransform:'rotate(45)'},defs);
+  el('line',{x1:0,y1:0,x2:0,y2:5,stroke:css('--c-auction-mark'),'stroke-width':1.4,'stroke-opacity':.55},sp);
+  return {defs,hatch:`url(#hatch${svg.id})`,sp:`url(#sp${svg.id})`};
+}
+function yScale(lo,hi,top,bot){return v=>bot-(v-lo)/(hi-lo)*(bot-top)}
+function grid(svg,w,y,lo,hi,step,x0,x1,axisX){
+  for(let v=Math.ceil(lo/step)*step;v<=hi;v+=step){const yy=y(v);el('line',{x1:x0,x2:x1,y1:yy,y2:yy,stroke:css('--hairline'),'stroke-width':1},svg);txt(svg,axisX+6,yy+4,fmt(v,0))}
+}
+function candles(svg,data,x,y,cw,upto){
+  const up=css('--c-up-mark'),dn=css('--c-down-mark');
+  data.forEach((b,i)=>{if(upto!=null&&i>upto)return;const cx=x(i);const isUp=b.c>=b.o;const col=isUp?up:dn;
+    el('line',{x1:cx,x2:cx,y1:y(b.h),y2:y(b.l),stroke:col,'stroke-width':1.2},svg);
+    const top=y(Math.max(b.o,b.c)),bh=Math.max(1.5,Math.abs(y(b.o)-y(b.c)));
+    if(isUp)el('rect',{x:cx-cw/2+0.75,y:top+0.75,width:Math.max(1,cw-1.5),height:Math.max(0.5,bh-1.5),fill:css('--ground'),stroke:col,'stroke-width':1.5},svg);
+    else el('rect',{x:cx-cw/2,y:top,width:cw,height:bh,fill:col},svg);
+  });
+}
+function tag(svg,x,y,label,color,fill){ // axis tag, sits on the price axis
+  const g=el('g',{},svg);const key=label.replace(/^[↑↓] /,'').replace(/ [\d,]+$/,'');if(GLOSS[key]||GLOSS[label])el('title',{},g).textContent=GLOSS[key]||GLOSS[label];svg=g;
+  const rect=el('rect',{x,y:y-9,height:18,fill:fill||css('--ground'),stroke:color,'stroke-width':1.5,rx:2},svg);
+  const t=txt(svg,x+6,y+4,label,{fill:fill?css('--on-ink'):color});const w=(t.getComputedTextLength?.()||label.length*8.6)+12;rect.setAttribute('width',w);return w;
+}
+
+/* ---------- panes ---------- */
+function paneHead(idx,sym,meta,toggles=[]){
+  return `<div class="pane-head"><span class="idx">${idx}</span><span class="sym">${sym}</span>${meta}<span class="spacer"></span>${toggles.map(t=>`<button class="tog ${t.sw?'sw':''} ${t.keep?'keep':''}" aria-pressed="${t.on!==false}" style="--sw:var(${t.sw||'--ink'})">${t.l}</button>`).join('')}</div>`;
+}
+const priceMeta=(last,chg,pct)=>`<span class="px" style="display:contents"><span class="num">${fmt(last)}</span><span class="num ${chg>=0?'up':'down'}">${sgn(chg,2)}<span class="pct"> (${sgn(pct,2)}%)</span></span></span>`;
+
+function drawPrice(svg,{seed,n=64,start=24300,vol=18,ladder=false,cone=false,vwap=false,replayAt=null,volume=true,spot=null}){
+  const W=svg.clientWidth||600,H=svg.clientHeight||340;const f=frame(svg,W,H);
+  const axisW=88, ladW=ladder?(W<380?44:72):0, coneN=cone?12:0;
+  const data=bars(seed,n,start,vol);
+  if(spot!=null){const d=spot-data[n-1].c;data.forEach(b=>{b.o+=d;b.h+=d;b.l+=d;b.c+=d})}
+  const plotR=W-axisW-ladW;const volH=volume?Math.min(48,H*0.16):0;
+  const top=replayAt!=null?40:16,bot=H-22-volH;
+  let lo=Math.min(...data.map(b=>b.l)),hi=Math.max(...data.map(b=>b.h));
+  const last=data[n-1].c;const sig=vol*Math.sqrt(n)*0.14;
+  if(cone){lo=Math.min(lo,last-2.1*sig);hi=Math.max(hi,last+2.1*sig)}
+  const padv=(hi-lo)*0.06;lo-=padv;hi+=padv;
+  const y=yScale(lo,hi,top,bot);
+  const vis=data.slice(-Math.floor(n/ (W<500?(ladder?2.5:1.3):1)));const off=n-vis.length;
+  const slot=(plotR-8)/(vis.length+coneN);const cw=Math.max(2,slot*0.62);const x=i=>8+(i-off+0.5)*slot;
+  grid(svg,W,y,lo,hi,(hi-lo)>300?100:50,0,plotR,W-axisW);
+  // VWAP + bands
+  if(vwap){let pv=0,vv=0,sq=0;const pts=[],b1u=[],b1d=[],b2u=[],b2d=[];data.forEach((b,i)=>{const tp=(b.h+b.l+b.c)/3;pv+=tp*b.v;vv+=b.v;const vw=pv/vv;sq+=b.v*(tp-vw)**2;const sd=Math.sqrt(sq/vv);if(i<off)return;if(replayAt!=null&&i>replayAt)return;pts.push([x(i),y(vw)]);b1u.push([x(i),y(vw+sd)]);b1d.push([x(i),y(vw-sd)]);b2u.push([x(i),y(vw+2*sd)]);b2d.push([x(i),y(vw-2*sd)])});
+    const P=a=>a.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join('');
+    [[b1u,'5 4'],[b1d,'5 4'],[b2u,'1.5 3'],[b2d,'1.5 3']].forEach(([a,d])=>el('path',{d:P(a),fill:'none',stroke:css('--c-band-mark'),'stroke-width':1.2,'stroke-dasharray':d},svg));
+    el('path',{d:P(pts),fill:'none',stroke:css('--ink'),'stroke-width':1.5},svg);
+    const fp=pts[0];txt(svg,fp[0],fp[1]+16,'VWAP',{fill:css('--ink')});
+  }
+  // cone
+  if(cone){const x0=x(n-1);const up1=[],dn1=[],up2=[],dn2=[];for(let k=0;k<=coneN;k++){const s=sig*Math.sqrt(k/coneN);const xx=x0+k*slot;up1.push([xx,y(last+s)]);dn1.push([xx,y(last-s)]);up2.push([xx,y(last+2*s)]);dn2.push([xx,y(last-2*s)])}
+    const poly=(a,b)=>'M'+a.map(p=>p.join(' ')).join('L')+'L'+b.slice().reverse().map(p=>p.join(' ')).join('L')+'Z';
+    el('path',{d:poly(up2,dn2),fill:css('--c-band-mark'),'fill-opacity':.08},svg);
+    el('path',{d:poly(up1,dn1),fill:css('--c-band-mark'),'fill-opacity':.14},svg);
+    [up1,dn1].forEach(a=>el('path',{d:'M'+a.map(p=>p.join(' ')).join('L'),fill:'none',stroke:css('--c-band-mark'),'stroke-width':1.2,'stroke-dasharray':'5 4'},svg));
+    [up2,dn2].forEach(a=>el('path',{d:'M'+a.map(p=>p.join(' ')).join('L'),fill:'none',stroke:css('--c-band-mark'),'stroke-width':1,'stroke-dasharray':'1.5 3'},svg));
+    const ex=up1[coneN][0];{txt(svg,ex-62,up2[coneN][1]+14,'2σ 95%',{fill:css('--c-band')});txt(svg,ex-62,up1[coneN][1]+14,'1σ 68%',{fill:css('--c-band')})}
+  }
+  candles(svg,data.slice(off),(i)=>x(i+off),y,cw,replayAt!=null?replayAt-off:null);
+  // volume
+  if(volume){const vmax=Math.max(...data.map(b=>b.v));data.forEach((b,i)=>{if(i<off||(replayAt!=null&&i>replayAt))return;const hh=b.v/vmax*(volH-6);el('rect',{x:x(i)-cw/2,y:H-22-hh,width:cw,height:hh,fill:b.c>=b.o?css('--c-up-mark'):css('--c-down-mark'),'fill-opacity':.45},svg)});
+    el('line',{x1:0,x2:plotR,y1:H-22-volH,y2:H-22-volH,stroke:css('--hairline')},svg)}
+  // time axis
+  el('line',{x1:0,x2:W,y1:H-22,y2:H-22,stroke:css('--hairline')},svg);
+  ['09:15','10:00','10:45','11:30','12:15','13:00','13:45','14:30'].forEach((t,i,a)=>{const xx=8+(plotR-60)*i/(a.length-1);if(W<500&&i%2)return;txt(svg,xx,H-7,t)});
+  // ladder (options OI on the price axis)
+  if(ladder){const lx=plotR;el('line',{x1:lx,x2:lx,y1:0,y2:H-22,stroke:css('--hairline')},svg);const mid=lx+ladW/2;el('line',{x1:mid,x2:mid,y1:top,y2:bot,stroke:css('--hairline')},svg);
+    const r=rng(seed+7);const strikes=[];for(let s=Math.ceil(lo/50)*50;s<=hi;s+=50)strikes.push(s);
+    const atm=Math.round(last/50)*50;let cmax=0,pmax=0;const rows=strikes.map(s=>{const d=(s-atm)/50;const c=(d>0?1:0.35)*(40+r()*60)*Math.exp(-Math.abs(d-3)/4)*(s===FX.callWall?2.6:1);const p=(d<0?1:0.35)*(40+r()*60)*Math.exp(-Math.abs(d+3)/4)*(s===FX.putWall?2.6:1);cmax=Math.max(cmax,c);pmax=Math.max(pmax,p);return{s,c,p}});
+    const half=ladW/2-4,bh=Math.max(3,Math.min(8,(y(lo)-y(lo+50))*0.36));
+    rows.forEach(o=>{const yy=y(o.s);el('rect',{x:mid,y:yy-bh-0.5,width:o.c/cmax*half,height:bh,fill:css('--c-call-mark')},svg);el('rect',{x:mid-o.p/pmax*half,y:yy+0.5,width:o.p/pmax*half,height:bh,fill:css('--c-put-mark')},svg)});
+    const mp=FX.maxPain;
+    // tags never drop: narrow panes shorten them. Put wall is a double line so the two walls differ without hue.
+    const narrow=W<380;
+    const walls=[[FX.callWall,css('--c-call-mark'),css('--c-call'),narrow?'CW':'CALL WALL','solid'],[FX.putWall,css('--c-put-mark'),css('--c-put'),narrow?'PW':'PUT WALL','double'],[mp,css('--c-magnet-mark'),css('--c-magnet'),narrow?'MP':'MAX PAIN','dash']];
+    // a level outside the visible range pins to the pane edge with an arrow instead of squashing the candles
+    walls.forEach(([s,m,t,l,kind])=>{if(s>hi||s<lo){const up=s>hi;tag(svg,8,up?top+2:bot-11,(up?'↑ ':'↓ ')+l+' '+fmt(s,0),t);return}const yy=y(s);
+      if(kind==='double'){[-2,2].forEach(o=>el('line',{x1:0,x2:lx,y1:yy+o,y2:yy+o,stroke:m,'stroke-width':1.5},svg))}
+      else el('line',{x1:0,x2:lx,y1:yy,y2:yy,stroke:m,'stroke-width':kind==='solid'?3:1.5,'stroke-dasharray':kind==='dash'?'6 4':'none'},svg);
+      tag(svg,8,yy-13,l+' '+fmt(s,0),t)});
+    txt(svg,mid-14,top-4<10?12:top-4,'P',{fill:css('--c-put')});txt(svg,mid+6,top-4<10?12:top-4,'C',{fill:css('--c-call')})
+  }
+  // replay hatch
+  if(replayAt!=null){const xr=x(replayAt)+slot/2;el('rect',{x:xr,y:0,width:plotR-xr,height:H-22,fill:f.hatch,'fill-opacity':.5},svg);el('line',{x1:xr,x2:xr,y1:0,y2:H-22,stroke:css('--ink'),'stroke-width':1.5},svg);txt(svg,Math.min(xr+6,plotR-80),H-30,'NOT YET KNOWN',{fill:css('--c-band')})}
+  // last price tag on axis
+  const lp=replayAt!=null?data[replayAt].c:last;const ly=y(lp);el('line',{x1:0,x2:W-axisW,y1:ly,y2:ly,stroke:css('--ink'),'stroke-width':1,'stroke-dasharray':'1 3'},svg);tag(svg,W-axisW+2,ly,fmt(lp,2),css('--ink'),css('--ink'));
+  const head=replayAt!=null&&svg.closest('.pane')?.querySelector('.pane-head .px');if(head){const first=data[0].o;head.innerHTML=`<span class="num">${fmt(lp)}</span> <span class="num ${lp>=first?'up':'down'}">${sgn(lp-first,2)}<span class="pct"> (${sgn((lp-first)/first*100,2)}%)</span></span>`}
+  return{data,last:lp};
+}
+
+function drawPayoff(svg){
+  const W=svg.clientWidth||600,H=svg.clientHeight||340;frame(svg,W,H);
+  const L=16,R=W-64,T=24,B=H-28;const lo=23900,hi=24800;const x=v=>L+(v-lo)/(hi-lo)*(R-L);
+  // bull call spread 24300/24500 debit 72, plus short 24100 put credit 31 → payoff at expiry
+  const pay=s=>(Math.max(0,s-24300)-Math.max(0,s-24500)-72)*75+(31-Math.max(0,24100-s))*75;
+  const pts=[];for(let s=lo;s<=hi;s+=5)pts.push([s,pay(s)]);
+  const mx=Math.max(...pts.map(p=>p[1])),mn=Math.min(...pts.map(p=>p[1]));const y=yScale(mn*1.15,mx*1.25,T,B);
+  // implied 1σ range behind
+  const last=24312,sig=150;el('rect',{x:x(last-2*sig),y:T,width:x(last+2*sig)-x(last-2*sig),height:B-T,fill:css('--c-band-mark'),'fill-opacity':.06},svg);
+  el('rect',{x:x(last-sig),y:T,width:x(last+sig)-x(last-sig),height:B-T,fill:css('--c-band-mark'),'fill-opacity':.1},svg);
+  if(W>=420){txt(svg,x(last+sig)+4,B-22,'1σ 68%',{fill:css('--c-band')});txt(svg,x(last+2*sig)+4,B-22,'2σ 95%',{fill:css('--c-band')})}
+  for(let v=-15000;v<=15000;v+=5000){if(v<mn*1.15||v>mx*1.25)continue;const yy=y(v);el('line',{x1:L,x2:R,y1:yy,y2:yy,stroke:css('--hairline')},svg);txt(svg,R+6,yy+4,(v>0?'+':v<0?'−':'')+fmt(Math.abs(v),0))}
+  const y0=y(0);el('line',{x1:L,x2:R,y1:y0,y2:y0,stroke:css('--ink-dim'),'stroke-width':1},svg);
+  const line='M'+pts.map(p=>x(p[0]).toFixed(1)+' '+y(p[1]).toFixed(1)).join('L');
+  const clipU=el('clipPath',{id:'cu'},svg);el('rect',{x:L,y:T,width:R-L,height:y0-T},clipU);
+  const clipD=el('clipPath',{id:'cd'},svg);el('rect',{x:L,y:y0,width:R-L,height:B-y0},clipD);
+  const area=line+`L${x(hi)} ${y0}L${x(lo)} ${y0}Z`;
+  el('path',{d:area,fill:css('--c-up-mark'),'fill-opacity':.14,'clip-path':'url(#cu)'},svg);
+  el('path',{d:area,fill:css('--c-down-mark'),'fill-opacity':.14,'clip-path':'url(#cd)'},svg);
+  el('path',{d:line,fill:'none',stroke:css('--ink'),'stroke-width':2},svg);
+  // breakevens
+  for(let i=1;i<pts.length;i++){if(Math.sign(pts[i][1])!==Math.sign(pts[i-1][1])){const xx=x(pts[i][0]);el('line',{x1:xx,x2:xx,y1:y0-8,y2:y0+8,stroke:css('--c-magnet-mark'),'stroke-width':2},svg);txt(svg,xx+6,y0+18,'BE '+fmt(pts[i][0],0),{fill:css('--c-magnet')})}}
+  txt(svg,R-6,y(mx)+18,'max gain '+sgn(mx,0),{fill:css('--c-up'),'text-anchor':'end'});
+  txt(svg,L+4,y(mn)+16,'max loss '+sgn(mn,0),{fill:css('--c-down')});
+  // spot
+  el('line',{x1:x(last),x2:x(last),y1:T,y2:B,stroke:css('--ink'),'stroke-dasharray':'1 3'},svg);txt(svg,x(last)+4,T+12,'SPOT '+fmt(last,0),{fill:css('--ink')});
+  [24000,24200,24400,24600].forEach(s=>{if(W<420&&s%400)return;txt(svg,x(s)-18,H-8,fmt(s,0))});
+}
+
+function drawPositioning(svg){
+  const W=svg.clientWidth||600,H=svg.clientHeight||340;frame(svg,W,H);
+  const r=rng(41);const strikes=[];for(let s=24000;s<=24600;s+=50)strikes.push(s);
+  const L=16,R=W-72,T=28,B=H-28,mid=(T+B)/2;const bw=(R-L)/strikes.length;
+  const rows=strikes.map(s=>({s,c:(s>24300?1:0.3)*(r()*1.1+0.2)*(s===24450?2:1)*12,p:(s<24300?1:0.3)*(r()*1.1+0.2)*(s===24100?2:1)*12}));
+  const m=Math.max(...rows.map(o=>Math.max(o.c,o.p)));const k=(mid-T-8)/m;
+  el('line',{x1:L,x2:R,y1:mid,y2:mid,stroke:css('--ink-dim')},svg);
+  rows.forEach((o,i)=>{const xx=L+i*bw+bw*0.18,w=bw*0.64;el('rect',{x:xx,y:mid-o.c*k,width:w,height:o.c*k,fill:css('--c-call-mark')},svg);el('rect',{x:xx,y:mid,width:w,height:o.p*k,fill:css('--c-put-mark')},svg);if(i%(W<560?4:2)===0)txt(svg,xx-6,H-8,fmt(o.s,0))});
+  txt(svg,L,T-10,'C  CALL OI ADDED TODAY, LAKH',{fill:css('--c-call')});
+  txt(svg,L,B-4,'P  PUT OI ADDED TODAY',{fill:css('--c-put')});
+  [[`C ${fmt(m,1)}`,T+6],['0',mid+4],[`P ${fmt(m,1)}`,B-8]].forEach(([s,yy])=>txt(svg,R+6,yy,s));
+  const ax=L+((24312-24000)/50+0.5)*bw;el('line',{x1:ax,x2:ax,y1:T,y2:B,stroke:css('--ink'),'stroke-dasharray':'1 3'},svg);txt(svg,ax+4,T+12,'SPOT',{fill:css('--ink')});
+}
+
+/* TPO + composite */
+function drawTPO(svg){
+  const W=svg.clientWidth||600,H=svg.clientHeight||340;frame(svg,W,H);
+  const r=rng(77);const step=10,lo=24180,hi=24420;const rows=(hi-lo)/step+1;const T=16,B=H-24;const rh=(B-T)/rows;const y=v=>B-((v-lo)/step+0.5)*rh;
+  const periods='ABCDEFGHIJKLM'.split('');let c=24300;const prof={};const per=[];
+  periods.forEach((p,i)=>{const span=i<2?7:3+Math.floor(r()*4);let a=Math.round((c-span*step*(0.3+r()*0.4))/step)*step;a=Math.max(lo,a);const b=Math.min(hi,a+span*step);per.push([a,b]);for(let v=a;v<=b;v+=step){(prof[v]=prof[v]||[]).push(p)}c=(a+b)/2+(r()-0.42)*60});
+  // IB
+  const ibLo=Math.min(per[0][0],per[1][0]),ibHi=Math.max(per[0][1],per[1][1]);
+  // POC + VA
+  const keys=Object.keys(prof).map(Number).sort((a,b)=>a-b);let poc=keys[0];keys.forEach(k=>{if(prof[k].length>prof[poc].length)poc=k});
+  const total=keys.reduce((s,k)=>s+prof[k].length,0);let va=[poc,poc],acc=prof[poc].length;while(acc<total*0.7){const up=prof[va[1]+step]?.length||0,dn=prof[va[0]-step]?.length||0;if(up>=dn&&prof[va[1]+step]){va[1]+=step;acc+=up}else if(prof[va[0]-step]){va[0]-=step;acc+=dn}else break}
+  const axisW=64,compW=Math.min(200,W*0.28),tpoR=W-axisW-compW-16;const lw=Math.max(9,Math.min(16,(tpoR-60)/periods.length));const x0=48;
+  // value area fill
+  el('rect',{x:x0-6,y:y(va[1])-rh/2,width:tpoR-x0+6,height:(va[1]-va[0])/step*rh+rh,fill:css('--c-magnet-mark'),'fill-opacity':.1},svg);
+  [[va[1],'VAH'],[va[0],'VAL']].forEach(([v,l])=>{const yy=v===va[1]?y(v)-rh/2:y(v)+rh/2;el('line',{x1:x0-6,x2:tpoR,y1:yy,y2:yy,stroke:css('--c-magnet-mark')},svg);txt(svg,tpoR-30,v===va[1]?yy-4:yy+13,l,{fill:css('--c-magnet')})});
+  // single prints
+  keys.forEach(k=>{if(prof[k].length===1&&(k>va[1]||k<va[0])){el('rect',{x:x0-6,y:y(k)-rh/2,width:lw*3,height:rh,fill:`url(#sp${svg.id})`},svg)}});
+  const spK=keys.filter(k=>prof[k].length===1&&(k>va[1]||k<va[0]));if(spK.length)txt(svg,x0+lw*3+2,y(spK[spK.length-1])+4,'SP',{fill:css('--c-auction')});
+  // letters
+  const fam=css('--font-mono').split(',')[0].replace(/"/g,'');
+  keys.forEach(k=>{prof[k].forEach((p,j)=>{const ib=p==='A'||p==='B';const t=el('text',{x:x0+j*lw,y:y(k)+4,'font-family':fam,'font-size':12,'font-weight':ib?500:400,fill:ib?css('--c-auction'):css('--ink-dim')},svg);t.textContent=p})});
+  // POC
+  el('line',{x1:x0-6,x2:W-axisW,y1:y(poc),y2:y(poc),stroke:css('--c-magnet-mark'),'stroke-width':2},svg);tag(svg,Math.max(x0+prof[poc].length*lw+8,tpoR-46),y(poc),'POC',css('--c-magnet'));
+  // IB bracket
+  const by1=y(ibHi)-rh/2,by2=y(ibLo)+rh/2;el('path',{d:`M${x0-10} ${by1}H${x0-16}V${by2}H${x0-10}`,fill:'none',stroke:css('--c-auction-mark'),'stroke-width':2},svg);
+  txt(svg,x0-34,(by1+by2)/2+4,'IB',{fill:css('--c-auction')});
+  // price axis
+  for(let v=lo;v<=hi;v+=50){txt(svg,W-axisW+6,y(v)+4,fmt(v,0))}
+  // composite lane
+  const cx=tpoR+16;el('line',{x1:cx-8,x2:cx-8,y1:T,y2:B,stroke:css('--hairline')},svg);
+  txt(svg,cx,T-2+12,'5D COMPOSITE',{});
+  const r2=rng(9);const comp=[];for(let v=lo;v<=hi;v+=step){const d=(v-24290)/60;comp.push([v,Math.exp(-d*d)*0.8+Math.exp(-(((v-24400)/25)**2))*0.5+0.12+r2()*0.12])}
+  // LVN dip
+  comp.forEach(o=>{if(Math.abs(o[0]-24350)<15)o[1]*=0.25});
+  const cm=Math.max(...comp.map(o=>o[1]));comp.forEach(([v,q])=>el('rect',{x:cx,y:y(v)-rh/2+1,width:q/cm*(compW-24),height:Math.max(1,rh-2),fill:css('--c-auction-mark'),'fill-opacity':.35},svg));
+  const hvn=comp.reduce((a,b)=>b[1]>a[1]?b:a)[0];
+  const mk=(v,filled,l)=>{const yy=y(v),xx=W-axisW-12;el('path',{d:`M${xx} ${yy-5}L${xx+5} ${yy}L${xx} ${yy+5}L${xx-5} ${yy}Z`,fill:filled?css('--c-auction-mark'):css('--ground'),stroke:css('--c-auction-mark'),'stroke-width':1.5},svg);txt(svg,xx-36,yy+4,l,{fill:css('--c-auction')})};
+  mk(hvn,true,'HVN');mk(24350,false,'LVN');
+  // naked POC from prior day
+  const npy=y(24410);el('line',{x1:x0-6,x2:W-axisW,y1:npy,y2:npy,stroke:css('--c-magnet-mark'),'stroke-width':1.5,'stroke-dasharray':'2 3'},svg);
+  tag(svg,x0+lw*4,npy,'nPOC 13 NOV',css('--c-magnet'));
+}
+
+/* Footprint */
+function drawFootprint(svg){
+  const W=svg.clientWidth||600,H=svg.clientHeight||340;frame(svg,W,H);
+  const r=rng(23);const cols=Math.max(2,Math.min(7,Math.floor((W-88)/104))),rows=10,step=0.5,base=24307;const axisW=80,T=8,deltaH=56,B=H-24-deltaH;const cw=(W-axisW-8)/cols,rh=(B-T)/rows;
+  const fam=css('--font-mono').split(',')[0].replace(/"/g,'');
+  let cum=0;const cd=[];const stackTags=[];
+  for(let c=0;c<cols;c++){const mid=Math.floor(rows/2)+Math.round((r()-0.5)*2);const lo=Math.max(0,mid-4),hi=Math.min(rows-1,mid+3+Math.floor(r()*2));let d=0;let stack=0,stackStart=-1,stacks=[];
+    const isUp=c===cols-1||r()>0.45;const x0=8+c*cw;
+    el('rect',{x:x0+cw-6,y:T+(rows-1-hi)*rh,width:3,height:(hi-lo+1)*rh,fill:isUp?css('--c-up-mark'):css('--c-down-mark')},svg);
+    for(let i=lo;i<=hi;i++){const forced=c===cols-1&&i>=mid-1&&i<=mid+1;const bid=Math.round(20+r()*180),ask=forced?Math.round(bid*(3.2+r())):Math.round(bid*(0.4+r()*(isUp?1.9:1.2)));d+=ask-bid;const yy=T+(rows-1-i)*rh;
+      const imb=ask>=bid*3?'up':bid>=ask*3?'down':null;
+      if(imb){el('rect',{x:x0+3,y:yy+2,width:cw-14,height:rh-4,fill:'none',stroke:css(imb==='up'?'--c-up-mark':'--c-down-mark'),'stroke-width':1.5,rx:1},svg)}
+      if(imb==='up'){stack++;if(stack===1)stackStart=i;if(stack===3)stacks.push(stackStart)}else stack=0;
+      const fs=12;
+      const t=el('text',{x:x0+cw/2-3,y:yy+rh/2+fs*0.36,'text-anchor':'middle','font-family':fam,'font-size':fs,'font-weight':imb?500:400},svg);
+      const a=el('tspan',{fill:imb==='down'?css('--c-down'):css('--ink-dim')},t);a.textContent=bid;const xs=el('tspan',{fill:css('--ink-dim')},t);xs.textContent=' × ';const b=el('tspan',{fill:imb==='up'?css('--c-up'):css('--ink-dim')},t);b.textContent=ask;
+    }
+    stacks.forEach(s=>{const y1=T+(rows-1-(s+2))*rh+2,y2=T+(rows-1-s)*rh+rh-2;el('path',{d:`M${x0+1} ${y1}V${y2}`,stroke:css('--c-up-mark'),'stroke-width':2,fill:'none'},svg);stackTags.push((y1+y2)/2)});
+    cum+=d;cd.push(cum);
+    el('line',{x1:x0+cw,x2:x0+cw,y1:T,y2:H-24,stroke:css('--hairline')},svg);
+    const dy=B+18;txt(svg,x0+cw/2-3,dy,sgn(d),{'text-anchor':'middle',fill:d>=0?css('--c-up'):css('--c-down')});
+  }
+  // delta labels
+  el('line',{x1:0,x2:W,y1:B+2,y2:B+2,stroke:css('--hairline')},svg);
+  txt(svg,W-axisW+6,B+18,'DELTA');
+  // cum delta line
+  const cmin=Math.min(0,...cd),cmax=Math.max(0,...cd);const cy=v=>H-28-(v-cmin)/((cmax-cmin)||1)*(deltaH-32);
+  el('path',{d:'M'+cd.map((v,i)=>`${8+(i+0.5)*cw} ${cy(v)}`).join('L'),fill:'none',stroke:cd[cd.length-1]>=0?css('--c-up-mark'):css('--c-down-mark'),'stroke-width':1.5},svg);
+  cd.forEach((v,i)=>el('rect',{x:8+(i+0.5)*cw-2.5,y:cy(v)-2.5,width:5,height:5,fill:v>=0?css('--c-up-mark'):css('--ground'),stroke:v>=0?css('--c-up-mark'):css('--c-down-mark'),'stroke-width':1.2},svg));
+  txt(svg,W-axisW+6,H-30,'CUM');txt(svg,W-axisW+6,H-14,sgn(cd[cd.length-1]),{fill:cd[cd.length-1]>=0?css('--c-up'):css('--c-down')});
+  for(let i=0;i<rows;i+=1){const yy=T+(rows-1-i)*rh+rh/2;if(stackTags.some(t=>Math.abs(t-yy)<rh*1.6))continue;txt(svg,W-axisW+6,yy+4,fmt(base+i*step,1))}
+  stackTags.forEach(t=>tag(svg,W-axisW+2,t,'STACK 3',css('--c-up')));
+  ['10:26','10:27','10:28','10:29','10:30','10:31','10:32'].slice(-cols).forEach((t,i)=>txt(svg,8+i*cw+cw/2-18,H-6,t));
+}
+
+function domRows(){const r=rng(5);let rows='';const last=24312.5;const heat=['--heat-1','--heat-2','--heat-3','--heat-4','--heat-5','--heat-6'];
+  for(let i=12;i>=-12;i--){const px=last+i*0.5;const ask=i>0?Math.round(40+r()*400*(i===6?4:1)):'';const bid=i<0?Math.round(40+r()*400*(i===-8?4.5:1)):'';const sz=Number(ask||bid||0);const h=heat[Math.min(5,Math.floor(sz/300))];
+    const cls=i===0?'last':i===-3?'staged':'';
+    rows+=`<tr class="${cls}"><td class="up ${bid>900?'big':''}">${bid?fmt(bid,0):''}</td><td class="px" tabindex="0" aria-label="Stage order at ${fmt(px,2)}">${fmt(px,2)}</td><td class="down ${ask>900?'big':''}">${ask?fmt(ask,0):''}</td><td class="heat"><i style="--h:var(${h})" title="${fmt(sz,0)} lots"></i></td></tr>`}
+  return rows}
+
+/* ---------- screens ---------- */
+const SCREENS=[['workspace','Charts','⌥1'],['auction','Auction','⌥2'],['screener','Screener','⌥3']];
+function nav(){
+  const items=SCREENS.map(([k,l,n])=>`<a href="?screen=${k}${Q.get('theme')?'&theme='+Q.get('theme'):''}" ${k===SCREEN?'aria-current="page"':''}><b>${n}</b><span>${l}</span></a>`).join('');
+  $('#dock').innerHTML=items+`<a href="?screen=auction" style="margin-top:auto"><b>⌥4</b><span>Orders</span></a>`;$('#tabs').innerHTML=items;
+  const panes=SCREEN==='auction'?3:4;if(SCREEN==='screener')$('#layouts').style.display='none';
+  $('#layouts').innerHTML=[1,2,3,4,6,9,16].map(n=>`<button aria-pressed="${n===panes}" aria-label="${n} panes">${n}</button>`).join('');
+}
+function card({type,sw,stamp,time,title,body,facts,acts}){return `<article class="card"><div class="card-top"><span class="sw" style="--sw:var(${sw})"></span><span class="lab">${type}</span><span class="stamp ${stamp.toLowerCase()}">${stamp}</span><time class="num">${time}</time></div><h3>${title}</h3><p>${body}</p>${facts?`<div class="facts">${facts.map(([k,v,c])=>`<div><span class="lab">${k}</span><span class="num ${c||''}">${v}</span></div>`).join('')}</div>`:''}<div class="acts">${(acts||['Show on chart']).map((a,i)=>`<button class="ghost">${a}</button>`).join('')}</div></article>`}
+
+const RAIL={
+  workspace:[
+    {type:'Positioning',sw:'--c-call-mark',stamp:'RAC',time:'10:31',title:'Call writers added 18.2 lakh OI at 24,450',body:'The call wall moved up one strike since 10:00. Price has closed below a fresh call wall on 61% of past days like this.',facts:[['Call wall','24,450','call'],['Put wall','24,100','put'],['PCR','0.84']],acts:['Show on chart','Draft a spread']},
+    {type:'Structure',sw:'--c-magnet-mark',stamp:'CNF',time:'10:24',title:'Price accepted above yesterday’s value',body:'Two 30-minute periods held above VAH 24,290. When that happened before, the next session’s range sat above VAH 7 times in 10.',facts:[['VAH','24,290','magnet'],['POC','24,262','magnet'],['Samples','212']]},
+    {type:'Regime',sw:'--c-up-mark',stamp:'CNF',time:'09:45',title:'Expansion, day 6',body:'Breadth and credit spreads still read expansion. Forward 5-day return in this regime: median +0.6%.',facts:[['Regime','Expansion','up'],['Day','6'],['Median 5D','+0.6%','up']]},
+    {type:'Flow',sw:'--c-down-mark',stamp:'WL',time:'10:29',title:'Sellers absorbed at 24,280',body:'Four 1-minute bars printed −2,100 delta without a lower low. Too few past cases to grade.',facts:[['Δ 4 bars','−2,100','down'],['Low held','24,280'],['Samples','9']]},
+  ],
+  auction:[
+    {type:'Structure',sw:'--c-auction-mark',stamp:'CNF',time:'10:30',title:'Open drive up, IB 24,236 to 24,306',body:'A and B periods both extended higher with no return to the open. On open-drive days the open held as the low 78% of the time.',facts:[['IB range','70 pts','auction'],['Open type','Drive'],['Samples','388']]},
+    {type:'Structure',sw:'--c-auction-mark',stamp:'RAC',time:'10:30',title:'Single prints 24,330 to 24,350',body:'A thin area left above value. Price came back to fill single prints within two sessions in 64% of in-sample cases.',facts:[['From','24,330'],['To','24,350'],['Filled 2D','64%']]},
+    {type:'Flow',sw:'--c-up-mark',stamp:'RAC',time:'10:32',title:'Three stacked buy imbalances at 24,309',body:'Ask volume beat bid three times over on three adjacent prices. The level held as support in the next 30 minutes 58% of the time.',facts:[['Stack','3 rows','up'],['Cum Δ','+3,412','up'],['Held 30m','58%']]},
+    {type:'Magnet',sw:'--c-magnet-mark',stamp:'WL',time:'09:15',title:'Naked POC from 13 Nov at 24,410',body:'Yesterday’s point of control was never revisited. Not enough cases on this symbol to grade it yet.',facts:[['nPOC','24,410','magnet'],['Distance','+98'],['Samples','14']]},
+  ],
+  screener:[
+    {type:'Evidence',sw:'--c-up-mark',stamp:'CNF',time:'Run 10:31',title:'This screen held up out of sample',body:'Built on 2015–2021, tested on 2022–2026 with point-in-time data. No look-ahead: every criterion reads only what was known at the close.',facts:[['Hit rate','57%','up'],['Median 5D','+1.1%','up'],['Trades','1,906']]},
+    {type:'Lineage',sw:'--c-band-mark',stamp:'RAC',time:'v3',title:'Changed since v2: delivery % threshold',body:'The 20-day delivery average replaced a fixed 45% cut. The change was chosen in sample, so v3 is graded RAC until it has 6 months live.',facts:[['Versions','3'],['Since','14 Aug'],['Live trades','118']]},
+  ]
+};
+
+function workspace(){
+  $('#main').innerHTML=`<section class="ws g4" aria-label="Chart workspace">
+    <div class="pane" id="p1">${paneHead('01','NIFTY 50','<span class="lab ivl">5m</span>'+priceMeta(FX.spot,FX.chg,FX.pct),[{l:'Ladder',sw:'--c-call-mark',keep:1},{l:'Cone',sw:'--c-band-mark'},{l:'VWAP',sw:'--ink'}])}<div class="pane-body"><svg id="s1" role="img" aria-label="NIFTY 5 minute candles with option ladder, VWAP and implied range"></svg></div></div>
+    <div class="pane" id="p2" data-replay>${paneHead('02','BANKNIFTY','<span class="lab">15m</span>'+priceMeta(52118.2,-142.6,-0.27),[{l:'Vol',sw:'--c-up-mark'}])}<div class="pane-body"><span class="replay-tag">REPLAY · 14 NOV 10:32 IST</span><svg id="s2" role="img" aria-label="BANKNIFTY in replay at 10:32, later bars hidden"></svg></div></div>
+    <div class="pane" id="p3">${paneHead('03','Strategy','<span class="lab">Spread + short put</span>',[{l:'At expiry',keep:1},{l:'Today',on:false}])}<div class="pane-body"><svg id="s3" role="img" aria-label="Strategy payoff at expiry with implied range"></svg></div></div>
+    <div class="pane" id="p4">${paneHead('04','Positioning','<span class="lab">NIFTY 27 Nov</span>',[{l:'OI Δ',sw:'--c-call-mark'},{l:'OI',on:false}])}<div class="pane-body"><svg id="s4" role="img" aria-label="Call and put open interest added today by strike"></svg></div></div>
+  </section>`;
+  const draw=()=>{drawPrice($('#s1'),{seed:3,ladder:true,cone:true,vwap:true,spot:FX.spot});drawPrice($('#s2'),{seed:11,n:60,start:52200,vol:45,replayAt:41});drawPayoff($('#s3'));drawPositioning($('#s4'))};
+  return draw;
+}
+function auction(){
+  $('#main').innerHTML=`<section class="ws g3" aria-label="Auction workspace">
+    <div class="pane">${paneHead('01','NIFTY 50','<span class="lab">30m TPO</span>'+priceMeta(24312.45,86.3,0.36),[{l:'TPO',sw:'--c-auction-mark',keep:1},{l:'Value',sw:'--c-magnet-mark'},{l:'Composite',sw:'--c-auction-mark'}])}<div class="pane-body"><svg id="t1" role="img" aria-label="Market profile with value area, POC, initial balance and 5 day composite"></svg></div></div>
+    <div class="pane">${paneHead('02','NIFTY FUT','<span class="lab">1m footprint</span>',[{l:'Bid×Ask',keep:1},{l:'Δ',sw:'--c-up-mark'}])}<div class="pane-body"><svg id="t2" role="img" aria-label="Footprint, bid by ask volume per price with imbalances and delta"></svg></div></div>
+    <div class="pane">${paneHead('03','NIFTY 27 NOV FUT','<span class="lab">DOM</span><span class="spacer"></span><span class="legend" aria-label="Liquidity scale, lots"><span class="lab">LOTS 0</span>'+[1,2,3,4,5,6].map(i=>`<i style="--h:var(--heat-${i})"></i>`).join('')+'<span class="lab">1.5K+</span></span>',[])}<div class="pane-body"><div class="dom-wrap"><table class="dom"><thead><tr><th>BID</th><th style="text-align:center">PRICE</th><th>ASK</th><th>LOTS</th></tr></thead><tbody>${domRows()}</tbody></table></div>
+      <div class="ticket" role="region" aria-label="Staged order"><div class="what"><em>STAGED</em>NIFTY 27 NOV FUT · BUY 2 lots (150 qty) @ 24,311.00 LMT · NRML</div><div class="btns"><button class="ghost">Clear <span class="lab">Esc</span></button><button class="primary">Confirm order <span class="lab" style="color:inherit">↵</span></button></div><div class="why"><span class="up">● Broker linked.</span> Nothing is sent until you confirm. Margin 2.31 L, within today’s limit.</div></div>
+      </div></div>
+  </section>`;
+  return()=>{drawTPO($('#t1'));drawFootprint($('#t2'));const w=$('.dom-wrap'),l=$('.dom tr.last');if(w&&l)w.scrollTop=l.offsetTop-w.clientHeight/2};
+}
+function screener(){
+  const rows=[['TATAMOTORS',948.3,1.8,'Delivery 61% vs 44% avg · above weekly VAH','CNF',57],['HDFCBANK',1711.1,0.6,'Delivery 58% vs 47% · accepted above VAH Tue','CNF',61],['LT',3622.0,-0.4,'Delivery 52% vs 41% · inside value, near VAH','RAC',49],['SUNPHARMA',1802.5,1.1,'Delivery 66% vs 50% · above VAH 3 sessions','CNF',58],['COALINDIA',412.9,-1.2,'Delivery 49% vs 38% · VAH test failed','WL',44],['ITC',476.15,0.3,'Delivery 63% vs 55% · above VAH','RAC',52]];
+  $('#main').innerHTML=`<section class="scr" aria-label="Screener">
+    <div class="builder"><span class="lab">Screen 03 · v3 · Nifty 200</span><h1>Accumulation above value</h1>
+      <div class="ask"><input value="Nifty 200 stocks where delivery % beats its 20-day average and price closed above weekly VAH" aria-label="Describe the screen in plain words"><button class="primary" style="height:48px">Parse and run</button></div>
+      <div class="crit" role="table" aria-label="Parsed criteria"><span class="lab hd">#</span><span class="lab hd">Field</span><span class="lab hd">Test</span><span class="lab hd">Value</span><span class="lab hd src" style="font-size:12px;color:var(--ink-dim)">From your words</span>
+        <span class="num">1</span><span>Universe</span><span class="op">in</span><span>Nifty 200, point in time</span><span class="src">“Nifty 200 stocks”</span>
+        <span class="num">2</span><span>Delivery %</span><span class="op">&gt;</span><span>20-day average</span><span class="src">“delivery % beats its 20-day average”</span>
+        <span class="num">3</span><span>Close</span><span class="op">&gt;</span><span class="magnet">Weekly VAH</span><span class="src">“closed above weekly VAH”</span></div></div>
+    <div class="results"><div class="results-head"><h2>14 match today</h2><span class="lab">Close 13 Nov · read as of 15:30 IST</span></div>
+      <table class="res"><thead><tr><th>Symbol</th><th class="r">Last</th><th class="r">Chg</th><th class="hide-s">Why it matched</th><th class="hide-s">20D</th><th>Grade</th><th class="r hide-s">Hit 5D</th></tr></thead><tbody>
+      ${rows.map(([s,l,c,w,g,h],i)=>`<tr><td class="sym">${s}</td><td class="r num">${fmt(l)}</td><td class="r num ${c>=0?'up':'down'}">${sgn(c,1)}%</td><td class="why-list hide-s">${w}</td><td class="hide-s"><svg width="96" height="24" id="sp${i}" aria-hidden="true"></svg></td><td><span class="stamp ${g.toLowerCase()}">${g}</span></td><td class="r num hide-s">${h}%</td></tr>`).join('')}
+      </tbody></table></div>
+  </section>`;
+  return()=>{rows.forEach((r_,i)=>{const s=$('#sp'+i);s.innerHTML='';const d=bars(100+i,20,100,2);const lo=Math.min(...d.map(b=>b.c)),hi=Math.max(...d.map(b=>b.c));const y=v=>21-(v-lo)/(hi-lo||1)*18;const up=d[19].c>=d[0].c;el('path',{d:'M'+d.map((b,j)=>`${2+j*4.8} ${y(b.c)}`).join('L'),fill:'none',stroke:up?css('--c-up-mark'):css('--c-down-mark'),'stroke-width':1.5,'stroke-dasharray':up?'none':'3 2'},s)})};
+}
+
+function strip(){
+  const replay=SCREEN==='workspace';
+  $('#strip').innerHTML=replay?`<button aria-label="Step back one bar">[</button><button aria-label="Play replay">▶&#xFE0E;</button><button aria-label="Step forward one bar">]</button><span class="lab hide-s">02 REPLAY</span><div class="scrub"><svg id="scrub" aria-label="Replay position 10:32 of session"></svg></div><span class="num">10:32</span><span class="lab hide-m">Space play · [ ] step</span><button class="ghost" style="width:auto;padding:0 12px">Back to live</button>`
+    :`<span class="lab">Session</span><div class="scrub"><svg id="scrub" aria-hidden="true"></svg></div><span class="num">10:32:14</span>`;
+}
+function drawScrub(){const s=$('#scrub');if(!s)return;const W=s.clientWidth,H=s.clientHeight;s.setAttribute('viewBox',`0 0 ${W} ${H}`);s.innerHTML='';const m=H/2;el('line',{x1:0,x2:W,y1:m,y2:m,stroke:css('--hairline'),'stroke-width':2},s);const p=W*(77/375);el('line',{x1:0,x2:p,y1:m,y2:m,stroke:css('--ink'),'stroke-width':2},s);
+  if(SCREEN==='workspace'){el('rect',{x:p,y:m-6,width:W-p,height:12,fill:`url(#hatchscrub)`,'fill-opacity':.5},s);const d=el('defs',{},s);const h=el('pattern',{id:'hatchscrub',width:6,height:6,patternUnits:'userSpaceOnUse',patternTransform:'rotate(45)'},d);el('line',{x1:0,y1:0,x2:0,y2:6,stroke:css('--c-band-mark'),'stroke-width':1.2},h);el('rect',{x:p-2,y:m-9,width:4,height:18,fill:css('--ink')},s)}
+  else el('rect',{x:p-1,y:m-6,width:2,height:12,fill:css('--ink')},s);
+  [['09:15',0],['11:00',.28],['13:00',.6],['15:30',1]].forEach(([t,f],i)=>{if(W<360)return;const xx=f*W;el('line',{x1:xx,x2:xx,y1:m-4,y2:m,stroke:css('--ink-dim')},s);const tt=el('text',{x:Math.min(Math.max(xx,0),W),y:m-7,'text-anchor':i===0?'start':i===3?'end':'middle','font-family':'Martian Mono','font-size':12,fill:css('--ink-dim')},s);tt.textContent=t})}
+
+nav();strip();
+const draw=({workspace,auction,screener})[SCREEN]();
+$('#rail').innerHTML=RAIL[SCREEN].map(card).join('');$('#rail-count').textContent=RAIL[SCREEN].length+' new';
+$('#rail-title').textContent=SCREEN==='screener'?'Evidence':'Insights';
+$('#peek').textContent=RAIL[SCREEN][0].title;
+const heads=[...document.querySelectorAll('.ws .pane-head')];if(heads.length)$('#pswitch').innerHTML=`<button aria-label="Previous pane">‹</button><span><span class="num">01/${String(heads.length).padStart(2,'0')}</span> ${heads[0].querySelector('.sym').textContent}</span><button aria-label="Next pane">›</button>`;else $('#pswitch').remove();
+const all=()=>{draw();drawScrub()};
+new ResizeObserver(()=>requestAnimationFrame(all)).observe(document.body);
+const themeLabel=()=>{const dk=document.documentElement.dataset.theme==='dark';$('#theme').textContent=dk?'Light theme':'Dark theme'};themeLabel();
+$('#theme').onclick=()=>{const d=document.documentElement;d.dataset.theme=d.dataset.theme==='dark'?'light':'dark';themeLabel();all()};
+document.fonts?.ready.then(all);
+addEventListener('keydown',e=>{if(e.key==='/'&&document.activeElement!==$('#cmd')){e.preventDefault();$('#cmd').focus()}});
+</script>
+</body>
+</html>
