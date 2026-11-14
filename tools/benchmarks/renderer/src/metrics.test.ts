@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { frameStats, summarise } from "./metrics.ts";
+import { frameStats, runStatus, summarise, TICK_FLOOR } from "./metrics.ts";
 import { SESSIONS } from "./load.ts";
 import { BAR_SECONDS, ticksPerSecond } from "./replay.ts";
 
@@ -34,6 +34,21 @@ test("3 repeats are judged against the frame limits: p95 16.7, p99.9 33, at most
   assert.equal(summarise([good, good, { ...good, p95: 17 }]).status, "fail");
   assert.equal(summarise([good, good, { ...good, over50ms: 4 }]).status, "fail");
   assert.equal(summarise([good, good, { ...good, over50ms: 3 }]).status, "pass");
+});
+
+const run = { ...good, pageErrors: [] as string[], ticksPerSecDelivered: 30 };
+
+test("only an unmodified preset session can pass; a shortened or quick run within limits is incomplete", () => {
+  assert.equal(runStatus([run, run, run], 30, true), "pass");
+  assert.equal(runStatus([run, run, run], 30, false), "incomplete");
+  assert.equal(runStatus([run, run, { ...run, p95: 17 }], 30, false), "fail");
+});
+
+test("a page error, a tick shortfall or an errored run voids the verdict", () => {
+  assert.equal(runStatus([run, run, { ...run, pageErrors: ["draw threw"] }], 30, true), "error");
+  assert.equal(runStatus([run, run, { ...run, ticksPerSecDelivered: 30 * TICK_FLOOR - 0.01 }], 30, true), "error");
+  assert.equal(runStatus([run, run, { ...run, ticksPerSecDelivered: 30 * TICK_FLOOR }], 30, true), "pass");
+  assert.equal(runStatus([run, run, { error: "ERROR: boom" }], 30, true), "error");
 });
 
 test("sessions: the budget session is 16 charts for 600 s x 3 at 60x, the footprint session is 4 charts", () => {

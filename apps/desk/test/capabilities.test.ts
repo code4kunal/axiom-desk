@@ -8,7 +8,7 @@ import { callCapability, CapabilityCallError } from "../src/desk/capabilities.ts
 // The API is a separate process; this stub stands in for it and records what the route sent.
 type Seen = { url: string; headers: IncomingHttpHeaders; body: string };
 let seen: Seen[] = [];
-let reply: { status: number; body: unknown } = { status: 200, body: {} };
+let reply: { status: number; body: unknown; text?: string } = { status: 200, body: {} };
 let api: Server;
 
 before(async () => {
@@ -17,8 +17,8 @@ before(async () => {
     req.on("data", (chunk: Buffer) => (body += chunk.toString()));
     req.on("end", () => {
       seen.push({ url: req.url ?? "", headers: req.headers, body });
-      res.writeHead(reply.status, { "content-type": "application/json" });
-      res.end(JSON.stringify(reply.body));
+      res.writeHead(reply.status, { "content-type": reply.text === undefined ? "application/json" : "text/plain" });
+      res.end(reply.text ?? JSON.stringify(reply.body));
     });
   });
   await new Promise<void>((resolve) => api.listen(0, "127.0.0.1", resolve));
@@ -141,6 +141,15 @@ test("any other 403 is not reported as not entitled", async () => {
   const refused = await callCapability("runs_latest", { kind: "regime" }, browserFetch).catch((e: unknown) => e);
   assert.ok(refused instanceof CapabilityCallError);
   assert.equal(refused.notEntitled, false);
+});
+
+// An unhandled API exception comes back as the framework's plain-text 500, not JSON.
+test("a plain-text API 500 reaches the browser caller as a CapabilityCallError", async () => {
+  reply = { status: 500, body: null, text: "Internal Server Error" };
+  const failed = await callCapability("runs_latest", { kind: "regime" }, browserFetch).catch((e: unknown) => e);
+  assert.ok(failed instanceof CapabilityCallError);
+  assert.equal(failed.status, 500);
+  assert.equal(failed.notEntitled, false);
 });
 
 test("an unreachable API is 502", async () => {

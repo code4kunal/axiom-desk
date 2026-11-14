@@ -129,6 +129,36 @@ def test_incremental_update_equals_full_recompute(name: str) -> None:
         assert step == {key: values[-1] for key, values in full.items()}, f"bar {k}"
 
 
+def flat_tail(bars: list[Bar], n: int = 250) -> list[Bar]:
+    """A locked-at-circuit run: H = L = C = last close, zero volume, at the golden's bar spacing."""
+    last, step = bars[-1], bars[-1].ts - bars[-2].ts
+    flat = [
+        Bar(last.ts + step * k, last.close, last.close, last.close, last.close, 0.0, oi=last.oi)
+        for k in range(1, n + 1)
+    ]
+    return bars + flat
+
+
+@pytest.mark.parametrize("name", sorted(REGISTRY))
+def test_flat_zero_volume_bars_never_divide_by_zero(name: str) -> None:
+    g = load(name)
+    out = compute(name, flat_tail(golden_bars(g)), calendar=golden_calendar(g), **g["params"])
+    bad = [
+        f"{k}[{i}]={v}"
+        for k, vs in out.items()
+        for i, v in enumerate(vs)
+        if v is not None and not math.isfinite(v)
+    ]
+    assert not bad, bad[:5]
+
+
+def test_range_oscillators_read_zero_on_a_flat_range() -> None:
+    # TA-Lib's TA_IS_ZERO guard: an empty high-low range gives 0, not a division error.
+    bars = flat_tail(seeded_bars())
+    assert compute("williams_r", bars, period=14)["williams_r"][-1] == 0.0
+    assert compute("stochastic", bars)["k"][-1] == 0.0
+
+
 SESSION = load("session_vwap")
 
 

@@ -33,3 +33,17 @@ export function summarise(runs: Pick<FrameStats, "p95" | "p999" | "over50ms">[])
   const ok = runs.every((r) => r.p95 <= LIMITS.p95 && r.p999 <= LIMITS.p999 && r.over50ms <= LIMITS.over50ms);
   return { status: ok ? "pass" : "fail" };
 }
+
+// shortcut: 95% is a guess at setInterval jitter on a healthy run, tune it from the first real budget runs.
+export const TICK_FLOOR = 0.95;
+
+export type Run = Pick<FrameStats, "p95" | "p999" | "over50ms"> & { pageErrors: string[]; ticksPerSecDelivered: number };
+
+/** One renderer's verdict. A page error or a tick shortfall voids the run, and only an unmodified preset session can pass. */
+export function runStatus(runs: (Run | { error: unknown })[], tps: number, atPreset: boolean): "error" | "incomplete" | "pass" | "fail" {
+  const broken = (r: Run | { error: unknown }) =>
+    "error" in r || r.pageErrors.length > 0 || r.ticksPerSecDelivered < TICK_FLOOR * tps;
+  if (runs.some(broken)) return "error";
+  const { status } = summarise(runs as Run[]);
+  return status === "pass" && !atPreset ? "incomplete" : status;
+}

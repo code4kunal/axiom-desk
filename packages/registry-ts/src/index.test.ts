@@ -35,8 +35,20 @@ test("raises with the status and server message on refusal", async () => {
   );
 });
 
+// A probe capability with a concrete output: every real output is still `unknown`, which would make the check
+// below pass even if callCapability dropped the output type. The check itself runs under `pnpm typecheck`.
+declare module "./generated.ts" {
+  interface CapabilityInputs {
+    typing_probe: { id: string };
+  }
+  interface CapabilityOutputs {
+    typing_probe: { score: number };
+  }
+}
+
 test("types the envelope value with the capability's output", () => {
-  type Returned = Awaited<ReturnType<typeof callCapability<"runs_latest">>>;
-  const typed: Equal<Returned, Envelope<CapabilityOutputs["runs_latest"]>> = true;
-  assert.equal(typed, true);
+  type Returned = Awaited<ReturnType<typeof callCapability<"typing_probe">>>;
+  const typed: Equal<Returned, Envelope<CapabilityOutputs["typing_probe"]>> = true;
+  const value: Equal<Returned["value"], { score: number }> = true;
+  assert.ok(typed && value);
 });

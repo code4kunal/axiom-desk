@@ -3,12 +3,13 @@
 //   pnpm bench [custom scichart] [--session=budget|footprint] [--seconds=20] [--tps=20] [--charts=8]
 //              [--repeats=3] [--replay=60] [--profile=<hardware name>] [--out=file.jsonl] [--port=5199]
 // --session=budget is the 16-chart, 600 s, 3-repeat, 60x run; --session=footprint is the 4-footprint-chart run.
-// Without --session the run is the quick 8-chart check, one repeat, and reports "incomplete".
+// Without --session the run is the quick 8-chart check and reports "incomplete" (or "fail"); so does a
+// session with any dimension overridden. A page error or tick shortfall reports "error".
 import { appendFileSync } from "node:fs";
 import os from "node:os";
 import { chromium } from "playwright";
 import { SESSIONS, type Session } from "./src/load.ts";
-import { frameStats, summarise } from "./src/metrics.ts";
+import { frameStats, runStatus } from "./src/metrics.ts";
 import { ticksPerSecond } from "./src/replay.ts";
 
 const args = process.argv.slice(2);
@@ -25,6 +26,9 @@ const repeats = Number(flags.repeats ?? preset.repeats);
 const speed = Number(flags.replay ?? preset.speed);
 // Replay speed sets the tick rate (30 ticks per bar); the quick run keeps its fixed 20 ticks/s.
 const tps = Number(flags.tps ?? (speed ? ticksPerSecond(30, speed) : 20));
+// Overriding any preset dimension makes the run a probe: it can fail but never pass the budget.
+const atPreset = preset !== quick && charts === preset.charts && seconds === preset.seconds &&
+  repeats === preset.repeats && speed === preset.speed && flags.tps === undefined;
 const qs = new URLSearchParams({ seconds: String(seconds), tps: String(tps), charts: String(charts), history: flags.history ?? "20000" });
 
 // Installed Chrome: the browser the desk runs, and no Playwright browser download.
@@ -85,10 +89,9 @@ try {
       }
       await page.close();
     }
-    const ok = runs.filter((x): x is Exclude<typeof x, { error: string | null }> => !("error" in x));
     const line = JSON.stringify({
       renderer: r, load: preset.load, charts, seconds, replaySpeed: speed, tps, repeats: runs.length,
-      status: ok.length < runs.length ? "error" : summarise(ok).status, hardware, runs,
+      status: runStatus(runs, tps, atPreset), hardware, runs,
     });
     console.log(line);
     if (flags.out) appendFileSync(flags.out, `${line}\n`);

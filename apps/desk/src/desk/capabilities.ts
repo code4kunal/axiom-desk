@@ -32,10 +32,12 @@ export async function callCapability<N extends CapabilityName>(
     headers: { "content-type": "application/json" },
     body: JSON.stringify(input),
   });
-  const body: unknown = await response.json();
+  // An unhandled API exception arrives as a plain-text 500; it must still surface as a CapabilityCallError.
+  const body: unknown = await response.json().catch(() => undefined);
   if (!response.ok) {
-    const error = (body as { error?: unknown }).error;
-    throw new CapabilityCallError(response.status, typeof error === "string" ? error : JSON.stringify(error));
+    const error = (body as { error?: unknown } | undefined)?.error;
+    const message = typeof error === "string" ? error : error === undefined ? response.statusText : JSON.stringify(error);
+    throw new CapabilityCallError(response.status, message);
   }
   return body as Envelope<CapabilityOutputs[N]>;
 }
