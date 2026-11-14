@@ -141,6 +141,24 @@ def test_date_past_horizon_raises_horizon_error(calendar: TradingCalendar) -> No
         calendar.sessions_in_range("equity", horizon - timedelta(days=5), past_horizon)
 
 
+def test_horizon_message_names_the_end_that_was_crossed(calendar: TradingCalendar) -> None:
+    """Before COVERAGE_START says so, whether by direct ask or by a backward search."""
+    before = calendar.start_date - timedelta(days=1)
+    with pytest.raises(CalendarHorizonExceeded, match="before the start of") as e1:
+        calendar.get_session("equity", before)
+    assert e1.value.horizon == calendar.start_date
+
+    first_open = datetime(2019, 1, 1, 8, 0, tzinfo=IST)  # nothing earlier to find
+    with pytest.raises(CalendarHorizonExceeded, match="before the start of"):
+        calendar.previous_session("equity", first_open)
+
+    with pytest.raises(CalendarHorizonExceeded, match="past the end of"):
+        calendar.get_session("equity", calendar.horizon + timedelta(days=1))
+    last = datetime(2026, 12, 31, 16, 0, tzinfo=IST)
+    with pytest.raises(CalendarHorizonExceeded, match="past the end of"):
+        calendar.next_session("equity", last)
+
+
 def test_reference_rows_carry_synthetic_flag_and_calendar_reports_it() -> None:
     """Every holiday and special-session row has the flag; unverified rows give limitations."""
     import csv

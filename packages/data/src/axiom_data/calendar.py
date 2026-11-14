@@ -26,9 +26,12 @@ class CalendarHorizonExceeded(RuleUnknown):
     """Raised when date is past covered holiday horizon or before history start (R5, B3)."""
 
     def __init__(self, asked_date: date, horizon: date) -> None:
+        # horizon is the boundary that was crossed: COVERAGE_START when asked_date is before it.
+        where = "before the start of" if asked_date < horizon else "past the end of"
         Refused.__init__(
             self,
-            f"calendar horizon exceeded: {asked_date} is past published holiday coverage {horizon}",
+            f"calendar horizon exceeded: {asked_date} is {where} published holiday coverage "
+            f"{horizon}",
         )
         self.rule = "trading_calendar"
         self.on = asked_date
@@ -147,7 +150,9 @@ class TradingCalendar:
         return self._start_date
 
     def _check_horizon(self, d: date) -> None:
-        if d < self._start_date or d > self._horizon_date:
+        if d < self._start_date:
+            raise CalendarHorizonExceeded(d, self._start_date)
+        if d > self._horizon_date:
             raise CalendarHorizonExceeded(d, self._horizon_date)
 
     def _check_segment(self, segment: str, d: date) -> None:
