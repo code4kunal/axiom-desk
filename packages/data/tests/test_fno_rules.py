@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 from axiom_core.authz import Refused
 from axiom_data.fno_rules import FnoRulesEngine, MalformedRule
+from axiom_data.instruments import InstrumentStore
 from axiom_data.pointintime import EffectiveDatedRow, RuleUnknown
 
 
@@ -310,3 +311,20 @@ def test_every_change_date_day_before_and_day_of(fno: FnoRulesEngine) -> None:
     pl_curr = fno.get_contract_rules("NSE", "NIFTY", on=date(2025, 12, 6)).position_limit_rule
     assert pl_prev == "500cr_or_15pct_oi"
     assert pl_curr == "1500cr_net"
+
+
+def test_banned_stock_through_contract_rules_is_banned(
+    fno: FnoRulesEngine, conn: sqlite3.Connection
+) -> None:
+    """The ban list is keyed by instrument id; the underlying symbol is mapped first."""
+    path = Path(__file__).parent / "fixtures" / "instruments.json"
+    InstrumentStore(conn).load_fixture_data(json.loads(path.read_text(encoding="utf-8")))
+    assert fno.get_contract_rules("NSE", "RELIANCE", on=date(2024, 8, 1)).is_banned is True
+    assert fno.get_contract_rules("NSE", "RELIANCE", on=date(2024, 8, 2)).is_banned is False
+
+
+def test_unmapped_underlying_ban_status_is_unknown(fno: FnoRulesEngine) -> None:
+    """No symbol-to-id mapping: never report False, say unknown and why."""
+    rules = fno.get_contract_rules("NSE", "RELIANCE", on=date(2024, 8, 1))
+    assert rules.is_banned is None
+    assert any("ban status unknown" in lim for lim in rules.limitations)

@@ -15,6 +15,7 @@ from axiom_core.authz import Refused
 from axiom_core.envelope import Source
 
 from axiom_data.calendar import TradingCalendar
+from axiom_data.instruments import InstrumentStore
 from axiom_data.pointintime import (
     IST,
     EffectiveDatedRow,
@@ -531,11 +532,16 @@ class FnoRulesEngine:
                 is_verified = False
 
         # 6. Ban status
+        # The ban list is keyed by instrument id, so map the underlying symbol first.
         banned: bool | None = None
-        try:
-            banned = self.is_banned(exchange, underlying, on_date)
-        except RuleUnknown:
-            banned = None
+        inst = InstrumentStore(self._conn).resolve_identifier("symbol", underlying, on_date)
+        if inst is None:
+            limitations.append(f"ban status unknown: no instrument id for {underlying}")
+        else:
+            try:
+                banned = self.is_banned(exchange, inst.instrument_id, on_date)
+            except RuleUnknown:
+                banned = None
 
         if not is_verified and "unverified rule" not in limitations:
             limitations.append("unverified rule")
