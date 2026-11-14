@@ -15,7 +15,7 @@ execution: code
 - **Objective:** A desk trader opens one chart and gets everything needed to decide on an Indian F&O or equity instrument: price, strikes, positioning, volatility, and what the evidence says, each with its base rate. The desk stops opening TradingView for charts, Sensibull, Opstra or Tradl for position building, and GoCharting for market profile and order flow.
 - **Means:** An options-native chart with strikes on the price axis and the strategy builder on the chart. An insight rail driven by a quant-specified detector catalogue. Cross-stock pattern twins. An AI screener builder that backtests itself. One auction model per instrument that reads market profile, volume profile and order flow across nested timeframes, with a DOM ladder that sends confirmed orders through the broker. Point-in-time replay across all of it.
 - **Product authority:** Extends `docs/plans/2026-11-12-1110-feat-axiom-desk-platform-plan.md` (the platform plan), platform units U14–U17, and proposes amendments to R12, R14, R20, R49, R56, R110, R116, R126, platform KTD6, platform units U7, U12, U14–U19, U21 and U25, gates G1, G2 and G5, and PR5 sequencing, listed under Platform Plan Amendments. Platform R-IDs are not edited here. New IDs continue the platform plan's sequences: R155+, F11+, AE21+. Where this contract and the platform plan disagree, the platform plan stands until an amendment is accepted into it.
-- **Execution profile:** four PRs (PR1–PR4 under Implementation Units). PR1 is buildable now. PR2 waits on the renderer decision and G5, PR3 on platform U7, U8, U9, U11, U12, U15, U19, U21 drafts and U25, PR4 on the G1 tick-by-tick feed and platform U21.
+- **Execution profile:** four PRs (PR1–PR4 under Implementation Units). PR1 is buildable now. PR2 waits on the renderer decision and G5, PR3 on platform U7, U8, U9, U11, U12, U15, U19, U21 drafts, U22 money-flow and sector rank, and U25, PR4 on the G1 tick-by-tick feed and platform U21.
 - **Stop conditions:** stop and report if a settled decision proves infeasible in the build, if a golden value cannot be matched to its reference formula, or if the R191 or R218 frame budget fails on the named hardware profile.
 - **Open blockers:**
   - The platform U14 renderer decision is open. SciChart was not run (no licence key), the R126 timed tasks were not run (no named desk testers), and 16 charts with the rail open has never been measured.
@@ -28,7 +28,7 @@ execution: code
 
 ## Product Contract
 
-The Product Contract below keeps its stable IDs. Planning revised R206 and added R219–R226 after the user confirmed them in the scoping synthesis; nothing else changed meaning.
+The Product Contract below keeps its stable IDs. Planning revised R206 and added R219–R226 after the user confirmed them in the scoping synthesis. After the 2026-11-14 document review the user accepted changes to R226 (uncalibrated tier) and R215 (working orders); nothing else changed meaning.
 
 ### Summary
 
@@ -114,7 +114,7 @@ Uses the platform plan's actors: A1 desk user (traders, PMs, analysts, quants) a
 - R200. The V1 equity detector catalogue covers the three equity questions in R166: R16 chart patterns with their forward outcomes, accumulation from delivery percentage and institutional-flow changes (R133, never naming entities per R77), and sector-relative rank (R135). It carries the same calibration tags as R169.
 - R170. Every insight opens an evidence card per R86–R93: base rate, sample, confidence interval, out-of-sample status, and what followed past occurrences, failures included. Otherwise it shows insufficient evidence per R95.
 - R171. Each insight tells its story in plain language: what changed, against what normal, what historically followed, and what would invalidate it. The text never uses buy, sell, favourable or assured wording (R17, R77).
-- R226. The insight stream controls false discoveries across each instrument's emissions for the day, and an insight that fails the control is not streamed.
+- R226. The insight stream controls false discoveries across each instrument's emissions for the day, deciding each insight once when it arrives, and an insight that fails the control is not streamed. Uncalibrated emissions have no p-value: they stream in a separate tier labelled "uncalibrated", outside significance ranking and outside the control.
 - R172. Selecting an insight highlights its strike, level or time on the chart, and selecting a chart object shows the insights attached to it.
 
 **Pattern twins and stories**
@@ -185,7 +185,7 @@ Uses the platform plan's actors: A1 desk user (traders, PMs, analysts, quants) a
 
 **Orders from the chart**
 
-- R215. A DOM ladder shows depth by price. Clicking a price stages a priced order, and one explicit confirm in Axiom sends it through the broker integration. Each send records who confirmed it and when. Until G2 clears the broker-API path, the confirm creates a ticket draft per R55.
+- R215. A DOM ladder shows depth by price. Clicking a price stages a priced order, and one explicit confirm in Axiom sends it through the broker integration. Each send records who confirmed it and when. Working orders show on the ladder at their price with their fill state, and the user can cancel or modify them there; a modify goes through the same confirm. Until G2 clears the broker-API path, the confirm creates a ticket draft per R55.
 - R216. The agent can stage an order but never confirm one. Replay never sends a live order (R196).
 
 **Layout, speed and ease**
@@ -337,11 +337,12 @@ Proposed changes to `docs/plans/2026-11-12-1110-feat-axiom-desk-platform-plan.md
 - **platform U18:** owns the screener builder (R177–R183, R199). The platform plan has no screen-efficacy or screen-backtest requirement today.
 - **platform U19:** keeps the strategy engine (R38, R81). The on-chart builder surface (R156–R158, R164, R187) moves to platform U17.
 - **platform U25:** owns the agent actions in R194 and the stage-only rule in R216.
-- **platform U21:** owns the order path in R215: staging, the Axiom confirm, broker send and the record of who confirmed.
+- **platform U21:** owns the order path in R215: staging, the Axiom confirm, broker send, working-order cancel and modify, and the record of who confirmed.
+- **platform U22:** the R133 money-flow inputs (delivery percentage, institutional-flow changes) and the R135 sector-relative rank move ahead of this plan's PR3, so the R200 equity detectors do not wait on platform PR7.
 - **G1:** adds a tick-by-tick and depth feed for index and liquid stock futures (R205).
 - **G2:** adds legal review of sending confirmed orders through the broker API (R215).
 - **G5:** `DESIGN.md` adds chart-pane tokens: ladder, rail, payoff, cone and evidence card.
-- **PR5 sequencing:** platform U17 and U18 now depend on platform U7 as-of reads and the platform U12 detector registry. This plan's PR3 also needs platform U19's strategy engine, platform U21's drafts and validators, and platform U25's agent runtime, which sit in platform PR6 after PR5. Platform PR6 must land platform U19, U21 drafts and U25 before this plan's PR3, so the platform plan reorders them or splits PR6. This plan's PR1 and PR2 need none of it.
+- **PR5 sequencing:** platform U17 and U18 now depend on platform U7 as-of reads and the platform U12 detector registry. This plan's PR3 also needs platform U19's strategy engine, platform U21's drafts and validators, and platform U25's agent runtime, which sit in platform PR6 after PR5. Platform PR6 must land platform U19, U21 drafts and U25, and the platform U22 money-flow and sector-rank pieces must land, before this plan's PR3, so the platform plan reorders them or splits PR6. This plan's PR1 and PR2 need none of it.
 
 ### Dependencies / Assumptions
 
@@ -357,7 +358,7 @@ Proposed changes to `docs/plans/2026-11-12-1110-feat-axiom-desk-platform-plan.md
 
 **Deferred to Planning**
 
-Planning resolved its questions in KTD2–KTD19. The 2026-11-14 document review left six decisions and three G5 design questions open; they are listed with the build gates under Planning Contract, Gates and Open Questions.
+Planning resolved its questions in KTD2–KTD19. The 2026-11-14 document review's six decisions were accepted by the user and written in. Three G5 design questions remain, listed with the build gates under Planning Contract, Gates and Open Questions.
 
 ### Sources / Research
 
@@ -405,9 +406,9 @@ Repo rules that bind every unit: the feature pipeline in `CLAUDE.md` (groom, arc
 
 - KTD1. **Capabilities may declare a human-only binding with a stated reason.** `Capability` gains an optional reason that exempts it from the agent binding, and a CI test holds the allowlist. A separate manifest test names every chart capability this plan adds, so a missing one fails CI instead of passing silently. Governs U1.
 - KTD2. **Drag repricing interpolates on an engine grid and settles on an exact engine call.** The engine returns a spot by IV by time price grid for the strategy. The browser interpolates on it during the drag, and on release an exact engine call replaces the interpolated value, which is the value shown, cited and checked for agent parity. Governs R158, R191, R225. (session-settled: user-approved — chosen over an engine call per frame, which cannot hold R191, and over pricing in the browser, which breaks the platform rule that the engine computes every number.)
-- KTD3. **Replay reads recorded emissions and never recomputes.** Every detector output, strike rank, auction state and screen result is written once to an append-only emission log with `knowledge_ts` and `detector_version`. As-of reads filter on `knowledge_ts`. `as_of` is a required input on every chart capability, filled by the agent runtime from workspace context, never by the model. Governs R184, R189, R196. (session-settled: user-approved — chosen over recomputing with pinned code, which breaks when input data is later corrected.)
-- KTD4. **Storage is tiered.** Option chains keep every change for the last 5 sessions, 1-minute snapshots near the money and 5-minute snapshots for the full chain after that, with each surface stored as fitted parameters. Raw ticks stay for 20 sessions and then compact to per-price, per-minute totals. Governs R189, R214. (session-settled: user-approved — chosen over keeping everything at full density, which costs about 1.8 billion rows a day at 1-second chain snapshots.)
-- KTD5. **The rail controls false discoveries per instrument per day** with Benjamini–Hochberg across that day's emissions. Governs R226. (session-settled: user-approved — chosen over streaming every detector hit, which is mostly noise.)
+- KTD3. **Replay reads recorded outputs and computes on-demand requests only from as-of inputs.** Every detector output, insight, question card, auction state and live screen result is written once to an append-only emission log with `knowledge_ts` and `detector_version`, and replay reads these from the log, never recomputing them. On-demand capabilities (strike ranks, strategy pricing and reprice grids, twins, new screen runs) compute in replay from archived inputs with `knowledge_ts` at or before `as_of`, with evidence limited per R185, and are labelled "computed in replay". As-of reads filter on `knowledge_ts`. `as_of` is a required input on every chart capability, filled by the agent runtime from workspace context, never by the model. Governs R184, R189, R196. (session-settled: user-approved, scope accepted 2026-11-14 — chosen over recomputing recorded outputs with pinned code, which breaks when input data is later corrected, and over serving only recorded outputs, which leaves on-demand requests in replay empty.)
+- KTD4. **Storage is tiered.** Option chains keep every change for the last 5 sessions, 1-minute snapshots near the money and 5-minute snapshots for the full chain after that, with each surface stored as fitted parameters. Raw ticks stay for 20 sessions and then compact to per-price, per-minute totals, except for a named calibration set (NIFTY and BANKNIFTY futures plus quant-named liquid stock futures), whose raw ticks and depth snapshots are kept indefinitely so order-flow patterns can calibrate. Governs R189, R209, R210, R214. (session-settled: user-approved, calibration set accepted 2026-11-14 — chosen over keeping everything at full density, which costs about 1.8 billion rows a day at 1-second chain snapshots, and over compacting everything, which leaves order-flow patterns uncalibratable.)
+- KTD5. **The rail controls false discoveries per instrument per session with an online procedure (LORD++),** alpha-wealth reset at session start. Each calibrated emission is passed or withheld once on arrival, and the decision and alpha-wealth state are written to the emission log, so replay shows the same decision. Uncalibrated emissions bypass the procedure into the labelled tier (R226). Governs R226. (session-settled: user-approved, online method accepted 2026-11-14 — chosen over streaming every detector hit, which is mostly noise, and over day-batch Benjamini–Hochberg, which cannot decide a live stream.)
 - KTD6. **Screen statistics guard against overfitting.** A lineage starts at the first backtest run, and every run counts, saved or not and by the user or the agent. Suggestions pass only on the deflated Sharpe ratio with lineage-wide N, PBO from CSCV and purged, embargoed cross-validation. The final holdout is read only through Thresholdout with a fixed budget. Governs R178–R181, R223. (session-settled: user-approved — chosen over in-sample suggestion gates.)
 - KTD7. **Twins use z-normalised matrix-profile search, re-ranked by constrained DTW.** Search runs MASS across the universe, applies an exclusion zone, keeps one match per instrument per window, and reports effective N clustered by date. Governs R173–R176, R222. (session-settled: user-approved — chosen over a static twin list, which is look-ahead when backtested.)
 - KTD8. **Plain-language screens parse through strict tool use against a schema generated from the registry.** Free-text expressions are not accepted. Rule-based checks catch vague quantifiers, a missing timeframe and a missing universe, and the engine, not the model, renders the confirmation text. Governs R177.
@@ -487,8 +488,15 @@ stateDiagram-v2
   Staged --> Cancelled: user discards
   Staged --> Draft: user confirms, G2 flag off
   Staged --> Sent: user confirms, G2 flag on
-  Sent --> Accepted: broker accepts
+  Sent --> Working: broker accepts
   Sent --> Rejected: broker rejects, reason shown
+  Working --> PartiallyFilled: partial fill
+  PartiallyFilled --> Filled: rest fills
+  Working --> Filled: fills
+  Working --> Staged: user modifies, re-confirm
+  PartiallyFilled --> Staged: user modifies remainder, re-confirm
+  Working --> Cancelled: user cancels, broker confirms
+  PartiallyFilled --> Cancelled: user cancels remainder
 ```
 
 ### Output Structure
@@ -523,18 +531,12 @@ tools/benchmarks/tasks/
 
 - The renderer decision needs a SciChart licence key and two named desk testers before PR2 starts (platform U14 spike, `tools/benchmarks/renderer/RESULT.md`).
 - G5: `DESIGN.md` chart-pane tokens and the TASTE file gate every `apps/desk` chart screen. The G5 design pass authors those tokens before PR2 starts; U8 consumes them. `references/TASTE.md` is still an empty template, so G5 needs the desk's 3 likes and 3 hates first.
-- G1: the tick-by-tick and depth feed contract, including storage terms that confirm the KTD4 20-session window, gates PR4. The vendor sample must show individual trades with exchange timestamps and depth snapshots timestamped so each trade matches the quote in force (KTD11); a snapshot or cumulative-volume feed does not pass, and the depth cadence relative to trades is recorded.
+- G1: the tick-by-tick and depth feed contract, including storage terms that confirm the KTD4 20-session window and indefinite retention for the calibration set, gates PR4. The vendor sample must show individual trades with exchange timestamps and depth snapshots timestamped so each trade matches the quote in force (KTD11); a snapshot or cumulative-volume feed does not pass, and the depth cadence relative to trades is recorded.
 - G2: legal review of sending confirmed orders through the broker API gates turning on the KTD12 flag. G2 also records whether the broker issues per-user order-scope tokens separate from read-only trade-book access, and amends platform U21's rule that the fill service holds no order-capable credential, which the KTD12 send path otherwise contradicts.
 - Desk quants sign the R169, R200 and R209 catalogues and the per-instrument row size, footprint zoom threshold and HVN/LVN cut-offs before those detectors go live.
 
-Open decisions from the 2026-11-14 document review (user's call; each blocks the named unit, not PR1):
+Decisions from the 2026-11-14 document review, all accepted by the user on 2026-11-14: online LORD++ for the rail (KTD5), an "uncalibrated" tier outside the control (R226), on-demand computation in replay from as-of inputs (KTD3), indefinite tick retention for a calibration set (KTD4), platform U22 money-flow and sector-rank inputs ahead of PR3 (amendment), and working-order cancel and modify on the DOM (R215, KTD12).
 
-- **Rail false-discovery method (KTD5, R226; blocks U14).** Benjamini–Hochberg over a whole day's emissions cannot decide each insight when it streams: later emissions change the threshold, so a streamed insight can fail by the close. Recommended: an online procedure (LORD++ per instrument per session, decided once on arrival and written to the emission log).
-- **Uncalibrated emissions and the gate (R226, R210; blocks U14, U16, U27).** Uncalibrated detectors and every order-flow pattern have no p-value, so a literal R226 streams none of them at launch. Recommended: stream them in a separate tier labelled "uncalibrated", outside significance ranking and the gate.
-- **On-demand capabilities in replay (KTD3; blocks U22).** KTD3 says replay never recomputes, but strike ranks, strategy pricing, twins and new screen runs asked for in replay were never recorded. Recommended: recorded outputs (detector emissions, insights, cards, auction state, live screen results) read from the log; on-demand capabilities compute in replay from inputs with `knowledge_ts` at or before `as_of`, labelled "computed in replay".
-- **Tick retention for calibration (KTD4; blocks U25, U27 calibration).** Compacting raw ticks to per-minute totals after 20 sessions discards the sequences absorption and heatmap patterns need, so order-flow patterns can never calibrate. Recommended: keep raw ticks and depth indefinitely for a named calibration set (NIFTY and BANKNIFTY futures plus quant-named stock futures), with G1 confirming those terms.
-- **Equity accumulation and sector-rank detectors (R200; blocks part of U14).** Their inputs come from platform U22 (platform PR7), which itself depends on what this plan's PR3 delivers. Recommended: move the money-flow (R133) and sector-rank (R135) pieces of platform U22 ahead of PR3; the alternative ships those two question cards after platform U22.
-- **Working orders after send (KTD12; blocks U28).** The order path ends at accepted or rejected, so a resting DOM limit order has no on-ladder marker, cancel, modify or partial-fill state. Decide whether cancel and modify are in this plan or stay in the broker's own window.
 - **Deferred to the G5 design pass:** right-edge lane order and what drops first in a small slot when ladder, composite profile, DOM and heatmap coexist (U9, U10); rail region priority and the pre-open plan card's home (U15); layout presets and slots per breakpoint (U10).
 
 ---
@@ -731,7 +733,7 @@ Waits on: PR1 (merge order only), the renderer decision and G5 (both needed befo
 
 ### PR3: Options, insights, screens and replay
 
-Waits on: PR2 (merge order only), and platform U7 archive, U8 gateway, U9 surface, U11 options, U12 evidence, U15 pattern detection (R16), U19 strategy engine, U21 drafts and validators (not its G2-gated tickets and fills) and U25 agent runtime (needed before start). Separate PR because it cannot be built until those platform units merge, and holding PR1 and PR2 for them would block buildable work.
+Waits on: PR2 (merge order only), and platform U7 archive, U8 gateway, U9 surface, U11 options, U12 evidence, U15 pattern detection (R16), U19 strategy engine, U21 drafts and validators (not its G2-gated tickets and fills), U22 money-flow and sector-rank inputs (R133, R135) and U25 agent runtime (needed before start). Separate PR because it cannot be built until those platform units merge, and holding PR1 and PR2 for them would block buildable work.
 
 ### U11. Ladder, strategy and ranking capabilities
 
@@ -785,12 +787,13 @@ Waits on: PR2 (merge order only), and platform U7 archive, U8 gateway, U9 surfac
 
 - **Goal:** Run the versioned detector catalogue, record emissions and stream controlled insights.
 - **Requirements:** R165–R171, R200, R226.
-- **Dependencies:** U1, U4, U11, U12, platform U12, platform U15.
+- **Dependencies:** U1, U4, U11, U12, platform U12, platform U15, platform U22 money-flow and sector rank.
 - **Files:** `packages/insights/src/axiom_insights/detectors/`, `packages/insights/src/axiom_insights/catalogue.py`, `emit.py`, `stream.py`, `cards.py`, `packages/insights/tests/`.
 - **Approach:** detectors register with version, sign-off and calibration tag. Emissions go to the U4 log, with insight lifecycle states active, updated, invalidated, expired and demoted. The stream applies KTD5, and the rail key follows KTD17. U14 also implements the signed R169 F&O detector families and the R200 equity detectors (R16 patterns from platform U15), each with golden tests and its calibration tag; a family goes live only after quant sign-off.
 - **Test scenarios:**
   - Covers AE23. A thin sample shows insufficient evidence, not a hit rate.
-  - Of 20 emissions in a day with one true signal, the stream passes only those surviving BH at the configured rate.
+  - Fed 20 calibrated emissions in time order, each pass or withhold decision matches LORD++ at the configured rate, is final when made, and equals the replay read.
+  - An uncalibrated auction card streams in the "uncalibrated" tier, while a calibrated insight that fails the control does not stream.
   - An invalidated insight stays, marked invalidated, until session end.
   - A demoted detector stops emitting, and its past items show "demoted".
   - Story text never contains buy, sell, favourable or assured.
@@ -915,6 +918,7 @@ Waits on: PR2 (merge order only), and platform U7 archive, U8 gateway, U9 surfac
   - A stock F&O paper position held through expiry shows physical settlement.
   - A detector before its go-live shows "detector not yet live", and the opt-in backfill is labelled.
   - A profile and auction read at 10:30 replay uses no bar after 10:30.
+  - A strike rank requested at 10:30 replay reads no snapshot after 10:30 and is labelled "computed in replay".
 - **Verification:** leakage tests pass, and removing the `knowledge_ts` filter makes AE25 fail.
 
 ### U23. Replay UI
@@ -959,6 +963,7 @@ Waits on: PR3 (merge order only), the G1 tick-by-tick feed with sample data, and
   - A trade at the ask classifies as buyer-initiated and counts as unambiguous.
   - A mid-spread trade falls back to the tick rule and counts as ambiguous.
   - After 20 sessions, raw ticks compact to per-price, per-minute totals, and the footprint for that session is unchanged.
+  - Raw ticks and depth for a calibration-set instrument are not compacted.
   - The unambiguous share per instrument and session matches a hand count on the fixture.
 - **Verification:** golden tests pass.
 
@@ -997,6 +1002,8 @@ Waits on: PR3 (merge order only), the G1 tick-by-tick feed with sample data, and
   - With the G2 flag off, a confirm creates a ticket draft, and no broker call is made.
   - With the flag on, a confirm sends once, and a double click sends once.
   - A broker rejection shows its reason, and the order stays rejected.
+  - A working limit order shows on the ladder at its price; a partial fill shows filled and remaining lots.
+  - Cancelling a working order removes it only after the broker confirms; a modify returns it to staged and needs a fresh confirm.
   - In replay, the DOM offers paper orders only.
   - A live stage call carrying a replay `as_of` returns 403 and creates no draft and no broker call.
   - Covers AE34. The agent stages a two-lot NIFTY futures order from the DOM, and its confirm call is refused.
