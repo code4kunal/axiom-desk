@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Any
 
+from axiom_core.authz import Refused
 from axiom_core.envelope import Source
 
 from axiom_data.pointintime import (
@@ -17,6 +18,10 @@ from axiom_data.pointintime import (
     end_of_day_ist_utc,
     ensure_utc_aware,
 )
+
+
+class MalformedCorporateAction(Refused):
+    """Raised when corporate action data cannot be parsed (e.g. malformed cash amount)."""
 
 
 @dataclass(frozen=True)
@@ -63,6 +68,8 @@ class CorporateAction:
             raise ValueError(f"from_qty must be positive, got {self.from_qty}")
         if self.to_qty is not None and self.to_qty <= 0:
             raise ValueError(f"to_qty must be positive, got {self.to_qty}")
+        if self.type in ("split", "bonus") and (self.from_qty is None or self.to_qty is None):
+            raise ValueError(f"{self.type} requires from_qty and to_qty")
 
 
 @dataclass(frozen=True)
@@ -202,10 +209,9 @@ class CorporateActionAdjuster:
             sources.append(Source(name=action.source, licence_scope=action.licence_scope))
 
             if action.type in ("split", "bonus"):
-                from_q = action.from_qty or 1
-                to_q = action.to_qty or 1
-                price_factor = from_q / to_q
-                vol_factor = to_q / from_q
+                assert action.from_qty is not None and action.to_qty is not None
+                price_factor = action.from_qty / action.to_qty
+                vol_factor = action.to_qty / action.from_qty
 
                 for i, b in enumerate(res_bars):
                     if b.date < action.ex_date:
@@ -228,18 +234,33 @@ class CorporateActionAdjuster:
                         )
                     else:
                         prior_close = prior_bars[-1].close
-                        amount_flt = float(action.amount or "0")
-                        div_factor = 1.0 - (amount_flt / prior_close)
-                        for i, b in enumerate(res_bars):
-                            if b.date < action.ex_date:
-                                res_bars[i] = Bar(
-                                    date=b.date,
-                                    open=b.open * div_factor,
-                                    high=b.high * div_factor,
-                                    low=b.low * div_factor,
-                                    close=b.close * div_factor,
-                                    volume=b.volume,
-                                )
+                        try:
+                            amount_flt = (
+                                float(action.amount) if action.amount is not None else 0.0
+                            )
+                        except (ValueError, TypeError) as err:
+                            raise MalformedCorporateAction(
+                                f"invalid dividend amount {action.amount!r} "
+                                f"on action {action.action_id}"
+                            ) from err
+
+                        if amount_flt >= prior_close:
+                            limitations.append(
+                                f"total-return dividend on {action.ex_date} skipped: "
+                                f"amount {amount_flt} >= prior close {prior_close}"
+                            )
+                        else:
+                            div_factor = 1.0 - (amount_flt / prior_close)
+                            for i, b in enumerate(res_bars):
+                                if b.date < action.ex_date:
+                                    res_bars[i] = Bar(
+                                        date=b.date,
+                                        open=b.open * div_factor,
+                                        high=b.high * div_factor,
+                                        low=b.low * div_factor,
+                                        close=b.close * div_factor,
+                                        volume=b.volume,
+                                    )
 
             elif action.type in ("rights", "merger", "demerger"):
                 limitations.append(f"unhandled corporate action: {action.type} on {action.ex_date}")

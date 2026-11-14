@@ -363,3 +363,71 @@ def test_zero_or_negative_ratio_refused_at_load(conn: sqlite3.Connection) -> Non
                 }
             ]
         )
+
+
+def test_split_and_bonus_require_from_and_to_qty() -> None:
+    """from_qty and to_qty are required for split and bonus at construction."""
+    with pytest.raises(ValueError, match="requires from_qty and to_qty"):
+        CorporateAction(
+            action_id="SPLIT_NO_QTY",
+            recorded_at=datetime(2024, 1, 1, tzinfo=UTC),
+            instrument_id="STOCK",
+            type="split",
+            status="active",
+            ex_date=date(2024, 5, 15),
+            published_at=datetime(2024, 1, 1, tzinfo=UTC),
+            source="TEST",
+            from_qty=None,
+            to_qty=None,
+        )
+
+
+def test_dividend_at_or_above_prior_close_skipped(conn: sqlite3.Connection) -> None:
+    """A dividend >= prior close must not flip prices negative; skip with limitation."""
+    adj = CorporateActionAdjuster(conn)
+    adj.load_corporate_actions(
+        [
+            {
+                "action_id": "HUGE_DIV",
+                "recorded_at": "2024-01-01T00:00:00Z",
+                "instrument_id": "STOCK",
+                "type": "dividend",
+                "ex_date": "2024-05-15",
+                "amount": "1200.00",
+                "published_at": "2024-01-01T00:00:00Z",
+                "source": "TEST",
+            }
+        ]
+    )
+    bars = [
+        _bar(date(2024, 5, 14), 1000.0, 100.0),
+        _bar(date(2024, 5, 15), 100.0, 100.0),
+    ]
+    res = adj.adjust_bars("STOCK", bars, as_of=date(2024, 5, 20), total_return=True)
+    # Price must not flip negative
+    assert res.bars[0].close == 1000.0
+    assert any("skipped" in lim for lim in res.limitations)
+
+
+def test_bad_dividend_amount_raises_refused(conn: sqlite3.Connection) -> None:
+    """A bad amount string must raise a clear Refused subclass, not a bare ValueError."""
+    from axiom_core.authz import Refused
+
+    adj = CorporateActionAdjuster(conn)
+    adj.load_corporate_actions(
+        [
+            {
+                "action_id": "BAD_DIV",
+                "recorded_at": "2024-01-01T00:00:00Z",
+                "instrument_id": "STOCK",
+                "type": "dividend",
+                "ex_date": "2024-05-15",
+                "amount": "not-a-number",
+                "published_at": "2024-01-01T00:00:00Z",
+                "source": "TEST",
+            }
+        ]
+    )
+    bars = [_bar(date(2024, 5, 14), 1000.0, 100.0)]
+    with pytest.raises(Refused):
+        adj.adjust_bars("STOCK", bars, as_of=date(2024, 5, 20), total_return=True)
