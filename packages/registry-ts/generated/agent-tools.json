@@ -64,6 +64,11 @@
         "purpose": {
           "anyOf": [
             {
+              "enum": [
+                "basket_member",
+                "order_draft_leg",
+                "basket_tracking_member"
+              ],
               "type": "string"
             },
             {

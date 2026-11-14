@@ -179,6 +179,7 @@ def test_bad_input_is_422_not_500(app_services: Services) -> None:
         ("instrument_lookup", {"symbol": "SPX", "on": "2026-13-45"}),
         ("instrument_lookup", {"on": "2026-11-13"}),
         ("trading_calendar", {"segment": "equity"}),
+        ("instrument_lookup", {"symbol": "SPX", "on": "2026-11-13", "purpose": "basket_membr"}),
     ]
     for name, body in bad:
         res = client.post(f"/capabilities/{name}", json=body, headers=headers)

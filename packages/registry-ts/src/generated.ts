@@ -32,7 +32,7 @@ export interface InstrumentLookupInput {
   on: string;
   symbol?: string | null;
   instrument_id?: string | null;
-  purpose?: string | null;
+  purpose?: "basket_member" | "order_draft_leg" | "basket_tracking_member" | null;
 }
 
 /** Latest published run of a kind (for example the current regime) */

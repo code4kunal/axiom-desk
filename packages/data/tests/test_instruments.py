@@ -55,6 +55,15 @@ def test_nse_equity_allowed(store: InstrumentStore) -> None:
     assert e2.status == "allowed"
 
 
+def test_unknown_purpose_is_refused(store: InstrumentStore) -> None:
+    """A misspelled purpose never falls through to allowed."""
+    for inst_id in ("RELIANCE_EQ", "GSEC_10Y_2034"):  # basket-eligible, broker-executable only
+        inst = store.get_instrument(inst_id)
+        assert inst is not None
+        e = store.check_eligibility(inst, purpose="basket_membr", on=date(2026, 11, 13))
+        assert e.status == "refused", inst_id
+
+
 def test_gsec_conditional_on_broker(store: InstrumentStore) -> None:
     """A G-Sec is conditional, naming broker execution as the condition."""
     gsec = store.get_instrument("GSEC_10Y_2034")

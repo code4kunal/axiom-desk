@@ -358,6 +358,10 @@ class InstrumentStore:
         role_res = self.get_role(instrument, on)
         role = role_res.role
 
+        # Checked first: later branches allow by default, which a typo must not reach.
+        if purpose not in ("basket_member", "order_draft_leg", "basket_tracking_member"):
+            return Eligibility(status="refused", reason=f"unknown purpose: {purpose}", role=role)
+
         if role == "analysis-only":
             suggestions = self.get_tracking_investables(instrument.instrument_id, on)
             return Eligibility(

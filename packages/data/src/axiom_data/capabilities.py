@@ -7,7 +7,7 @@ Provides:
 """
 
 from datetime import date, datetime, time
-from typing import Any
+from typing import Any, Literal
 
 from axiom_core.authz import Action, NotFound
 from axiom_core.envelope import HandlerResult, Source
@@ -24,7 +24,7 @@ class InstrumentLookupInput(BaseModel):
     on: date
     symbol: str | None = None
     instrument_id: str | None = None
-    purpose: str | None = None
+    purpose: Literal["basket_member", "order_draft_leg", "basket_tracking_member"] | None = None
 
     @model_validator(mode="after")
     def _needs_identifier(self) -> "InstrumentLookupInput":
