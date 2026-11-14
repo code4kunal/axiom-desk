@@ -128,7 +128,6 @@ def test_trading_calendar_holiday_returns_no_session_and_next_session(
 def test_non_public_scope_refused_for_unentitled_tenant(app_services: Services) -> None:
     """A source whose scope the tenant lacks is refused by the registry."""
     # Insert an instrument with a proprietary licence scope
-    assert app_services.instruments is not None
     app_services.instruments.load_instruments(
         [
             Instrument(

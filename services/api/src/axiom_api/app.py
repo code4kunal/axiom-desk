@@ -40,9 +40,9 @@ class Services:
     runs: RunStore
     entitlements: Entitlements
     registry: Registry
-    instruments: InstrumentStore | None = None
-    calendar: TradingCalendar | None = None
-    fno_rules: FnoRulesEngine | None = None
+    instruments: InstrumentStore
+    calendar: TradingCalendar
+    fno_rules: FnoRulesEngine
 
 
 def build_services(conn: sqlite3.Connection, clock: Callable[[], float]) -> Services:

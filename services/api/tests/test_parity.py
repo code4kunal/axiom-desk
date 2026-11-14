@@ -189,6 +189,21 @@ def test_tenant_in_the_request_body_cannot_override_the_session(services: Servic
     assert response.status_code == 403
 
 
+def test_services_requires_data_engine_fields(services: Services) -> None:
+    """instruments, calendar, and fno_rules must be required fields on Services."""
+    with pytest.raises(TypeError):
+        Services(  # pyright: ignore[reportCallIssue]
+            audit=services.audit,
+            directory=services.directory,
+            authz=services.authz,
+            sessions=services.sessions,
+            pending=services.pending,
+            runs=services.runs,
+            entitlements=services.entitlements,
+            registry=services.registry,
+        )
+
+
 def test_generated_artifacts_match_the_registry(services: Services) -> None:
     from axiom_api import codegen
 
