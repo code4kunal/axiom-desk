@@ -641,8 +641,8 @@ Waits on: nothing.
 
 ### U5. Indicator core
 
-- **Goal:** Ship the R219 built-ins with reference-correct numbers.
-- **Requirements:** R219, R220, R221.
+- **Goal:** Ship the R219 built-ins with reference-correct numbers, except PCR and the India VIX overlay, which move to U12 because they need the option chain and the India VIX series, not bars.
+- **Requirements:** R219 (all but PCR and India VIX), R220, R221.
 - **Dependencies:** none.
 - **Files:** `packages/chartmath/pyproject.toml`, `packages/chartmath/src/axiom_chartmath/indicators/`, `packages/chartmath/tests/test_indicators.py`, `specs/quant/golden/indicators/`, `specs/quant/indicators.md`, root `pyproject.toml` workspace members.
 - **Approach:** per KTD14. Each indicator is a pure function over adjusted bars with an incremental update form. It declares its warm-up, reference formula and version. Session indicators take the trading calendar from platform U5 and use a fixture calendar until that lands.
@@ -753,12 +753,13 @@ Waits on: PR2 (merge order only), and platform U7 archive, U8 gateway, U9 surfac
 
 ### U12. Implied range, walls and positioning
 
-- **Goal:** Compute the implied range, OI walls with hold rates and the positioning additions.
-- **Requirements:** R160, R161, R162.
-- **Dependencies:** U11, platform U11, U12.
-- **Files:** `packages/options/src/axiom_options/implied_range.py`, `walls.py`, `positioning.py`, `packages/options/tests/test_implied_range.py`, `test_walls.py`.
-- **Approach:** R160–R162, with history split at SEBI rule-change dates (R110).
+- **Goal:** Compute the implied range, OI walls with hold rates and the positioning additions, plus the two R219 India indicators held from U5: PCR and the India VIX overlay.
+- **Requirements:** R160, R161, R162, R219 (PCR and India VIX).
+- **Dependencies:** U5, U11, platform U11, U12.
+- **Files:** `packages/options/src/axiom_options/implied_range.py`, `walls.py`, `positioning.py`, `packages/options/tests/test_implied_range.py`, `test_walls.py`, `packages/chartmath/src/axiom_chartmath/indicators/india.py`, `specs/quant/golden/indicators/` (PCR and India VIX goldens).
+- **Approach:** R160–R162, with history split at SEBI rule-change dates (R110). PCR reads put and call OI from the platform U11 chain, aligned to bar timestamps. The India VIX overlay reads the NSE India VIX series. Neither plan names the unit that ingests that series yet, so U12 adds it if platform U9 does not. Both register in the U5 indicator registry and follow R221.
 - **Test scenarios:**
+  - PCR and the India VIX overlay match their goldens, and the U5 golden test picks them up from the registry.
   - A weekly expiry with a short post-2024 sample draws the range and reports insufficient evidence for its base rate.
   - Participant OI on a Monday shows the prior Friday's date and the market-level label.
   - A wall's hold rate cites its sample and confidence interval.

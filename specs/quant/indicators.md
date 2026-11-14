@@ -193,7 +193,7 @@ V = 1000 per bar. TP from bar 3: 12, 13, 10, 22/3, 26.5/3, 35.5/3, 39.5/3. In un
 
 ## Not built, or built without an independent golden
 
-- **PCR and the India VIX overlay: held.** Both need a second input series (option-chain put and call OI, the India VIX series) that the bar type does not carry, and no feed shape for them exists yet. They are data alignment rather than formulas: PCR = put OI / call OI per bar, the overlay draws VIX closes on the price chart.
+- **PCR and the India VIX overlay: moved to plan unit U12.** Both need a second input series (option-chain put and call OI, the India VIX series) that the bar type does not carry, and no feed shape for them exists yet. They are data alignment rather than formulas: PCR = put OI / call OI per bar, the overlay draws VIX closes on the price chart.
 - **Volume profile** is built in the profile module (`specs/quant/profile.md`), not as a per-bar indicator.
 - **TradingView exports: NOT RUN.** No export is available here; every TA-Lib-covered indicator has a TA-Lib golden instead.
 - **Hand fixtures** cover supertrend, session and anchored VWAP, classic and Camarilla pivots, CPR, previous levels, delivery % and futures OI. They are independent of the code but small; a second source (TradingView exports, NSE delivery files) should replace them when available.
