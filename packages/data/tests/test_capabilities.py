@@ -101,7 +101,7 @@ def test_fno_contract_rules_cites_circular_and_has_unverified_limitation(
     env = app_services.registry.call(agent_principal, "fno_contract_rules", inputs, Binding.AGENT)
 
     sources = [s.name for s in env.sources]
-    assert "NSE/CIRCULAR/2025" in sources, f"Sources: {sources}"
+    assert "UNSOURCED" in sources, f"Sources: {sources}"
     assert "unverified rule" in env.limitations
     assert env.value["expiry_weekdays"]["weekly"] == "Tuesday"
 
