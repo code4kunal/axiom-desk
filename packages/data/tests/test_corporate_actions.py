@@ -189,6 +189,29 @@ def test_cancelled_action_not_applied(adjuster: CorporateActionAdjuster) -> None
     assert res.bars[0].close == 2000.0
 
 
+def test_cancellation_rows_without_amount_or_ratio_load_and_are_ignored(
+    conn: sqlite3.Connection,
+) -> None:
+    """A cancelled dividend with no amount and a cancelled split with no quantities load fine."""
+    base = {
+        "recorded_at": "2024-01-01T00:00:00Z",
+        "instrument_id": "STOCK",
+        "status": "cancelled",
+        "ex_date": "2024-05-15",
+        "published_at": "2024-01-01T00:00:00Z",
+        "source": "TEST",
+    }
+    adj = CorporateActionAdjuster(conn)
+    adj.load_corporate_actions(
+        [
+            {**base, "action_id": "D1", "type": "dividend"},
+            {**base, "action_id": "S1", "type": "split"},
+        ]
+    )
+    res = adj.adjust_bars("STOCK", _sample_bars(), as_of=date(2024, 6, 1))
+    assert res.bars == _sample_bars()
+
+
 def test_moved_ex_date_applies_at_corrected_date(adjuster: CorporateActionAdjuster) -> None:
     """An action whose ex-date moved applies only at corrected ex-date."""
     bars = [

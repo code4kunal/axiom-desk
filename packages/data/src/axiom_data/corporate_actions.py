@@ -71,10 +71,17 @@ class CorporateAction:
             raise ValueError(f"from_qty must be positive, got {self.from_qty}")
         if self.to_qty is not None and self.to_qty <= 0:
             raise ValueError(f"to_qty must be positive, got {self.to_qty}")
-        if self.type in ("split", "bonus") and (self.from_qty is None or self.to_qty is None):
+        cancelled = self.status == "cancelled"  # a cancellation may omit amount and ratio
+        if (
+            self.type in ("split", "bonus")
+            and not cancelled
+            and (self.from_qty is None or self.to_qty is None)
+        ):
             raise ValueError(f"{self.type} requires from_qty and to_qty")
         if self.type == "dividend":
             if self.amount is None:
+                if cancelled:
+                    return
                 raise MalformedCorporateAction(f"dividend {self.action_id} requires an amount")
             try:
                 positive = float(self.amount) > 0
@@ -135,7 +142,9 @@ class CorporateActionAdjuster:
                         ) from err
                     try:
                         act = CorporateAction(**fields)
-                    except TypeError as err:  # a ValueError from the field checks stays a ValueError
+                    except (
+                        TypeError
+                    ) as err:  # a ValueError from the field checks stays a ValueError
                         raise MalformedCorporateAction(
                             f"malformed corporate action {item.get('action_id')!r}: {err!r}"
                         ) from err
