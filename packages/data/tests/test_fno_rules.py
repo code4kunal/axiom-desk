@@ -192,7 +192,7 @@ def test_weekly_synthetic_flag_survives_clean_monthly_row(fno: FnoRulesEngine) -
     """A synthetic weekly row surfaces its flag even when the monthly row is clean."""
     ts = datetime(2025, 11, 1, tzinfo=UTC)
     clean_monthly = EffectiveDatedRow(
-        key="NSE:BANKNIFTY:monthly",
+        key="NSE:NIFTY:monthly",
         effective_from=date(2025, 9, 1),
         effective_to=None,
         published_at=ts,
@@ -203,7 +203,7 @@ def test_weekly_synthetic_flag_survives_clean_monthly_row(fno: FnoRulesEngine) -
     )
     fno._expiry_rules_table.load([clean_monthly])  # pyright: ignore[reportPrivateUsage]
     # 2025-12-10: every other table resolves to a real circular, so only the weekly row is synthetic
-    rules = fno.get_contract_rules("NSE", "BANKNIFTY", on=date(2025, 12, 10))
+    rules = fno.get_contract_rules("NSE", "NIFTY", on=date(2025, 12, 10))
     assert "synthetic publication date" in rules.limitations
 
 
@@ -263,6 +263,15 @@ def test_blank_or_misspelt_cell_raises_malformed_rule(
     if column == "expiry_weekday":
         with pytest.raises(MalformedRule, match=column):
             fno.resolve_expiry("NSE", "NIFTY", "monthly", date(2026, 6, 1), date(2026, 6, 1))
+
+
+def test_ineligible_weekly_has_no_weekly_expiry_weekday(fno: FnoRulesEngine) -> None:
+    """BANKNIFTY lost weekly expiries on 2024-11-20: no weekly weekday after, one before."""
+    after = fno.get_contract_rules("NSE", "BANKNIFTY", on=date(2024, 11, 20))
+    assert "weekly" not in after.expiry_weekdays
+    assert "monthly" in after.expiry_weekdays
+    before = fno.get_contract_rules("NSE", "BANKNIFTY", on=date(2024, 11, 19))
+    assert "weekly" in before.expiry_weekdays
 
 
 def test_position_limit_index_rule_only_for_index_underlyings(fno: FnoRulesEngine) -> None:

@@ -512,6 +512,8 @@ class FnoRulesEngine:
         expiry_weekdays: dict[str, str] = {}
         expiry_results: list[LookupResult[EffectiveDatedRow]] = []
         for cycle in ("weekly", "monthly"):
+            if cycle == "weekly" and not weekly_eligible:
+                continue
             try:
                 res_w = self._expiry_rules_table.resolve(
                     f"{exchange}:{underlying}:{cycle}", on_date
