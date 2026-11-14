@@ -14,16 +14,23 @@ from axiom_core.authz import Refused
 from axiom_data.pointintime import (
     IST,
     NaiveTimestampRefused,
+    RuleUnknown,
 )
 
+COVERAGE_START: date = date(2019, 1, 1)
+COVERAGE_END: date = date(2026, 12, 31)
 
-class CalendarHorizonExceeded(Refused):
-    """Raised when a date is past the covered holiday list horizon or before history start (R5)."""
+
+class CalendarHorizonExceeded(RuleUnknown):
+    """Raised when date is past covered holiday horizon or before history start (R5, B3)."""
 
     def __init__(self, asked_date: date, horizon: date) -> None:
-        super().__init__(
-            f"calendar horizon exceeded: {asked_date} is past published holiday coverage {horizon}"
+        Refused.__init__(
+            self,
+            f"calendar horizon exceeded: {asked_date} is past published holiday coverage {horizon}",
         )
+        self.rule = "trading_calendar"
+        self.on = asked_date
         self.asked_date = asked_date
         self.horizon = horizon
 
@@ -129,6 +136,10 @@ class TradingCalendar:
 
     @property
     def horizon(self) -> date:
+        return self._horizon_date
+
+    @property
+    def coverage_end(self) -> date:
         return self._horizon_date
 
     @property

@@ -151,3 +151,18 @@ def test_previous_regular_session_day(calendar: TradingCalendar) -> None:
     assert calendar.previous_regular_session_day("equity", date(2024, 3, 25)) == date(2024, 3, 22)
     # On special Saturday 2025-02-01 (Budget day, not regular) -> returns Friday 2025-01-31
     assert calendar.previous_regular_session_day("equity", date(2025, 2, 1)) == date(2025, 1, 31)
+
+
+def test_coverage_end_constant_and_past_horizon_raises_rule_unknown(
+    calendar: TradingCalendar,
+) -> None:
+    """Date past coverage_end must raise RuleUnknown, not be treated as a trading day (B3)."""
+    from axiom_data.calendar import COVERAGE_END
+    from axiom_data.pointintime import RuleUnknown
+
+    assert calendar.coverage_end == COVERAGE_END
+    past_date = COVERAGE_END + timedelta(days=1)
+    with pytest.raises(RuleUnknown):
+        calendar.is_regular_session_day("equity", past_date)
+    with pytest.raises(RuleUnknown):
+        calendar.get_session("equity", past_date)
