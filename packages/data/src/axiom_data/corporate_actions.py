@@ -220,7 +220,7 @@ class CorporateActionAdjuster:
     ) -> AdjustedHistoryResult:
         """Apply corporate actions to price and volume series as of date D (R11, R12)."""
         actions = self.get_actions_as_of(instrument_id, as_of)
-        res_bars = list(bars)
+        res_bars = sorted(bars, key=lambda b: b.date)  # "prior close" below needs ascending order
         limitations: list[str] = []
         sources: list[Source] = []
 

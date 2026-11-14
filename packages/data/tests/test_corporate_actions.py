@@ -230,6 +230,20 @@ def test_total_return_mode_dividend_scaling(adjuster: CorporateActionAdjuster) -
     assert res.bars[1].close == 990.0
 
 
+def test_unsorted_bars_give_the_same_result_as_sorted(adjuster: CorporateActionAdjuster) -> None:
+    """The dividend's prior close is the latest earlier bar, whatever the input order."""
+    ordered = [
+        _bar(date(2024, 6, 20), 500.0),
+        _bar(date(2024, 6, 28), 1000.0),
+        _bar(date(2024, 7, 2), 990.0),
+    ]
+    shuffled = [ordered[1], ordered[0], ordered[2]]
+    want = adjuster.adjust_bars("RELIANCE_EQ", ordered, as_of=date(2024, 7, 10), total_return=True)
+    got = adjuster.adjust_bars("RELIANCE_EQ", shuffled, as_of=date(2024, 7, 10), total_return=True)
+    assert got == want
+    assert shuffled[0] is ordered[1]  # caller's list is not mutated
+
+
 def test_total_return_without_prior_bar_returns_limitation(conn: sqlite3.Connection) -> None:
     """Total-return mode with no bar before ex-date returns limitation instead of guessing close."""
     adj = CorporateActionAdjuster(conn)
