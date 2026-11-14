@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 from axiom_core.authz import Refused
-from axiom_data.fno_rules import FnoRulesEngine
+from axiom_data.fno_rules import FnoRulesEngine, MalformedRule
 from axiom_data.pointintime import EffectiveDatedRow, RuleUnknown
 
 
@@ -204,6 +204,33 @@ def test_weekly_synthetic_flag_survives_clean_monthly_row(fno: FnoRulesEngine) -
     # 2025-12-10: every other table resolves to a real circular, so only the weekly row is synthetic
     rules = fno.get_contract_rules("NSE", "BANKNIFTY", on=date(2025, 12, 10))
     assert "synthetic publication date" in rules.limitations
+
+
+@pytest.mark.parametrize(
+    ("table", "key", "column"),
+    [
+        ("_contract_value_table", "NSE:NIFTY", "min_contract_value"),
+        ("_expiry_rules_table", "NSE:NIFTY:monthly", "expiry_weekday"),
+    ],
+)
+def test_row_missing_a_needed_column_raises_malformed_rule(
+    fno: FnoRulesEngine, table: str, key: str, column: str
+) -> None:
+    """A row without the column is refused by name, not given a made-up default."""
+    ts = datetime(2026, 1, 1, tzinfo=UTC)
+    row = EffectiveDatedRow(
+        key=key,
+        effective_from=date(2026, 1, 1),
+        effective_to=None,
+        published_at=ts,
+        recorded_at=ts,
+        source="TEST",
+        verified_against="TEST",
+        payload={},
+    )
+    getattr(fno, table).load([row])
+    with pytest.raises(MalformedRule, match=column):
+        fno.get_contract_rules("NSE", "NIFTY", on=date(2026, 6, 1))
 
 
 def test_position_limit_index_rule_only_for_index_underlyings(fno: FnoRulesEngine) -> None:
