@@ -49,6 +49,32 @@ Visual check: a screenshot of `?renderer=custom` shows 8 candle charts drawing, 
 
 Reading: with the live bar on screen, the custom renderer holds refresh rate with 8 charts at 5× the planned tick load, without WebGL (one run each; repeat before deciding). A rare single-frame stall remains (max 34–58 ms). GC is the likely cause; not yet profiled.
 
+## Budget runs: 16 charts and 4 footprint charts
+
+**NOT RUN.** The harness is built; no budget run has been made. Nothing below is measured.
+
+What a run does (`bench.ts`, `src/load.ts`, `src/metrics.ts`):
+
+- `--session=budget`: 16 charts, 600 s per run, 3 repeats, replay at 60x (30 ticks per bar, so 30 ticks/s per chart). Over the candles it lays a simulated rail (20 cards, one rewritten every 500 ms), a strategy overlay (payoff curve and cone) and a ladder of 100 strikes on every chart, redrawn at the tick rate, plus the DOM control layer (a labelled call and put button per strike, 4 strategy legs, 20 focusable rail items) on the focused chart only, as the desk virtualises it.
+- `--session=footprint`: 4 charts, each drawing a 40-bar by 30-level footprint grid with bid-by-ask text, same duration, repeats and replay speed.
+- Frame times are the `requestAnimationFrame` deltas of the measured window, taken from the whole run (`window.__frames`), not from the harness summary. Percentiles are nearest-rank.
+- A run with fewer than 3 repeats reports `incomplete`. With 3, the status is `pass` only if every run has p95 at most 16.7 ms, p99.9 at most 33 ms and at most 3 frames over 50 ms; otherwise `fail`.
+- The hardware profile (`--profile` name, CPU, cores, memory, OS, Chrome, GPU, device pixel ratio) is written into every result line.
+
+Known gap: `src/main.ts` does not start the load itself. `bench.ts` injects it after the charts exist, so the load's 2 s warmup starts a little after the harness's own warmup.
+
+```bash
+pnpm --filter @axiom/renderer-spike dev        # serves http://localhost:5199
+pnpm --filter @axiom/renderer-spike bench custom --session=budget --profile="<desk hardware name>" --out=budget.jsonl     # about 30 min
+pnpm --filter @axiom/renderer-spike bench custom --session=footprint --profile="<desk hardware name>" --out=footprint.jsonl   # about 30 min
+```
+
+| Session | Renderer | Hardware profile | Repeats | p95 ms | p99.9 ms | frames > 50 ms | Status |
+|---|---|---|---|---|---|---|---|
+| budget (16 charts, rail, strategy overlay, DOM layer, 60x) | custom | NOT RUN | NOT RUN | NOT RUN | NOT RUN | NOT RUN | NOT RUN |
+| footprint (4 charts, 60x) | custom | NOT RUN | NOT RUN | NOT RUN | NOT RUN | NOT RUN | NOT RUN |
+| budget | scichart | NOT RUN: no licence key | | | | | |
+
 ## R126 timed tasks (two desk users)
 
 The five spike tasks: open a symbol, change interval, add an indicator, draw a trendline, switch layout.
