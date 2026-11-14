@@ -78,7 +78,6 @@ def render(registry: Registry) -> dict[Path, str]:
     defs: dict[str, dict[str, Any]] = {}
 
     def top_level(schema: dict[str, Any]) -> dict[str, Any]:
-        # Nested models become named types shared across capabilities, so one name, one shape.
         for name, body in schema.get("$defs", {}).items():
             if defs.setdefault(name, body) != body:
                 raise ValueError(f"two different models are both named {name}; rename one")

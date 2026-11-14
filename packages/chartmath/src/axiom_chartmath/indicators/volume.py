@@ -3,6 +3,7 @@ from collections import deque
 from datetime import date, datetime
 
 from axiom_chartmath.bars import Bar, SessionCalendar
+from axiom_chartmath.indicators.primitives import typical
 from axiom_chartmath.indicators.registry import Out, Stepper, register
 
 
@@ -105,10 +106,6 @@ def vwap_bands(pv: float, v: float, p2v: float) -> Out:
     }
 
 
-def _typical(bar: Bar) -> float:
-    return (bar.high + bar.low + bar.close) / 3
-
-
 @register(
     "session_vwap",
     group="volume",
@@ -131,7 +128,7 @@ def session_vwap(calendar: SessionCalendar) -> Stepper:
             continue
         if d != day:
             day, pv, v, p2v = d, 0.0, 0.0, 0.0
-        tp = _typical(bar)
+        tp = typical(bar.high, bar.low, bar.close)
         pv, v, p2v = pv + tp * bar.volume, v + bar.volume, p2v + tp * tp * bar.volume
         out = vwap_bands(pv, v, p2v)
 
@@ -156,6 +153,6 @@ def anchored_vwap(anchor: str) -> Stepper:
         if bar.ts < start:
             out = NO_VWAP
             continue
-        tp = _typical(bar)
+        tp = typical(bar.high, bar.low, bar.close)
         pv, v, p2v = pv + tp * bar.volume, v + bar.volume, p2v + tp * tp * bar.volume
         out = vwap_bands(pv, v, p2v)

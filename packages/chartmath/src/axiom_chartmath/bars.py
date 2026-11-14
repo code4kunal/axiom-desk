@@ -1,5 +1,3 @@
-"""Bars, the NSE session calendar and corporate-action adjustment."""
-
 from collections.abc import Iterable
 from dataclasses import dataclass, replace
 from datetime import date, datetime, time, timedelta, timezone
@@ -52,8 +50,9 @@ def adjust_splits(bars: Iterable[Bar], splits: Iterable[tuple[date, float]]) -> 
     out: list[Bar] = []
     for bar in bars:
         f = 1.0
+        day = bar.ts.astimezone(IST).date()
         for ex, factor in splits:
-            if bar.ts.astimezone(IST).date() < ex:
+            if day < ex:
                 f *= factor
         out.append(
             bar

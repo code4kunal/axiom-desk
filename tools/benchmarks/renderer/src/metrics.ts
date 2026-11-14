@@ -5,7 +5,7 @@ export interface FrameStats {
   p99: number;
   p999: number;
   max: number;
-  over50ms: number; // frames strictly slower than 50 ms
+  over50ms: number;
 }
 
 // Nearest rank on integer permille, so 999 of 1000 frames is rank 999 with no float rounding.
@@ -28,7 +28,6 @@ export function frameStats(frameMs: number[]): FrameStats {
 export const REPEATS = 3;
 export const LIMITS = { p95: 16.7, p999: 33, over50ms: 3 }; // per run, 10-minute session
 
-/** Fewer than REPEATS runs cannot pass or fail: it is incomplete. */
 export function summarise(runs: Pick<FrameStats, "p95" | "p999" | "over50ms">[]): { status: "incomplete" | "pass" | "fail" } {
   if (runs.length < REPEATS) return { status: "incomplete" };
   const ok = runs.every((r) => r.p95 <= LIMITS.p95 && r.p999 <= LIMITS.p999 && r.over50ms <= LIMITS.over50ms);

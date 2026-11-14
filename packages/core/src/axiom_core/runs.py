@@ -53,7 +53,6 @@ class RunStore:
         return self._one("WHERE kind = ? ORDER BY published_at DESC, rowid DESC LIMIT 1", (kind,))
 
     def latest_as_of(self, kind: str, as_of: datetime) -> Run | None:
-        """The latest run that had been published by `as_of`."""
         if as_of.tzinfo is None:
             raise ValueError("as_of must be timezone-aware")
         return self._one(

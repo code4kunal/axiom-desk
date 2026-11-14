@@ -8,7 +8,7 @@ export interface Session {
   charts: number;
   seconds: number;
   repeats: number;
-  speed: number; // replay speed multiple
+  speed: number;
   load: LoadKind;
 }
 
@@ -19,7 +19,11 @@ export const SESSIONS = {
   footprint: { charts: 4, seconds: 600, repeats: REPEATS, speed: 60, load: "footprint" },
 } satisfies Record<string, Session>;
 
-const STRIKES = 100; // full ladder: a Nifty chain at 50-point steps, 5,000 points wide
+// full ladder: a Nifty chain
+const BASE_STRIKE = 22000;
+const STRIKE_STEP = 50;
+const LADDER_WIDTH = 5000;
+const STRIKES = LADDER_WIDTH / STRIKE_STEP;
 const LEGS = 4;
 const RAIL_ITEMS = 20;
 const FP_BARS = 40;
@@ -86,7 +90,6 @@ function drawFootprint(g: CanvasRenderingContext2D, t: number) {
   }
 }
 
-/** The labelled controls for the focused chart: ladder strikes, legs and rail items, all real DOM. */
 function mountControls(cell: HTMLElement): (t: number) => void {
   const layer = document.createElement("div");
   layer.style.cssText = "position:absolute;right:0;top:0;bottom:0;width:80px;overflow:hidden;display:flex;flex-direction:column";
@@ -96,7 +99,7 @@ function mountControls(cell: HTMLElement): (t: number) => void {
     row.style.cssText = "display:flex;flex:1;min-height:0;font-size:6px";
     for (const side of ["call", "put"]) {
       const b = document.createElement("button");
-      b.setAttribute("aria-label", `${side} strike ${22000 + i * 50}`);
+      b.setAttribute("aria-label", `${side} strike ${BASE_STRIKE + i * STRIKE_STEP}`);
       b.style.cssText = "flex:1;padding:0;border:0;background:transparent;color:#ddd";
       row.appendChild(b);
       ltps.push(b);

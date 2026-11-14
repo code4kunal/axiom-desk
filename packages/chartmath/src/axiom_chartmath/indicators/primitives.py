@@ -3,7 +3,7 @@ warming up, which passes through without touching state) and yields its output."
 
 import math
 from collections import deque
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 
 from axiom_chartmath.bars import Bar
 
@@ -14,6 +14,10 @@ BarStream = Generator[float | None, Bar, None]
 def primed[Y, S](g: Generator[Y, S, None]) -> Generator[Y, S, None]:
     next(g)
     return g
+
+
+def typical(high: float, low: float, close: float) -> float:
+    return (high + low + close) / 3
 
 
 def is_zero(x: float) -> bool:
@@ -33,37 +37,29 @@ def sma(n: int) -> Stream:
         out = sum(win) / n if len(win) == n else None
 
 
+def _seeded(n: int, step: Callable[[float, float], float]) -> Stream:
+    seed: list[float] = []
+    out: float | None = None
+    while True:
+        x = yield out
+        if x is None:
+            out = None
+            continue
+        if out is None and len(seed) < n:
+            seed.append(x)
+            out = sum(seed) / n if len(seed) == n else None
+        elif out is not None:
+            out = step(out, x)
+
+
 def ema(n: int) -> Stream:
     """EMA with k = 2/(n+1), seeded with the SMA of the first n values (TA-Lib's default seed)."""
     k = 2 / (n + 1)
-    seed: list[float] = []
-    out: float | None = None
-    while True:
-        x = yield out
-        if x is None:
-            out = None
-            continue
-        if out is None and len(seed) < n:
-            seed.append(x)
-            out = sum(seed) / n if len(seed) == n else None
-        elif out is not None:
-            out = (x - out) * k + out
+    return _seeded(n, lambda out, x: (x - out) * k + out)
 
 
 def wilder(n: int) -> Stream:
-    """Wilder's smoothing (RMA): SMA of the first n values, then (prev*(n-1) + x)/n."""
-    seed: list[float] = []
-    out: float | None = None
-    while True:
-        x = yield out
-        if x is None:
-            out = None
-            continue
-        if out is None and len(seed) < n:
-            seed.append(x)
-            out = sum(seed) / n if len(seed) == n else None
-        elif out is not None:
-            out = (out * (n - 1) + x) / n
+    return _seeded(n, lambda out, x: (out * (n - 1) + x) / n)
 
 
 def wma(n: int) -> Stream:
@@ -148,17 +144,25 @@ def stoch(
         out = None if sk is None or sd is None else (sk, sd)
 
 
-def midprice(n: int) -> BarStream:
+def high_low(n: int) -> Generator[tuple[float, float] | None, Bar, None]:
     highs: deque[float] = deque(maxlen=n)
     lows: deque[float] = deque(maxlen=n)
-    out: float | None = None
+    out: tuple[float, float] | None = None
     while True:
         bar = yield out
         highs.append(bar.high)
         lows.append(bar.low)
-        out = (max(highs) + min(lows)) / 2 if len(highs) == n else None
+        out = (max(highs), min(lows)) if len(highs) == n else None
+
+
+def midprice(n: int) -> BarStream:
+    hl = primed(high_low(n))
+    out: float | None = None
+    while True:
+        bar = yield out
+        hl_n = hl.send(bar)
+        out = None if hl_n is None else (hl_n[0] + hl_n[1]) / 2
 
 
 def diff(a: float | None, b: float | None, scale: float = 1.0) -> float | None:
-    """a - scale*b, or None while either side is warming up."""
     return None if a is None or b is None else a - scale * b

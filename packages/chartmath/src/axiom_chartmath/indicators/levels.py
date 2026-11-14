@@ -2,7 +2,7 @@ from collections.abc import Callable, Generator, Hashable
 from datetime import date
 
 from axiom_chartmath.bars import Bar, SessionCalendar
-from axiom_chartmath.indicators.primitives import primed
+from axiom_chartmath.indicators.primitives import primed, typical
 from axiom_chartmath.indicators.registry import Out, Stepper, register
 
 HLC = tuple[float, float, float]
@@ -45,7 +45,7 @@ def _from_prior_day(calendar: SessionCalendar, f: Callable[[float, float, float]
 
 
 def _classic(h: float, lo: float, c: float) -> Out:
-    pp = (h + lo + c) / 3
+    pp = typical(h, lo, c)
     return {
         "pivot": pp,
         "r1": 2 * pp - lo,
@@ -72,7 +72,7 @@ def _camarilla(h: float, lo: float, c: float) -> Out:
 
 
 def _cpr(h: float, lo: float, c: float) -> Out:
-    pp = (h + lo + c) / 3
+    pp = typical(h, lo, c)
     bc = (h + lo) / 2
     tc = 2 * pp - bc
     return {"pivot": pp, "top": max(tc, bc), "bottom": min(tc, bc)}

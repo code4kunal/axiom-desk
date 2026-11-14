@@ -25,7 +25,6 @@ class Emission:
 class EmissionLog:
     def __init__(self, conn: Connection, clock: Callable[[], float]) -> None:
         self._conn = conn
-        # knowledge time comes from the clock, never the caller, so nothing lands in the past
         self._clock = clock
 
     def record(

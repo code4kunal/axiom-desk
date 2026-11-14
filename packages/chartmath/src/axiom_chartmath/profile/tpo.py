@@ -38,8 +38,11 @@ def row_of(price: float, row_size: float) -> int:
     return math.floor(round(price / row_size, 9))
 
 
+def price_of(row: int, row_size: float) -> float:
+    return round(row * row_size, 9)
+
+
 def poc_row(counts: Mapping[int, float]) -> int:
-    """Row with the most activity; ties go to the row nearest the range middle, then the lower."""
     lo, hi = min(counts), max(counts)
     top = max(counts.values())
     mid = (lo + hi) / 2
@@ -67,7 +70,6 @@ def value_area_rows(counts: Mapping[int, float], share: float) -> tuple[int, int
 
 
 def smoothed(counts: Mapping[int, float], sigma: float) -> dict[int, float]:
-    """Gaussian smoothing over rows (kernel cut at 3 sigma); rows outside the profile count 0."""
     reach = math.ceil(3 * sigma)
     kernel = {k: math.exp(-(k * k) / (2 * sigma * sigma)) for k in range(-reach, reach + 1)}
     norm = sum(kernel.values())
@@ -77,8 +79,6 @@ def smoothed(counts: Mapping[int, float], sigma: float) -> dict[int, float]:
 
 @dataclass(frozen=True)
 class Distribution:
-    """A TPO and volume distribution over rows with its POC, value areas, HVNs and LVNs."""
-
     params: ProfileParams
     tpo: Mapping[int, int]
     volume: Mapping[int, float]
@@ -96,23 +96,21 @@ class Distribution:
         return self.params.version
 
     def price(self, row: int) -> float:
-        return round(row * self.params.row_size, 9)
+        return price_of(row, self.params.row_size)
 
 
 def distribution(
     tpo: Mapping[int, int], volume: Mapping[int, float], params: ProfileParams
 ) -> Distribution:
-    def price(r: int) -> float:
-        return round(r * params.row_size, 9)
-
+    rs = params.row_size
     va_lo, va_hi = value_area_rows(tpo, params.value_area)
     vpoc = vlo = vhi = None
     hvn: list[int] = []
     lvn: list[int] = []
     if sum(volume.values()) > 0:
-        vpoc = price(poc_row(volume))
+        vpoc = price_of(poc_row(volume), rs)
         lo, hi = value_area_rows(volume, params.value_area)
-        vlo, vhi = price(lo), price(hi)
+        vlo, vhi = price_of(lo, rs), price_of(hi, rs)
         s = smoothed(volume, params.smoothing_rows)
         peak = max(s.values())
         rows = sorted(s)
@@ -132,14 +130,14 @@ def distribution(
         params=params,
         tpo=dict(sorted(tpo.items())),
         volume=dict(sorted(volume.items())),
-        poc=price(poc_row(tpo)),
-        value_low=price(va_lo),
-        value_high=price(va_hi),
+        poc=price_of(poc_row(tpo), rs),
+        value_low=price_of(va_lo, rs),
+        value_high=price_of(va_hi, rs),
         vpoc=vpoc,
         volume_value_low=vlo,
         volume_value_high=vhi,
-        hvn=tuple(price(r) for r in hvn),
-        lvn=tuple(price(r) for r in lvn),
+        hvn=tuple(price_of(r, rs) for r in hvn),
+        lvn=tuple(price_of(r, rs) for r in lvn),
     )
 
 
@@ -156,7 +154,7 @@ class Period:
 class SessionProfile(Distribution):
     session: date
     periods: tuple[Period, ...]
-    ib_low: float | None  # None when the session's first hour is missing
+    ib_low: float | None
     ib_high: float | None
     single_prints: tuple[float, ...]
     poor_high: bool
@@ -203,20 +201,26 @@ def _session(
         periods.append(Period(start, lo, hi, half=start + PERIOD > close))
     ib = [p for p in periods if p.start < open_ + IB_PERIODS * PERIOD]
     bottom, top = min(tpo), max(tpo)
-    singles = [
-        r
-        for r in range(bottom + 1, top)
-        if tpo.get(r, 0) == 1
-        and any(tpo.get(x, 0) >= 2 for x in range(r + 1, top + 1))
-        and any(tpo.get(x, 0) >= 2 for x in range(bottom, r))
-    ]
+    below: set[int] = set()
+    seen = False
+    for r in range(bottom, top + 1):
+        if seen and tpo.get(r, 0) == 1:
+            below.add(r)
+        seen = seen or tpo.get(r, 0) >= 2
+    singles: list[int] = []
+    seen = False
+    for r in range(top, bottom - 1, -1):
+        if seen and r in below:
+            singles.append(r)
+        seen = seen or tpo.get(r, 0) >= 2
+    singles.reverse()
     return SessionProfile(
         **vars(distribution(tpo, volume, params)),
         session=day,
         periods=tuple(periods),
         ib_low=min((p.low for p in ib), default=None),
         ib_high=max((p.high for p in ib), default=None),
-        single_prints=tuple(round(r * rs, 9) for r in singles),
+        single_prints=tuple(price_of(r, rs) for r in singles),
         poor_high=tpo[top] >= 2,
         poor_low=tpo[bottom] >= 2,
     )

@@ -280,17 +280,15 @@ def adx(period: int = 14) -> Stepper:
     warmup=lambda c: c["period"] - 1,
 )
 def donchian(period: int = 20) -> Stepper:
-    highs: deque[float] = deque(maxlen=period)
-    lows: deque[float] = deque(maxlen=period)
+    hl = p.primed(p.high_low(period))
     out: Out = {}
     while True:
         bar = yield out
-        highs.append(bar.high)
-        lows.append(bar.low)
-        if len(highs) < period:
+        hl_n = hl.send(bar)
+        if hl_n is None:
             out = {"upper": None, "middle": None, "lower": None}
         else:
-            hh, ll = max(highs), min(lows)
+            hh, ll = hl_n
             out = {"upper": hh, "middle": (hh + ll) / 2, "lower": ll}
 
 

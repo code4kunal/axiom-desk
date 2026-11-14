@@ -1,5 +1,4 @@
 import math
-from collections import deque
 
 from axiom_chartmath.indicators import primitives as p
 from axiom_chartmath.indicators.registry import Out, Stepper, register
@@ -75,18 +74,16 @@ def historical_volatility(period: int = 20, annualisation: int = 252) -> Stepper
 )
 def chandelier(period: int = 22, multiplier: float = 3.0) -> Stepper:
     a = p.primed(p.atr(period))
-    highs: deque[float] = deque(maxlen=period)
-    lows: deque[float] = deque(maxlen=period)
+    hl = p.primed(p.high_low(period))
     out: Out = {}
     while True:
         bar = yield out
-        highs.append(bar.high)
-        lows.append(bar.low)
+        hl_n = hl.send(bar)
         av = a.send(bar)
-        if av is None:
+        if av is None or hl_n is None:
             out = {"long_stop": None, "short_stop": None}
         else:
             out = {
-                "long_stop": max(highs) - multiplier * av,
-                "short_stop": min(lows) + multiplier * av,
+                "long_stop": hl_n[0] - multiplier * av,
+                "short_stop": hl_n[1] + multiplier * av,
             }

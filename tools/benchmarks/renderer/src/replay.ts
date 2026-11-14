@@ -15,7 +15,6 @@ function mulberry32(seed: number): () => number {
 export const BAR_SECONDS = 60;
 const START = Date.UTC(2026, 0, 5, 3, 45) / 1000; // 09:15 IST
 
-/** Ticks per wall second at a replay speed: 60x plays one bar-minute per second. */
 export const ticksPerSecond = (ticksPerBar: number, speed: number) => (ticksPerBar * speed) / BAR_SECONDS;
 
 /**

@@ -1,5 +1,3 @@
-"""Market profile: TPO and volume profiles, nested composites and carried reference levels."""
-
 from axiom_chartmath.profile.composite import (
     Level,
     back_adjust,

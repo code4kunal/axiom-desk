@@ -6,7 +6,6 @@ from axiom_chartmath.indicators.registry import Out, Stepper, register
 
 
 def _rsi(n: int) -> Generator[float | None, float, None]:
-    """Wilder RSI: mean gain and loss of the first n changes, then Wilder-smoothed."""
     prev = yield None
     gain, loss = p.primed(p.wilder(n)), p.primed(p.wilder(n))
     out: float | None = None
@@ -100,7 +99,7 @@ def cci(period: int = 20) -> Stepper:
     out: Out = {}
     while True:
         bar = yield out
-        tp = (bar.high + bar.low + bar.close) / 3
+        tp = p.typical(bar.high, bar.low, bar.close)
         win.append(tp)
         if len(win) < period:
             out = {"cci": None}
@@ -117,17 +116,15 @@ def cci(period: int = 20) -> Stepper:
     warmup=lambda c: c["period"] - 1,
 )
 def williams_r(period: int = 14) -> Stepper:
-    highs: deque[float] = deque(maxlen=period)
-    lows: deque[float] = deque(maxlen=period)
+    hl = p.primed(p.high_low(period))
     out: Out = {}
     while True:
         bar = yield out
-        highs.append(bar.high)
-        lows.append(bar.low)
-        if len(highs) < period:
+        hl_n = hl.send(bar)
+        if hl_n is None:
             out = {"williams_r": None}
             continue
-        hh, ll = max(highs), min(lows)
+        hh, ll = hl_n
         out = {"williams_r": (hh - bar.close) / ((hh - ll) / -100) if hh != ll else 0.0}
 
 
@@ -164,7 +161,7 @@ def mfi(period: int = 14) -> Stepper:
     out: Out = {}
     while True:
         bar = yield out
-        tp = (bar.high + bar.low + bar.close) / 3
+        tp = p.typical(bar.high, bar.low, bar.close)
         if prev_tp is not None:
             mf = tp * bar.volume
             flows.append((mf if tp > prev_tp else 0.0, mf if tp < prev_tp else 0.0))

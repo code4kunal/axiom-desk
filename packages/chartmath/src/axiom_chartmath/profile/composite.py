@@ -1,9 +1,8 @@
-"""Composite profiles over nested timeframes and the reference levels sessions carry forward."""
-
 from collections import defaultdict
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, replace
 from datetime import date, datetime
+from typing import Literal
 
 from axiom_chartmath.bars import Bar
 from axiom_chartmath.profile.tpo import Distribution, SessionProfile, distribution, row_of
@@ -86,7 +85,7 @@ def back_adjust(bars: Iterable[Bar], rolls: Iterable[tuple[datetime, float]]) ->
 
 @dataclass(frozen=True)
 class Level:
-    kind: str  # naked_poc, single_print, poor_high, poor_low
+    kind: Literal["naked_poc", "single_print", "poor_high", "poor_low"]
     price: float
     session: date
 
@@ -96,11 +95,12 @@ def carried_levels(profiles: Sequence[SessionProfile]) -> list[Level]:
     the last session. A POC or single print clears once a later session trades its row; a poor
     high clears on a later trade above it, a poor low on one below."""
     _one_version(profiles)
+    spans = [(min(q.tpo), max(q.tpo)) for q in profiles]
     out: list[Level] = []
     for i, p in enumerate(profiles):
         rs = p.params.row_size
-        later = [(min(q.tpo), max(q.tpo)) for q in profiles[i + 1 :]]
-        top, bottom = max(p.tpo), min(p.tpo)
+        later = spans[i + 1 :]
+        bottom, top = spans[i]
         if not _traded(row_of(p.poc, rs), later):
             out.append(Level("naked_poc", p.poc, p.session))
         out += [
