@@ -41,16 +41,18 @@ class CorporateAction:
     type: str  # "split", "bonus", "dividend", "rights", "merger", "demerger"
     status: str  # "active", "cancelled"
     ex_date: date
+    published_at: datetime
+    source: str = ""
     from_qty: int | None = None
     to_qty: int | None = None
     amount: str | None = None
-    published_at: datetime | None = None
-    source: str = ""
     licence_scope: str = "public"
 
     def __post_init__(self) -> None:
         if not self.action_id:
             raise ValueError("action_id must be non-empty")
+        if self.published_at is None:
+            raise ValueError("published_at is required")
         if not self.source:
             raise ValueError("source must be non-empty")
         if not self.licence_scope:
@@ -105,7 +107,7 @@ class CorporateActionAdjuster:
                         licence_scope=item.get("licence_scope", "public"),
                     )
 
-                pub_iso = act.published_at.isoformat() if act.published_at else ""
+                pub_iso = act.published_at.isoformat()
                 self._conn.execute(
                     """
                     INSERT OR REPLACE INTO corporate_actions (

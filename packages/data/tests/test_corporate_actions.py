@@ -1,11 +1,12 @@
 import json
 import sqlite3
-from datetime import date
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 import pytest
 from axiom_data.corporate_actions import (
     Bar,
+    CorporateAction,
     CorporateActionAdjuster,
 )
 
@@ -264,6 +265,21 @@ def test_demerger_leaves_bars_unchanged_and_returns_limitation(
     res = adjuster.adjust_bars("RELIANCE_EQ", bars, as_of=date(2024, 9, 10))
     assert res.bars[0].close == 1000.0
     assert any("unhandled corporate action: demerger" in lim for lim in res.limitations)
+
+
+def test_corporate_action_published_at_required_refuses_none() -> None:
+    """published_at is required; None must be refused when building CorporateAction."""
+    with pytest.raises((ValueError, TypeError)):
+        CorporateAction(  # pyright: ignore[reportCallIssue]
+            action_id="ACT1",
+            recorded_at=datetime(2024, 1, 1, 0, 0, tzinfo=UTC),
+            instrument_id="STOCK",
+            type="split",
+            status="active",
+            ex_date=date(2024, 5, 15),
+            published_at=None,
+            source="TEST",
+        )
 
 
 def test_zero_or_negative_ratio_refused_at_load(conn: sqlite3.Connection) -> None:
