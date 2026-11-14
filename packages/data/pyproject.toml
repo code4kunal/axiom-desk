@@ -1,0 +1,13 @@
+[project]
+name = "axiom-data"
+version = "0.1.0"
+description = "Axiom Desk reference data: instruments, trading calendar, F&O rules and corporate actions."
+requires-python = ">=3.12,<3.13"
+dependencies = ["axiom-core"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/axiom_data"]

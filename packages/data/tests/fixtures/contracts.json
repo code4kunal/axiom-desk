@@ -1,0 +1,82 @@
+{
+  "contracts": [
+    {
+      "contract_id": "NIFTY_SEP_2025_FUT",
+      "underlying_id": "SPX_INDEX",
+      "option_type": "FUT",
+      "strike": null,
+      "source": "NSE_CONTRACT_MASTER",
+      "licence_scope": "public"
+    },
+    {
+      "contract_id": "NIFTY_LOT_REVISED_FUT",
+      "underlying_id": "SPX_INDEX",
+      "option_type": "FUT",
+      "strike": null,
+      "source": "NSE_CONTRACT_MASTER",
+      "licence_scope": "public"
+    },
+    {
+      "contract_id": "NIFTY_LATE_PUBLISHED_FUT",
+      "underlying_id": "SPX_INDEX",
+      "option_type": "FUT",
+      "strike": null,
+      "source": "NSE_CONTRACT_MASTER",
+      "licence_scope": "public"
+    }
+  ],
+  "expiries": [
+    {
+      "contract_id": "NIFTY_SEP_2025_FUT",
+      "expiry_date": "2025-09-25",
+      "effective_from": "2025-01-01",
+      "effective_to": null,
+      "published_at": "2025-01-01T00:00:00Z",
+      "recorded_at": "2025-01-01T00:00:00Z",
+      "source": "NSE_CONTRACT_MASTER",
+      "licence_scope": "public"
+    },
+    {
+      "contract_id": "NIFTY_SEP_2025_FUT",
+      "expiry_date": "2025-09-30",
+      "effective_from": "2025-01-01",
+      "effective_to": null,
+      "published_at": "2025-08-20T00:00:00Z",
+      "recorded_at": "2025-08-20T00:00:00Z",
+      "source": "NSE_CIRCULAR_REDATING",
+      "licence_scope": "public"
+    },
+    {
+      "contract_id": "NIFTY_LATE_PUBLISHED_FUT",
+      "expiry_date": "2025-09-30",
+      "effective_from": "2025-01-01",
+      "effective_to": null,
+      "published_at": "2025-07-20T00:00:00Z",
+      "recorded_at": "2025-07-20T00:00:00Z",
+      "source": "NSE_CONTRACT_MASTER",
+      "licence_scope": "public"
+    }
+  ],
+  "lots": [
+    {
+      "contract_id": "NIFTY_LOT_REVISED_FUT",
+      "lot_size": 50,
+      "effective_from": "2024-01-01",
+      "effective_to": "2024-11-20",
+      "published_at": "2023-12-01T00:00:00Z",
+      "recorded_at": "2023-12-01T00:00:00Z",
+      "source": "NSE_CIRCULAR",
+      "licence_scope": "public"
+    },
+    {
+      "contract_id": "NIFTY_LOT_REVISED_FUT",
+      "lot_size": 25,
+      "effective_from": "2024-11-20",
+      "effective_to": null,
+      "published_at": "2024-10-01T00:00:00Z",
+      "recorded_at": "2024-10-01T00:00:00Z",
+      "source": "NSE_CIRCULAR",
+      "licence_scope": "public"
+    }
+  ]
+}

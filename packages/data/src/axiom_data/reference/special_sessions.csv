@@ -1,0 +1,7 @@
+segment,date,open_time,close_time,session_name,published_at,recorded_at,source,licence_scope,published_at_synthetic,verified_against
+equity,2024-11-01,18:00:00,19:00:00,Muhurat Trading,2024-10-15T00:00:00Z,2024-10-15T00:00:00Z,UNSOURCED,public,true,
+fno,2024-11-01,18:00:00,19:00:00,Muhurat Trading,2024-10-15T00:00:00Z,2024-10-15T00:00:00Z,UNSOURCED,public,true,
+equity,2025-02-01,09:15:00,15:30:00,Union Budget Special Session,2025-01-15T00:00:00Z,2025-01-15T00:00:00Z,UNSOURCED,public,true,
+fno,2025-02-01,09:15:00,15:30:00,Union Budget Special Session,2025-01-15T00:00:00Z,2025-01-15T00:00:00Z,UNSOURCED,public,true,
+equity,2025-10-21,18:15:00,19:15:00,Muhurat Trading,2025-09-15T00:00:00Z,2025-09-15T00:00:00Z,UNSOURCED,public,true,
+fno,2025-10-21,18:15:00,19:15:00,Muhurat Trading,2025-09-15T00:00:00Z,2025-09-15T00:00:00Z,UNSOURCED,public,true,

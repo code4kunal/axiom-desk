@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Axiom U5: reference data, trading calendar, F&O rules and corporate actions",
+    "output": "docs/diagrams/u5-reference-data.html",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "legend": {
+      "entries": {
+        "csv": { "label": "Reference CSV (PR review)" },
+        "db": { "label": "Records DB (Postgres/SQLite)" },
+        "pit": { "label": "Point-in-time engine (KTD2)" },
+        "service": { "label": "Domain service" },
+        "registry": { "label": "Capability registry" },
+        "consumer": { "label": "Downstream consumer" }
+      }
+    }
+  },
+  "components": [
+    { "id": "csv_rules", "type": "csv", "label": "Reference CSVs", "sublabel": "rules, holidays, roles", "pos": [40, 100], "size": [180, 60] },
+    { "id": "db_records", "type": "db", "label": "Records DB", "sublabel": "instruments, contracts, actions", "pos": [40, 220], "size": [180, 60] },
+    { "id": "u6_adapters", "type": "consumer", "label": "U6 Vendor Adapters", "sublabel": "daily feed writes", "pos": [40, 340], "size": [180, 60] },
+    { "id": "pit_engine", "type": "pit", "label": "Point-in-Time Resolver", "sublabel": "effective_from/to, published_at, recorded_at", "pos": [300, 160], "size": [220, 80] },
+    { "id": "calendar", "type": "service", "label": "Trading Calendar", "sublabel": "sessions, holidays, shifts", "pos": [600, 60], "size": [180, 60] },
+    { "id": "instruments", "type": "service", "label": "Instruments & Eligibility", "sublabel": "R7 roles, basket eligibility", "pos": [600, 160], "size": [180, 60] },
+    { "id": "fno_rules", "type": "service", "label": "F&O Rules & Contracts", "sublabel": "lot sizes, expiries, ban list", "pos": [600, 260], "size": [180, 60] },
+    { "id": "corp_actions", "type": "service", "label": "Corporate Actions", "sublabel": "splits, bonuses, total return", "pos": [600, 360], "size": [180, 60] },
+    { "id": "registry", "type": "registry", "label": "Capability Registry", "sublabel": "API, CLI, agent parity", "pos": [880, 160], "size": [180, 80] },
+    { "id": "downstream", "type": "consumer", "label": "Downstream Units", "sublabel": "U7 store, U14/15 charts, U19/21/23", "pos": [880, 310], "size": [180, 80] }
+  ],
+  "connections": [
+    { "from": "csv_rules", "to": "pit_engine", "label": "rule tables" },
+    { "from": "db_records", "to": "pit_engine", "label": "effective rows" },
+    { "from": "u6_adapters", "to": "db_records", "label": "ingest" },
+    { "from": "pit_engine", "to": "calendar", "label": "dated queries" },
+    { "from": "pit_engine", "to": "instruments", "label": "dated queries" },
+    { "from": "pit_engine", "to": "fno_rules", "label": "dated queries" },
+    { "from": "pit_engine", "to": "corp_actions", "label": "dated queries" },
+    { "from": "calendar", "to": "fno_rules", "label": "session shifts" },
+    { "from": "calendar", "to": "registry", "label": "trading_calendar" },
+    { "from": "instruments", "to": "registry", "label": "instrument_lookup" },
+    { "from": "fno_rules", "to": "registry", "label": "fno_contract_rules" },
+    { "from": "instruments", "to": "downstream", "label": "drafts & baskets" },
+    { "from": "corp_actions", "to": "downstream", "label": "adjusted series" }
+  ]
+}
