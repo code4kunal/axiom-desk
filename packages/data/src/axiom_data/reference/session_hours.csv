@@ -1,0 +1,5 @@
+segment,effective_from,effective_to,published_at,recorded_at,source,licence_scope,verified_against,open_time,close_time
+equity,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,NSE/TRD/REGULAR,public,,09:15:00,15:30:00
+fno,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,NSE/TRD/REGULAR,public,,09:15:00,15:30:00
+currency,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,NSE/CD/REGULAR,public,,09:00:00,17:00:00
+commodity,2019-01-01,,2018-12-01T00:00:00Z,2018-12-01T00:00:00Z,MCX/TRD/REGULAR,public,,09:00:00,23:30:00
