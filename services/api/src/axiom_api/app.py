@@ -108,7 +108,7 @@ def create_app(svc: Services, settings: Settings | None = None) -> FastAPI:
         except Refused as err:
             return JSONResponse({"error": str(err)}, status_code=422)
         except ValidationError as err:
-            return JSONResponse({"error": err.errors(include_url=False)}, status_code=422)
+            return JSONResponse({"error": err.errors(include_url=False, include_context=False)}, status_code=422)
         return JSONResponse(envelope.to_json())
 
     app = FastAPI(title="Axiom Desk")

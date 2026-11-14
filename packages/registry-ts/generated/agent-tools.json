@@ -13,6 +13,7 @@
           "type": "string"
         },
         "on": {
+          "format": "date",
           "title": "On",
           "type": "string"
         }
@@ -32,6 +33,7 @@
     "input_schema": {
       "properties": {
         "on": {
+          "format": "date",
           "title": "On",
           "type": "string"
         },
@@ -108,6 +110,7 @@
         "on": {
           "anyOf": [
             {
+              "format": "date",
               "type": "string"
             },
             {
@@ -120,6 +123,7 @@
         "timestamp": {
           "anyOf": [
             {
+              "format": "date-time",
               "type": "string"
             },
             {

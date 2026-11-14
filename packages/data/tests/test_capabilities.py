@@ -168,6 +168,23 @@ def test_non_public_scope_refused_for_unentitled_tenant(app_services: Services) 
     assert "licence scope vendor-proprietary is not entitled" in str(exc.value)
 
 
+def test_bad_input_is_422_not_500(app_services: Services) -> None:
+    """Malformed dates and missing one-of identifiers are validation errors."""
+    token = sign_in(app_services, "ana")
+    client = TestClient(create_app(app_services), raise_server_exceptions=False)
+    headers = {"Authorization": f"Bearer {token}"}
+    bad = [
+        ("fno_contract_rules", {"exchange": "NSE", "underlying": "NIFTY", "on": "2026-13-45"}),
+        ("trading_calendar", {"segment": "equity", "on": "2026-13-45"}),
+        ("instrument_lookup", {"symbol": "SPX", "on": "2026-13-45"}),
+        ("instrument_lookup", {"on": "2026-11-13"}),
+        ("trading_calendar", {"segment": "equity"}),
+    ]
+    for name, body in bad:
+        res = client.post(f"/capabilities/{name}", json=body, headers=headers)
+        assert res.status_code == 422, (name, body, res.text)
+
+
 def test_horizon_exceeded_and_rule_unknown_return_422(app_services: Services) -> None:
     """A date past calendar horizon, and rule asked before first row,
 

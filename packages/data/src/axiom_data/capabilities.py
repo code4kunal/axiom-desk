@@ -12,7 +12,7 @@ from typing import Any
 from axiom_core.authz import Action, NotFound
 from axiom_core.envelope import HandlerResult, Source
 from axiom_core.registry import ALL_BINDINGS, CallContext, Capability
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 
 from axiom_data.calendar import Session, TradingCalendar
 from axiom_data.fno_rules import FnoRulesEngine
@@ -21,22 +21,26 @@ from axiom_data.pointintime import IST, NaiveTimestampRefused
 
 
 class InstrumentLookupInput(BaseModel):
-    on: str
+    on: date
     symbol: str | None = None
     instrument_id: str | None = None
     purpose: str | None = None
 
+    @model_validator(mode="after")
+    def _needs_identifier(self) -> "InstrumentLookupInput":
+        if not (self.symbol or self.instrument_id):
+            raise ValueError("either symbol or instrument_id must be provided")
+        return self
+
 
 def instrument_lookup(instruments: InstrumentStore) -> Capability:
     def handler(ctx: CallContext, inputs: InstrumentLookupInput) -> HandlerResult:
-        on_date = date.fromisoformat(inputs.on)
-        inst = None
+        on_date = inputs.on
         if inputs.instrument_id:
             inst = instruments.get_instrument(inputs.instrument_id)
-        elif inputs.symbol:
-            inst = instruments.resolve_identifier("symbol", inputs.symbol, on_date)
         else:
-            raise ValueError("either symbol or instrument_id must be provided")
+            assert inputs.symbol  # the input model guarantees one identifier
+            inst = instruments.resolve_identifier("symbol", inputs.symbol, on_date)
 
         if inst is None:
             target = inputs.symbol or inputs.instrument_id or ""
@@ -105,8 +109,14 @@ def instrument_lookup(instruments: InstrumentStore) -> Capability:
 
 class TradingCalendarInput(BaseModel):
     segment: str
-    on: str | None = None
-    timestamp: str | None = None
+    on: date | None = None
+    timestamp: datetime | None = None
+
+    @model_validator(mode="after")
+    def _needs_on_or_timestamp(self) -> "TradingCalendarInput":
+        if self.on is None and self.timestamp is None:
+            raise ValueError("either 'on' or 'timestamp' must be provided")
+        return self
 
 
 def _format_session(s: Session | None) -> dict[str, Any] | None:
@@ -123,16 +133,15 @@ def _format_session(s: Session | None) -> dict[str, Any] | None:
 def trading_calendar(calendar: TradingCalendar) -> Capability:
     def handler(ctx: CallContext, inputs: TradingCalendarInput) -> HandlerResult:
         if inputs.timestamp is not None:
-            ts = datetime.fromisoformat(inputs.timestamp)
+            ts = inputs.timestamp
             if ts.tzinfo is None:
                 raise NaiveTimestampRefused("naive timestamp is refused")
             d = ts.astimezone(IST).date()
             ref_dt = ts
-        elif inputs.on is not None:
-            d = date.fromisoformat(inputs.on)
-            ref_dt = datetime.combine(d, time(0, 0, 0), tzinfo=IST)
         else:
-            raise ValueError("either 'on' or 'timestamp' must be provided")
+            assert inputs.on is not None  # the input model guarantees one of the two
+            d = inputs.on
+            ref_dt = datetime.combine(d, time(0, 0, 0), tzinfo=IST)
 
         session = calendar.get_session(inputs.segment, d)
         is_trading_day = session is not None
@@ -176,12 +185,12 @@ def trading_calendar(calendar: TradingCalendar) -> Capability:
 class FnoContractRulesInput(BaseModel):
     exchange: str
     underlying: str
-    on: str
+    on: date
 
 
 def fno_contract_rules(rules: FnoRulesEngine) -> Capability:
     def handler(ctx: CallContext, inputs: FnoContractRulesInput) -> HandlerResult:
-        on_date = date.fromisoformat(inputs.on)
+        on_date = inputs.on
         res = rules.get_contract_rules(inputs.exchange, inputs.underlying, on_date)
         value = {
             "exchange": res.exchange,
