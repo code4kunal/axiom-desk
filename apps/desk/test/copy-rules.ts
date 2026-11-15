@@ -1,5 +1,7 @@
 // Shared by the copy, numbers and launch tests: every string the page can show comes from content.ts.
 import * as content from "../src/landing/content.ts";
+import * as chart from "../src/chart/content.ts";
+import * as orderLabels from "../src/chart/order-labels.ts";
 
 export type Leaf = { path: string; value: string };
 
@@ -10,6 +12,8 @@ export function* walk(node: unknown, path = ""): Generator<Leaf> {
 }
 
 export const leaves = () => [...walk(content)];
+export const chartLeaves = () => [...walk(chart)];
+export const orderLeaves = () => [...walk(orderLabels)];
 
 // Whole words, case-insensitive; inflections listed explicitly so "buyer" stays legal.
 const BANNED = [
@@ -31,9 +35,13 @@ const BANNED = [
   "beats the market",
   "beating the market",
 ];
-const bannedRe = new RegExp(`\\b(${BANNED.join("|").replace(/ /g, "\\s+")})\\b`, "i");
+const SIDE = /^(buy|sell)/; // KTD15: the order-side words, allowed only in order-labels.ts
+const re = (words: string[]) => new RegExp(`\\b(${words.join("|").replace(/ /g, "\\s+")})\\b`, "i");
+const bannedRe = re(BANNED);
+const orderRe = re(BANNED.filter((w) => !SIDE.test(w)));
 
-export const bannedHit = (s: string) => s.match(bannedRe)?.[0] ?? null;
+export const bannedHit = (s: string, scope: "copy" | "order" = "copy") =>
+  s.match(scope === "order" ? orderRe : bannedRe)?.[0] ?? null;
 
 // A data figure: a date, or a number. Ordinals are not in content.ts (they're computed), and the
 // capability count and the HTTP status are not data.

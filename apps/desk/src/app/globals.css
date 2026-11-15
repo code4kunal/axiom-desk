@@ -40,6 +40,29 @@
   --color-stamp-rac: var(--color-gold);
   --color-stamp-wl: var(--color-cash);
 
+  /* Chart roles (DESIGN.md §8.2). On a chart pane these names win: green means up, not "expansion".
+     Aliases follow the dark overrides; only auction and the heat ramp need their own dark values. */
+  --color-c-up: var(--color-monsoon);
+  --color-c-up-mark: var(--color-monsoon-mark);
+  --color-c-down: var(--color-geru);
+  --color-c-down-mark: var(--color-geru-mark);
+  --color-c-call: var(--color-gilts);
+  --color-c-call-mark: var(--color-gilts-mark);
+  --color-c-put: var(--color-intl);
+  --color-c-put-mark: var(--color-intl-mark);
+  --color-c-magnet: var(--color-gold);
+  --color-c-magnet-mark: var(--color-gold-mark);
+  --color-c-band: var(--color-cash);
+  --color-c-band-mark: var(--color-cash-mark);
+  --color-c-auction: #5a6b0e;
+  --color-c-auction-mark: #738a12;
+  --color-heat-1: #fbf1d9;
+  --color-heat-2: #f0d58e;
+  --color-heat-3: #d9a73a;
+  --color-heat-4: #b0740f;
+  --color-heat-5: #7a4708;
+  --color-heat-6: #3f2304;
+
   --font-display: var(--ff-display), serif;
   --font-body: var(--ff-body), sans-serif;
   --font-mono: var(--ff-mono), monospace;
@@ -110,6 +133,14 @@
   --color-cash-mark: #98a2ae;
   --color-intl: #ee6cab;
   --color-intl-mark: #ee6cab;
+  --color-c-auction: #b3c94a;
+  --color-c-auction-mark: #b3c94a;
+  --color-heat-1: #2a2210;
+  --color-heat-2: #4e3a12;
+  --color-heat-3: #80601a;
+  --color-heat-4: #b88a28;
+  --color-heat-5: #e3b84c;
+  --color-heat-6: #fbe7a6;
 }
 
 /* JavaScript off: no data-theme, so follow the system. Same values as the block above. */
@@ -140,6 +171,14 @@
     --color-cash-mark: #98a2ae;
     --color-intl: #ee6cab;
     --color-intl-mark: #ee6cab;
+    --color-c-auction: #b3c94a;
+    --color-c-auction-mark: #b3c94a;
+    --color-heat-1: #2a2210;
+    --color-heat-2: #4e3a12;
+    --color-heat-3: #80601a;
+    --color-heat-4: #b88a28;
+    --color-heat-5: #e3b84c;
+    --color-heat-6: #fbe7a6;
   }
 }
 
