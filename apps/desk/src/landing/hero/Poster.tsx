@@ -11,7 +11,7 @@ const PHONE = "(width < 48rem)";
 const file = (p: number, t: string, ext: string, phone: boolean) => `/hero/poster-${p}-${t}${phone ? "-720" : ""}.${ext}`;
 
 export function Poster({ p }: { p: 0 | 40 | 70 | 100 }) {
-  const hole = hero.hole[p === 0 ? 0 : 1]!;
+  const hole = hero.hole[[0, 40, 70, 100].indexOf(p)]!;
   return (
     <div className="hero-plate relative aspect-square w-full [container-type:inline-size]">
       {THEMES.map((t) => (
@@ -40,8 +40,8 @@ export function Poster({ p }: { p: 0 | 40 | 70 | 100 }) {
         >
           {hole.word}
         </b>
-        {/* Hidden <640: the hole is too small and the step line says it. */}
-        <span className="max-w-[50%] font-mono max-sm:hidden text-label text-balance text-ink-dim">{hole.note}</span>
+        {/* Always shown: without it the number in the hole has no name. */}
+        <span className="max-w-[50%] font-mono text-label text-balance text-ink-dim">{hole.note}</span>
       </div>
     </div>
   );

@@ -21,11 +21,15 @@ test("money moves between 44% and 74%, and the tilt flattens by 100%", () => {
   assert.deepEqual(at("tilt"), [1, 1.6, 1.6, 0]);
 });
 
-// The legend says the move in words (no figures on screen); the words must match what the ring draws.
-test("the legend words match the weights the ring draws", () => {
-  const top = Math.max(...WEIGHTS_A);
-  assert.deepEqual(WEIGHTS_A.map((w) => (w === top ? "Most" : w >= 9 ? "Some" : "Low")), hero.legend.before);
-  assert.deepEqual(WEIGHTS_A.map((a, k) => (WEIGHTS_B[k]! < a ? "Less" : WEIGHTS_B[k]! > a ? "More" : "Same")), hero.legend.after);
+// The ring is labelled in percentages (user ruling 2026-11-13: numbers, not words standing in for them).
+test("hole, legend and step-3 caption show the percentages the ring draws, each summing to 100", () => {
+  assert.equal(WEIGHTS_A.reduce((a, b) => a + b), 100);
+  assert.equal(WEIGHTS_B.reduce((a, b) => a + b), 100);
+  assert.deepEqual(hero.legend.before, ["61%", "18%", "9%", "7%", "5%"]);
+  assert.deepEqual(hero.legend.after, ["42%", "29%", "17%", "7%", "5%"]);
+  assert.deepEqual(hero.hole.map((h) => h.word), ["61%", "61%", "42%", "42%"]);
+  assert.equal(hero.plates[2]!.caption, "EQUITY 61% → 42% · GILTS 18% → 29% · GOLD 9% → 17% · ILLUSTRATIVE");
+  for (const h of hero.hole) assert.equal(h.note, hero.legend.labels[0]!.toUpperCase()); // the number says what it is
 });
 
 test("keyframe maps scroll px to ring progress through the dock points", () => {
