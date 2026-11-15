@@ -10,6 +10,7 @@ from axiom_core.envelope import Source
 from axiom_core.registry import Binding
 from axiom_core.session import VerifiedClaims
 from axiom_core.tenancy import Role
+from axiom_data.instruments import Instrument
 from fastapi.testclient import TestClient
 
 AS_OF = datetime(2026, 11, 12, 9, 15, tzinfo=UTC)
@@ -29,6 +30,81 @@ def services() -> Iterator[Services]:
     svc = build_services(conn, Clock())
     svc.directory.bootstrap_admin("desk", "ada")
     svc.directory.grant(svc.directory.principal("desk", "ada"), "desk", "ana", Role.ANALYST)
+    if svc.instruments:
+        svc.instruments.load_instruments(
+            [
+                Instrument(
+                    instrument_id="SPX_INDEX",
+                    asset_class="global_index",
+                    kind="index",
+                    exchange="CBOE",
+                    name="S&P 500 Index",
+                    source="REF_FIXTURE",
+                    licence_scope="public",
+                ),
+                Instrument(
+                    instrument_id="MO_SP500_ETF",
+                    asset_class="etf",
+                    kind="etf",
+                    exchange="NSE",
+                    name="Motilal Oswal S&P 500 ETF",
+                    source="REF_FIXTURE",
+                    licence_scope="public",
+                ),
+            ]
+        )
+        svc.instruments.load_identifiers(
+            [
+                {
+                    "instrument_id": "SPX_INDEX",
+                    "identifier_type": "symbol",
+                    "value": "SPX",
+                    "effective_from": "2019-01-01",
+                    "effective_to": None,
+                    "published_at": "2018-12-01T00:00:00Z",
+                    "recorded_at": "2018-12-01T00:00:00Z",
+                    "source": "REF_FIXTURE",
+                    "licence_scope": "public",
+                },
+            ]
+        )
+        svc.instruments.load_tracks(
+            [
+                {
+                    "instrument_id": "MO_SP500_ETF",
+                    "tracked_instrument_id": "SPX_INDEX",
+                    "effective_from": "2020-01-01",
+                    "effective_to": None,
+                    "published_at": "2019-12-01T00:00:00Z",
+                    "recorded_at": "2019-12-01T00:00:00Z",
+                    "source": "REF_FIXTURE",
+                    "licence_scope": "public",
+                },
+            ]
+        )
+    if svc.fno_rules:
+        svc.fno_rules.load_contracts(
+            [
+                {
+                    "contract_id": "NSE:NIFTY-2026-11-26-FUT",
+                    "underlying_id": "NIFTY_INDEX",
+                    "source": "REF_FIXTURE",
+                    "licence_scope": "public",
+                }
+            ]
+        )
+        svc.fno_rules.load_ban_list_days(
+            [
+                {
+                    "exchange": "NSE",
+                    "list_date": "2026-11-13",
+                    "published_at": "2026-11-12T18:00:00Z",
+                    "recorded_at": "2026-11-12T18:00:00Z",
+                    "source": "REF_FIXTURE",
+                    "licence_scope": "public",
+                }
+            ]
+        )
     yield svc
     conn.close()
 
@@ -111,6 +187,21 @@ def test_tenant_in_the_request_body_cannot_override_the_session(services: Servic
         headers={"Authorization": f"Bearer {token}"},
     )
     assert response.status_code == 403
+
+
+def test_services_requires_data_engine_fields(services: Services) -> None:
+    """instruments, calendar, and fno_rules must be required fields on Services."""
+    with pytest.raises(TypeError):
+        Services(  # pyright: ignore[reportCallIssue]
+            audit=services.audit,
+            directory=services.directory,
+            authz=services.authz,
+            sessions=services.sessions,
+            pending=services.pending,
+            runs=services.runs,
+            entitlements=services.entitlements,
+            registry=services.registry,
+        )
 
 
 def test_generated_artifacts_match_the_registry(services: Services) -> None:

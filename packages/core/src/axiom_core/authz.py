@@ -51,6 +51,10 @@ class NotFound(Exception):
         super().__init__(f"{kind} {resource_id} not found")
 
 
+class Refused(Exception):
+    pass
+
+
 @dataclass(frozen=True)
 class Resource:
     tenant_id: str

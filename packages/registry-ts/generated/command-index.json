@@ -1,7 +1,22 @@
 [
   {
+    "name": "fno_contract_rules",
+    "summary": "F&O contract rules, expiry cycle weekdays, lot value and ban status",
+    "permission": "read"
+  },
+  {
+    "name": "instrument_lookup",
+    "summary": "Point-in-time instrument resolution, asset-class role and eligibility",
+    "permission": "read"
+  },
+  {
     "name": "runs_latest",
     "summary": "Latest published run of a kind (for example the current regime)",
+    "permission": "read"
+  },
+  {
+    "name": "trading_calendar",
+    "summary": "Trading session status, holidays and adjacent sessions per segment",
     "permission": "read"
   }
 ]

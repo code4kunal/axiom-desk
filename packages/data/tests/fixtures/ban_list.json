@@ -1,0 +1,29 @@
+{
+  "ban_list_days": [
+    {
+      "exchange": "NSE",
+      "list_date": "2024-08-01",
+      "published_at": "2024-08-01T00:00:00Z",
+      "recorded_at": "2024-08-01T00:00:00Z",
+      "source": "NSE_BAN_CIRCULAR",
+      "licence_scope": "public"
+    },
+    {
+      "exchange": "NSE",
+      "list_date": "2024-08-02",
+      "published_at": "2024-08-02T00:00:00Z",
+      "recorded_at": "2024-08-02T00:00:00Z",
+      "source": "NSE_BAN_CIRCULAR",
+      "licence_scope": "public"
+    }
+  ],
+  "ban_list": [
+    {
+      "exchange": "NSE",
+      "list_date": "2024-08-01",
+      "instrument_id": "RELIANCE_EQ",
+      "source": "NSE_BAN_CIRCULAR",
+      "licence_scope": "public"
+    }
+  ]
+}

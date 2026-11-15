@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Axiom U5 Reference Data Architecture</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card-bg: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --accent: #58a6ff;
+      --accent-muted: #1f6feb33;
+      --green: #3fb950;
+      --purple: #bc8cff;
+      --orange: #d29922;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    p.desc {
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+      font-size: 1rem;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    h2 {
+      font-size: 1.3rem;
+      margin-top: 0;
+      margin-bottom: 1rem;
+      color: var(--accent);
+    }
+    svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .node rect {
+      rx: 6;
+      ry: 6;
+      stroke-width: 1.5;
+    }
+    .node text.title {
+      font-weight: 600;
+      font-size: 14px;
+      fill: var(--text);
+    }
+    .node text.sub {
+      font-size: 11px;
+      fill: var(--text-muted);
+    }
+    .edge {
+      stroke: var(--border);
+      stroke-width: 1.5;
+      fill: none;
+      marker-end: url(#arrow);
+    }
+    .edge-label {
+      font-size: 11px;
+      fill: var(--text-muted);
+    }
+    .legend {
+      display: flex;
+      gap: 1.5rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .legend-swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.5rem 0.75rem;
+      text-align: left;
+    }
+    th {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Axiom Desk — U5 Reference Data Architecture</h1>
+    <p class="desc">Point-in-time reference data spine: instruments, trading calendar, F&O contract rules, and corporate action adjustments.</p>
+
+    <div class="card">
+      <h2>Architecture & Data Flow (KTD1, KTD2)</h2>
+      <svg viewBox="0 0 1100 480">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#8b949e" />
+          </marker>
+        </defs>
+
+        <!-- Components -->
+        <!-- Sources -->
+        <g class="node">
+          <rect x="40" y="40" width="200" height="70" fill="#1f6feb22" stroke="#58a6ff" />
+          <text class="title" x="55" y="70">Reference CSVs</text>
+          <text class="sub" x="55" y="92">rules, holidays, R7 roles (PR review)</text>
+        </g>
+        <g class="node">
+          <rect x="40" y="160" width="200" height="70" fill="#3fb95022" stroke="#3fb950" />
+          <text class="title" x="55" y="190">Records DB</text>
+          <text class="sub" x="55" y="212">instruments, contracts, actions</text>
+        </g>
+        <g class="node">
+          <rect x="40" y="280" width="200" height="70" fill="#bc8cff22" stroke="#bc8cff" />
+          <text class="title" x="55" y="310">U6 Vendor Feeds</text>
+          <text class="sub" x="55" y="332">daily contract master, ban lists</text>
+        </g>
+
+        <!-- Point in Time Engine -->
+        <g class="node">
+          <rect x="320" y="120" width="220" height="150" fill="#21262d" stroke="#58a6ff" stroke-width="2" />
+          <text class="title" x="335" y="155">Point-in-Time Engine (KTD2)</text>
+          <text class="sub" x="335" y="180">• effective_from & to [F, T)</text>
+          <text class="sub" x="335" y="200">• published_at &le; end of D (IST)</text>
+          <text class="sub" x="335" y="220">• latest recorded_at wins</text>
+          <text class="sub" x="335" y="240">• source & licence_scope tracking</text>
+        </g>
+
+        <!-- Domain Services -->
+        <g class="node">
+          <rect x="620" y="40" width="180" height="60" fill="#161b22" stroke="#30363d" />
+          <text class="title" x="635" y="68">Trading Calendar</text>
+          <text class="sub" x="635" y="86">sessions & holiday shifts</text>
+        </g>
+        <g class="node">
+          <rect x="620" y="130" width="180" height="60" fill="#161b22" stroke="#30363d" />
+          <text class="title" x="635" y="158">Instruments & Roles</text>
+          <text class="sub" x="635" y="176">R7 roles & eligibility (AE2)</text>
+        </g>
+        <g class="node">
+          <rect x="620" y="220" width="180" height="60" fill="#161b22" stroke="#30363d" />
+          <text class="title" x="635" y="248">F&O Rules & Contracts</text>
+          <text class="sub" x="635" y="266">lot sizes, expiries, ban list</text>
+        </g>
+        <g class="node">
+          <rect x="620" y="310" width="180" height="60" fill="#161b22" stroke="#30363d" />
+          <text class="title" x="635" y="338">Corporate Actions</text>
+          <text class="sub" x="635" y="356">splits, bonuses, total return</text>
+        </g>
+
+        <!-- Egress: Registry & Downstream -->
+        <g class="node">
+          <rect x="880" y="90" width="180" height="90" fill="#d2992222" stroke="#d29922" />
+          <text class="title" x="895" y="120">Capability Registry</text>
+          <text class="sub" x="895" y="142">instrument_lookup</text>
+          <text class="sub" x="895" y="158">trading_calendar / fno_rules</text>
+        </g>
+        <g class="node">
+          <rect x="880" y="240" width="180" height="90" fill="#bc8cff22" stroke="#bc8cff" />
+          <text class="title" x="895" y="270">Downstream Platforms</text>
+          <text class="sub" x="895" y="292">U7 store, U14/15 charts,</text>
+          <text class="sub" x="895" y="308">U19 backtests, U21 drafts</text>
+        </g>
+
+        <!-- Edges -->
+        <path class="edge" d="M 240 75 L 320 150" />
+        <path class="edge" d="M 240 195 L 320 195" />
+        <path class="edge" d="M 240 315 L 140 315 L 140 230" />
+
+        <path class="edge" d="M 540 160 L 620 70" />
+        <path class="edge" d="M 540 175 L 620 160" />
+        <path class="edge" d="M 540 215 L 620 250" />
+        <path class="edge" d="M 540 235 L 620 340" />
+
+        <!-- Inter-service: calendar -> fno_rules -->
+        <path class="edge" d="M 710 100 L 710 220" />
+
+        <path class="edge" d="M 800 70 L 880 120" />
+        <path class="edge" d="M 800 160 L 880 140" />
+        <path class="edge" d="M 800 250 L 880 160" />
+        <path class="edge" d="M 800 340 L 880 285" />
+        <path class="edge" d="M 800 180 L 880 265" />
+      </svg>
+
+      <div class="legend">
+        <div class="legend-item"><div class="legend-swatch" style="background:#58a6ff;"></div>Reference CSVs (Rules / Calendar)</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:#3fb950;"></div>Records DB Tables</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:#bc8cff;"></div>Feeds & Downstream Handlers</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:#d29922;"></div>Capability Registry (API / Agent / CLI)</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Expiry Resolution Logic (KTD3)</h2>
+      <svg viewBox="0 0 900 280">
+        <g class="node">
+          <rect x="30" y="40" width="160" height="50" fill="#21262d" stroke="#58a6ff" />
+          <text class="title" x="45" y="70">Target Period T</text>
+        </g>
+        <g class="node">
+          <rect x="250" y="35" width="200" height="60" fill="#21262d" stroke="#3fb950" />
+          <text class="title" x="265" y="60">Contract Record?</text>
+          <text class="sub" x="265" y="78">published by as_of A</text>
+        </g>
+        <g class="node">
+          <rect x="520" y="35" width="180" height="60" fill="#1f6feb22" stroke="#58a6ff" />
+          <text class="title" x="535" y="60">Explicit Expiry</text>
+          <text class="sub" x="535" y="78">contract_expiries row</text>
+        </g>
+        <g class="node">
+          <rect x="250" y="150" width="200" height="60" fill="#21262d" stroke="#d29922" />
+          <text class="title" x="265" y="175">Expiry Rule in Force?</text>
+          <text class="sub" x="265" y="193">candidate expiry weekday</text>
+        </g>
+        <g class="node">
+          <rect x="520" y="150" width="180" height="60" fill="#21262d" stroke="#bc8cff" />
+          <text class="title" x="535" y="175">Regular Session?</text>
+          <text class="sub" x="535" y="193">calendar check</text>
+        </g>
+        <g class="node">
+          <rect x="750" y="90" width="120" height="60" fill="#3fb95022" stroke="#3fb950" stroke-width="2" />
+          <text class="title" x="770" y="125">Final Expiry</text>
+        </g>
+
+        <!-- Edges -->
+        <path class="edge" d="M 190 65 L 250 65" />
+        <path class="edge" d="M 450 65 L 520 65" />
+        <path class="edge" d="M 350 95 L 350 150" />
+        <path class="edge" d="M 450 180 L 520 180" />
+        <path class="edge" d="M 700 65 L 750 110" />
+        <path class="edge" d="M 700 180 L 750 130" />
+      </svg>
+    </div>
+  </div>
+</body>
+</html>
