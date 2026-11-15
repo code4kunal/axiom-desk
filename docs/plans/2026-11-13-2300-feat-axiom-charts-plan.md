@@ -15,10 +15,10 @@ execution: code
 - **Objective:** A desk trader opens one chart and gets everything needed to decide on an Indian F&O or equity instrument: price, strikes, positioning, volatility, and what the evidence says, each with its base rate. The desk stops opening TradingView for charts, Sensibull, Opstra or Tradl for position building, and GoCharting for market profile and order flow.
 - **Means:** An options-native chart with strikes on the price axis and the strategy builder on the chart. An insight rail driven by a quant-specified detector catalogue. Cross-stock pattern twins. An AI screener builder that backtests itself. One auction model per instrument that reads market profile, volume profile and order flow across nested timeframes, with a DOM ladder that sends confirmed orders through the broker. Point-in-time replay across all of it.
 - **Product authority:** Extends `docs/plans/2026-11-12-1110-feat-axiom-desk-platform-plan.md` (the platform plan), platform units U14–U17, and proposes amendments to R12, R14, R20, R49, R56, R110, R116, R126, platform KTD6, platform units U7, U12, U14–U19, U21 and U25, gates G1, G2 and G5, and PR5 sequencing, listed under Platform Plan Amendments. Platform R-IDs are not edited here. New IDs continue the platform plan's sequences: R155+, F11+, AE21+. Where this contract and the platform plan disagree, the platform plan stands until an amendment is accepted into it.
-- **Execution profile:** four PRs (PR1–PR4 under Implementation Units). PR1 is buildable now. PR2 waits on the renderer decision and G5, PR3 on platform U7, U8, U9, U11, U12, U15, U19, U21 drafts, U22 money-flow and sector rank, and U25, PR4 on the G1 tick-by-tick feed and platform U21.
+- **Execution profile:** four PRs (PR1–PR4 under Implementation Units). PR1 is buildable now. PR2 is unblocked: the renderer is decided (custom, 2026-11-15) and G5 is met (DESIGN.md §8, merged in #12), PR3 on platform U7, U8, U9, U11, U12, U15, U19, U21 drafts, U22 money-flow and sector rank, and U25, PR4 on the G1 tick-by-tick feed and platform U21.
 - **Stop conditions:** stop and report if a settled decision proves infeasible in the build, if a golden value cannot be matched to its reference formula, or if the R191 or R218 frame budget fails on the named hardware profile.
 - **Open blockers:**
-  - The platform U14 renderer decision is open. SciChart was not run (no licence key), the R126 timed tasks were not run (no named desk testers), and 16 charts with the rail open has never been measured.
+  - The platform U14 renderer decision is made (2026-11-15, user ruling): the custom Canvas2D renderer; SciChart is dropped unrun. The custom renderer passed the 16-chart R191 session and the R218 footprint session on an M4 Pro (`tools/benchmarks/renderer/RESULT.md`). The R126 timed tasks move to PR2, which builds the UI they need.
   - `DESIGN.md` has no chart-pane tokens. G5 blocks chart screen work until it does.
   - Desk quants have not specified the V1 detector catalogues (R169, R200) or the auction pattern catalogue (R209). Intraday detectors launch uncalibrated until Axiom's own archive is deep enough.
   - No tick-by-tick and depth feed is contracted (G1). Footprint, delta, absorption, the heatmap and the DOM depth view (R205, R215) cannot ship without it.
@@ -330,7 +330,7 @@ Proposed changes to `docs/plans/2026-11-12-1110-feat-axiom-desk-platform-plan.md
 - **platform KTD6:** change the spike's load from 8 to 16 synced charts with the rail open, and judge it against R191.
 - **platform U7:** owns R189.
 - **platform U12:** registers detectors (R168) and counts twins, story conditions and screen suggestions as tested variants (R176, R180).
-- **platform U14:** re-runs the spike at 16 charts, with SciChart licensed and two named desk testers, before any chart feature work. It owns R184–R186, R188, R190, R191, R196, R197, and the rendering in R203, R205, R217 and R218.
+- **platform U14:** re-ran the spike at 16 charts on 2026-11-15 and chose the custom renderer; SciChart was dropped without a licensed run, and the two-tester timed tasks move to PR2. It owns R184–R186, R188, R190, R191, R196, R197, and the rendering in R203, R205, R217 and R218.
 - **platform U15:** owns R173–R176, R198, the strike-ranking math in R159, the profile math in R201, R202 and R204, and the indicator core in R219–R221.
 - **platform U16:** owns R192 and R195.
 - **platform U17:** owns the strike ladder, implied range, OI walls and positioning additions (R155, R160–R163), plus the rail (R165–R172), the equity catalogue (R200), R193, R207, and the auction model and its cards (R208–R213).
@@ -412,7 +412,7 @@ Repo rules that bind every unit: the feature pipeline in `CLAUDE.md` (groom, arc
 - KTD6. **Screen statistics guard against overfitting.** A lineage starts at the first backtest run, and every run counts, saved or not and by the user or the agent. Suggestions pass only on the deflated Sharpe ratio with lineage-wide N, PBO from CSCV and purged, embargoed cross-validation. The final holdout is read only through Thresholdout with a fixed budget. Governs R178–R181, R223. (session-settled: user-approved — chosen over in-sample suggestion gates.)
 - KTD7. **Twins use z-normalised matrix-profile search, re-ranked by constrained DTW.** Search runs MASS across the universe, applies an exclusion zone, keeps one match per instrument per window, and reports effective N clustered by date. Governs R173–R176, R222. (session-settled: user-approved — chosen over a static twin list, which is look-ahead when backtested.)
 - KTD8. **Plain-language screens parse through strict tool use against a schema generated from the registry.** Free-text expressions are not accepted. Rule-based checks catch vague quantifiers, a missing timeframe and a missing universe, and the engine, not the model, renders the confirmation text. Governs R177.
-- KTD9. **One frame scheduler drives every chart.** It uses dirty flags, separate static and overlay layers, typed-array ring buffers and min/max decimation. Plain WebGL2 is used only for the heatmap. All heatmaps share one WebGL2 context composited into each chart, so 16 heatmap charts stay under the browser's per-page context limit. A parallel DOM layer carries labelled controls for ladder strikes, rail items and legs, virtualised to the focused chart's visible strikes, legs and marks. The scheduler, layer split, ring buffers and decimation assume the custom renderer wins the platform U14 decision. If SciChart wins, KTD9, U9 and U26 are re-planned before PR2 starts; the DOM layer, sync bus, hit testing and lanes apply under either outcome. Governs R191, R197, R218.
+- KTD9. **One frame scheduler drives every chart.** It uses dirty flags, separate static and overlay layers, typed-array ring buffers and min/max decimation. Plain WebGL2 is used only for the heatmap. All heatmaps share one WebGL2 context composited into each chart, so 16 heatmap charts stay under the browser's per-page context limit. A parallel DOM layer carries labelled controls for ladder strikes, rail items and legs, virtualised to the focused chart's visible strikes, legs and marks. The scheduler, layer split, ring buffers and decimation follow the platform U14 decision: custom renderer, decided 2026-11-15 (`tools/benchmarks/renderer/RESULT.md`). Governs R191, R197, R218.
 - KTD10. **The engine computes profiles and footprint bins and pushes them about once a second.** The browser draws and interpolates only. Governs R201–R205. (session-settled: user-approved — chosen over computing per tick in the browser.)
 - KTD11. **The aggressor is classified by the quote rule against the depth snapshot at trade time, with the tick rule as fallback.** Trades at the bid or the ask count as unambiguous, which is the share R206 shows. Governs R206. (session-settled: user-approved — chosen over showing an accuracy figure with no ground truth to measure it against.)
 - KTD12. **Orders go stage, then Axiom confirm, then the platform U21 broker adapter, behind a G2 flag.** With the flag off, the confirm creates a ticket draft. The confirm action is human-only under KTD1, and the agent binding can stage only. The live stage capability refuses any request whose `as_of` is not live, and replay paper orders go through a separate paper-order capability that writes only to the replay book and has no broker adapter path. The order-scope broker token is per user, held in the cloud secret manager, readable only by the broker-send service called from the confirm path, never by the API process that hosts the agent runtime or by logs, and provisioned only when the G2 flag is on. Governs R164, R215, R216.
@@ -529,7 +529,7 @@ tools/benchmarks/tasks/
 
 ### Gates and Open Questions
 
-- The renderer decision needs a SciChart licence key and two named desk testers before PR2 starts (platform U14 spike, `tools/benchmarks/renderer/RESULT.md`).
+- The renderer is decided: custom (2026-11-15, `tools/benchmarks/renderer/RESULT.md`). R191 and R218 passed on one M4 Pro; re-run on the lowest desk spec before release. The R126 timed tasks run in PR2 once the workspace UI exists.
 - G5: `DESIGN.md` chart-pane tokens and the TASTE file gate every `apps/desk` chart screen. The G5 design pass authors those tokens before PR2 starts; U8 consumes them. `references/TASTE.md` is still an empty template, so G5 needs the desk's 3 likes and 3 hates first.
 - G1: the tick-by-tick and depth feed contract, including storage terms that confirm the KTD4 20-session window and indefinite retention for the calibration set, gates PR4. The vendor sample must show individual trades with exchange timestamps and depth snapshots timestamped so each trade matches the quote in force (KTD11); a snapshot or cumulative-volume feed does not pass, and the depth cadence relative to trades is recorded.
 - G2: legal review of sending confirmed orders through the broker API gates turning on the KTD12 flag. G2 also records whether the broker issues per-user order-scope tokens separate from read-only trade-book access, and amends platform U21's rule that the fill service holds no order-capable credential, which the KTD12 send path otherwise contradicts.
@@ -682,11 +682,11 @@ Waits on: nothing.
 - **Test scenarios:**
   - The metrics function reports p99.9 and the over-50 ms count on a fixed synthetic frame log.
   - A run with fewer than 3 repeats is reported as incomplete.
-- **Verification:** a local run writes all R191 fields to `RESULT.md`. The renderer decision itself waits on the SciChart key and testers (Gates).
+- **Verification:** a local run writes all R191 fields to `RESULT.md`. The renderer decision is recorded there (custom, 2026-11-15).
 
 ### PR2: Chart surface
 
-Waits on: PR1 (merge order only), the renderer decision and G5 (both needed before start). If the renderer decision picks SciChart, KTD9, U9 and U26 are re-planned first. Separate PR because `CLAUDE.md` makes G5 a start gate for every `apps/desk` screen, while PR1 is buildable now.
+Waits on: nothing. PR1 is merged, G5 is met (DESIGN.md §8 in #12) and the renderer is decided (custom), so KTD9, U9 and U26 stand as planned. Separate PR because `CLAUDE.md` makes G5 a start gate for every `apps/desk` screen, while PR1 is buildable now.
 
 ### U8. Chart tokens and desk copy rule
 
@@ -705,7 +705,7 @@ Waits on: PR1 (merge order only), the renderer decision and G5 (both needed befo
 
 - **Goal:** Build the `packages/chart-ts` engine the desk draws on.
 - **Requirements:** R190, R191, R197, R203.
-- **Dependencies:** U7, U8, the renderer decision.
+- **Dependencies:** U7, U8, the renderer decision (made: custom).
 - **Files:** `packages/chart-ts/src/`, `packages/chart-ts/test/`, `apps/desk/e2e/chart.spec.ts`.
 - **Approach:** per KTD9. Price-axis lanes host the ladder and the composite profile. In-chart session profiles draw beside their session's bars. The sync bus carries symbol, interval, crosshair, time, date range and drawings. Hit testing returns ladder strikes, legs and marks.
 - **Test scenarios:**
