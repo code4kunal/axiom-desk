@@ -1,6 +1,6 @@
 # U14 renderer spike: result
 
-Status: **partial, no decision yet.** The custom renderer is measured. SciChart is built and typechecks but has not run (no licence key). The five R126 timed tasks have not run (no desk testers yet). Per the plan, no chart feature work starts until this file records a decision.
+Status: **decided 2026-11-15: custom renderer; SciChart dropped** (user ruling). The custom renderer passed the R191 budget session (16 charts) and the R218 footprint session on an M4 Pro MacBook Pro. SciChart never ran (no licence key) and is no longer a candidate. The R126 timed tasks are deferred to PR2, which builds the UI they need.
 
 ## Candidates
 
@@ -51,7 +51,7 @@ Reading: with the live bar on screen, the custom renderer holds refresh rate wit
 
 ## Budget runs: 16 charts and 4 footprint charts
 
-**NOT RUN.** The harness is built; no budget run has been made. Nothing below is measured.
+Measured 2026-11-15 on the profile below. Raw result lines are summarised in the tables at the end of this section.
 
 What a run does (`bench.ts`, `src/load.ts`, `src/metrics.ts`):
 
@@ -71,9 +71,16 @@ pnpm --filter @axiom/renderer-spike bench custom --session=footprint --profile="
 
 | Session | Renderer | Hardware profile | Repeats | p95 ms | p99.9 ms | frames > 50 ms | Status |
 |---|---|---|---|---|---|---|---|
-| budget (16 charts, rail, strategy overlay, DOM layer, 60x) | custom | NOT RUN | NOT RUN | NOT RUN | NOT RUN | NOT RUN | NOT RUN |
-| footprint (4 charts, 60x) | custom | NOT RUN | NOT RUN | NOT RUN | NOT RUN | NOT RUN | NOT RUN |
-| budget | scichart | NOT RUN: no licence key | | | | | |
+| budget (16 charts, rail, strategy overlay, DOM layer, 60x), session 1 | custom | MacBook Pro M4 Pro | 3 | 9.1 / 9.1 / 9.1 | 9.4 / 9.4 / 10.6 | **12** / 1 / 0 | fail |
+| budget, session 2 | custom | MacBook Pro M4 Pro | 3 | 9.1 / 9.1 / 9.2 | 9.5 / 9.5 / 9.4 | 0 / 0 / 0 | **pass** |
+| footprint (4 charts, 60x) | custom | MacBook Pro M4 Pro | 3 | 9.2 / 9.2 / 9.2 | 17.6 / 15.6 / 16.8 | 1 / 2 / 0 | **pass** |
+| budget | scichart | not run: no licence key, dropped | | | | | |
+
+Hardware: Apple M4 Pro, 14 cores, 24 GB, macOS 25.5.0, Chrome 157.0.8103.52, ANGLE Metal, DPR 1, headed. Every run: about 120 fps, 30.3 ticks/s delivered against 30 asked, no page errors.
+
+- **Budget session 1 failed on frames over 50 ms only.** Run 1 had 12 stalls of about 64 ms, each matching a long main-thread task (771 ms total); runs 2 and 3 had 1 and 0. During that session an in-app browser tab was open on the spike page and other commands were running. Session 2, with the tab closed and the machine otherwise idle, had no stall and no long task in any run. The cause of the session 1 stalls is not established: the harness counts long tasks but does not record when they happen.
+- **Footprint passes with a thin margin on stalls.** Run 2 had 2 frames over 50 ms (limit 3), worst 66.5 ms; p99.9 reached 17.6 ms (limit 33).
+- Both sessions are one machine. R191 names a desk hardware profile; re-run on the lowest desk spec before release.
 
 ## R126 timed tasks (two desk users)
 
@@ -87,8 +94,9 @@ These tasks also need UI the spike does not have yet (a symbol picker, interval 
 
 ## Decision
 
-Open. Decide after the SciChart run and the timed tasks. The custom renderer meets the frame-time bar on its own, so the decision turns on:
+**Custom renderer (A).** Decided 2026-11-15 by the user. Recorded with the budget and footprint passes above.
 
-1. Whether SciChart is clearly faster at higher data density (many more bars on screen, 1-second bars).
-2. Licence cost: per-developer and white-label terms for broker tenants. UNVERIFIED; get a quote.
-3. Build cost of the R10 chart types and drawing tools that SciChart ships and we would write ourselves.
+- Why: it holds about 120 fps with 16 charts and nearly 2x headroom on p95. It costs no licence, adds no vendor and no white-label terms for broker tenants. SciChart could not be measured without a paid key.
+- Cost we accept: we build the R10 chart types and drawing tools ourselves (plan U9, U26).
+- Open risks: the unexplained session 1 stalls and the thin footprint stall margin. U9 adds long-task timestamps to the harness and re-runs both sessions after the engine lands.
+- `src/scichart.ts` and the `scichart` dependency stay until PR2 removes them with the spike UI.
