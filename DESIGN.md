@@ -93,6 +93,8 @@ Text tokens clear 4.5:1 on ground and raised; `-mark` tokens clear 3:1 and are f
 | Uncertainty: cone, VWAP bands, replay future | `--c-band` | `#636E7A` | `#808D9B` | `#98A2AE` | 5.20 / 4.72 | 3.39 / 3.07 | 7.32 / 6.68 |
 | Price reference: VWAP, crosshair tag, last price | `--ink` | as §1 | | | | | |
 
+In code (`apps/desk/src/app/globals.css`) each role is `--color-c-<role>` and `--color-c-<role>-mark` (utilities `text-c-up`, `stroke-c-put-mark`), and the ramp is `--color-heat-1…6`. `apps/desk/test/chart-tokens.test.ts` checks this table against the CSS.
+
 The up, call, put and magnet values reuse the monsoon, gilts, intl and gold values, so the desk ships no new chromatic except `--c-auction` (moss). On a chart pane these names win: green means up there, not "expansion".
 
 Liquidity heatmap ramp `--heat-1…6` (single hue, ochre, lightness carries the value):
